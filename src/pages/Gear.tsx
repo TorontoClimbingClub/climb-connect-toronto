@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Package, Plus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Package, Plus, Trash2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,11 @@ interface UserEquipment {
   category_id: string;
   equipment_categories: {
     name: string;
+  };
+  assignment_info?: {
+    event_id: string;
+    event_title: string;
+    event_date: string;
   };
 }
 
@@ -65,7 +71,34 @@ export default function Gear() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setEquipment(data || []);
+
+      // Fetch assignment information for each equipment
+      const equipmentIds = data?.map(e => e.id) || [];
+      const { data: assignmentData } = await supabase
+        .from('event_equipment')
+        .select(`
+          user_equipment_id,
+          events(id, title, date)
+        `)
+        .in('user_equipment_id', equipmentIds);
+
+      const assignmentMap = new Map();
+      assignmentData?.forEach(assignment => {
+        if (assignment.events) {
+          assignmentMap.set(assignment.user_equipment_id, {
+            event_id: assignment.events.id,
+            event_title: assignment.events.title,
+            event_date: assignment.events.date
+          });
+        }
+      });
+
+      const equipmentWithAssignments = data?.map(item => ({
+        ...item,
+        assignment_info: assignmentMap.get(item.id)
+      })) || [];
+
+      setEquipment(equipmentWithAssignments);
     } catch (error) {
       console.error('Error fetching equipment:', error);
       toast({
@@ -125,6 +158,21 @@ export default function Gear() {
 
   const deleteEquipment = async (id: string) => {
     try {
+      // First check if equipment is assigned to any events
+      const { data: assignmentData } = await supabase
+        .from('event_equipment')
+        .select('event_id')
+        .eq('user_equipment_id', id);
+
+      if (assignmentData && assignmentData.length > 0) {
+        toast({
+          title: "Cannot Delete",
+          description: "This equipment is assigned to an event. Remove it from the event first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('user_equipment')
         .delete()
@@ -266,10 +314,26 @@ export default function Gear() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-emerald-800">{item.item_name}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-emerald-800">{item.item_name}</h3>
+                        {item.assignment_info && (
+                          <Badge variant="outline" className="text-xs">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Assigned
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-stone-600">{item.equipment_categories.name}</p>
                       {item.brand && (
                         <p className="text-sm text-stone-500 mt-1">Brand: {item.brand}</p>
+                      )}
+                      {item.assignment_info && (
+                        <p className="text-sm text-orange-600 mt-1">
+                          Assigned to: {item.assignment_info.event_title} 
+                          <span className="block text-xs">
+                            Date: {new Date(item.assignment_info.event_date).toLocaleDateString()}
+                          </span>
+                        </p>
                       )}
                       {item.notes && (
                         <p className="text-sm text-stone-500 mt-2">{item.notes}</p>
@@ -280,6 +344,7 @@ export default function Gear() {
                       variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      disabled={!!item.assignment_info}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

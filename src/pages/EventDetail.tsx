@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,7 @@ import { EventHeader } from "@/components/event-detail/EventHeader";
 import { EventDetailsCard } from "@/components/event-detail/EventDetailsCard";
 import { CarpoolCard } from "@/components/event-detail/CarpoolCard";
 import { ParticipantsTable } from "@/components/event-detail/ParticipantsTable";
-import { EquipmentTable } from "@/components/event-detail/EquipmentTable";
+import { EquipmentCard } from "@/components/event-detail/EquipmentCard";
 
 interface Event {
   id: string;
@@ -43,13 +42,25 @@ interface Equipment {
   category_name: string;
 }
 
+interface UserEquipment {
+  id: string;
+  item_name: string;
+  brand: string | null;
+  notes: string | null;
+  category_name: string;
+  is_assigned?: boolean;
+  assigned_event?: string;
+}
+
 export default function EventDetail() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [userEquipment, setUserEquipment] = useState<UserEquipment[]>([]);
   const [userJoined, setUserJoined] = useState(false);
+  const [currentUserParticipation, setCurrentUserParticipation] = useState<Participant | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,6 +70,9 @@ export default function EventDetail() {
       fetchEventDetails();
       fetchParticipants();
       fetchEquipment();
+      if (user) {
+        fetchUserEquipment();
+      }
     }
   }, [eventId, user]);
 
@@ -76,12 +90,13 @@ export default function EventDetail() {
       if (user) {
         const { data: participation } = await supabase
           .from('event_participants')
-          .select('id')
+          .select('*')
           .eq('event_id', eventId)
           .eq('user_id', user.id)
           .single();
 
         setUserJoined(!!participation);
+        setCurrentUserParticipation(participation);
       }
     } catch (error) {
       console.error('Error fetching event details:', error);
@@ -187,6 +202,108 @@ export default function EventDetail() {
     }
   };
 
+  const fetchUserEquipment = async () => {
+    if (!user) return;
+
+    try {
+      const { data: userEquipmentData, error } = await supabase
+        .from('user_equipment')
+        .select(`
+          id,
+          item_name,
+          brand,
+          notes,
+          category_id,
+          equipment_categories(name)
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Check which equipment is already assigned to events
+      const equipmentIds = userEquipmentData?.map(e => e.id) || [];
+      const { data: assignedEquipment } = await supabase
+        .from('event_equipment')
+        .select('user_equipment_id, event_id')
+        .in('user_equipment_id', equipmentIds);
+
+      const assignedMap = new Map(assignedEquipment?.map(a => [a.user_equipment_id, a.event_id]) || []);
+
+      const equipmentWithAssignments = userEquipmentData?.map(item => ({
+        ...item,
+        category_name: item.equipment_categories?.name || 'Unknown Category',
+        is_assigned: assignedMap.has(item.id),
+        assigned_event: assignedMap.get(item.id)
+      })) || [];
+
+      setUserEquipment(equipmentWithAssignments);
+    } catch (error) {
+      console.error('Error fetching user equipment:', error);
+    }
+  };
+
+  const updateCarpoolStatus = async (isDriver: boolean, seats: number) => {
+    if (!user || !eventId) return;
+
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .update({
+          is_carpool_driver: isDriver,
+          available_seats: isDriver ? seats : null
+        })
+        .eq('event_id', eventId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Carpool status updated",
+      });
+
+      fetchParticipants();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update carpool status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const addEquipment = async (equipmentIds: string[]) => {
+    if (!user || !eventId) return;
+
+    try {
+      const equipmentRecords = equipmentIds.map(id => ({
+        event_id: eventId,
+        user_equipment_id: id,
+        user_id: user.id
+      }));
+
+      const { error } = await supabase
+        .from('event_equipment')
+        .insert(equipmentRecords);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: `Added ${equipmentIds.length} item(s) to event equipment`,
+      });
+
+      fetchEquipment();
+      fetchUserEquipment();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add equipment",
+        variant: "destructive",
+      });
+    }
+  };
+
   const joinEvent = async () => {
     if (!user || !eventId) return;
 
@@ -277,12 +394,22 @@ export default function EventDetail() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <EventDetailsCard event={event} participantsCount={participants.length} />
-          <CarpoolCard participants={participants} />
+          <CarpoolCard 
+            participants={participants}
+            currentUserId={user?.id}
+            currentUserParticipation={currentUserParticipation}
+            onUpdateCarpoolStatus={updateCarpoolStatus}
+          />
         </div>
 
         <div className="space-y-6">
           <ParticipantsTable participants={participants} />
-          <EquipmentTable equipment={equipment} />
+          <EquipmentCard 
+            equipment={equipment}
+            userEquipment={userEquipment}
+            currentUserId={user?.id}
+            onAddEquipment={addEquipment}
+          />
         </div>
       </div>
       <Navigation />
