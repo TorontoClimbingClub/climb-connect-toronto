@@ -40,15 +40,14 @@ export function EventsTab({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-emerald-800">Event Management</h2>
-        {canCreateEvents && (
-          <CreateEventDialog
-            showForm={showCreateForm}
-            onToggleForm={setShowCreateForm}
-            onEventCreated={() => {
-              setShowCreateForm(false);
-              onRefreshEvents();
-            }}
-          />
+        {canCreateEvents && !showCreateForm && (
+          <Button 
+            onClick={() => setShowCreateForm(true)}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Event
+          </Button>
         )}
       </div>
 
@@ -58,12 +57,12 @@ export function EventsTab({
           <div className="w-full max-w-2xl">
             <CreateEventDialog
               showForm={true}
-              onToggleForm={() => {}} // This won't be used since we're controlling it from parent
+              onToggleForm={setShowCreateForm}
               onEventCreated={() => {
                 setShowCreateForm(false);
                 onRefreshEvents();
               }}
-              hideButton={true} // Add this prop to hide the button when showing inline
+              hideButton={true}
             />
           </div>
         </div>
