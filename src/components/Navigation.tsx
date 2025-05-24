@@ -1,5 +1,5 @@
 
-import { Home, Calendar, User, Package, Users } from "lucide-react";
+import { Home, Calendar, User, Package, Users, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -47,6 +47,22 @@ export const Navigation = () => {
               </button>
             );
           })}
+          
+          {/* Admin button - only show for authenticated users */}
+          {user && (
+            <button
+              onClick={() => handleNavigation('/admin')}
+              className={cn(
+                "flex flex-col items-center space-y-1 py-2 px-3 rounded-lg transition-colors",
+                currentPath === '/admin'
+                  ? "text-emerald-600 bg-emerald-50" 
+                  : "text-stone-600 hover:text-emerald-600 hover:bg-stone-50"
+              )}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="text-xs font-medium">Admin</span>
+            </button>
+          )}
         </div>
       </div>
     </nav>

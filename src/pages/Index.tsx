@@ -49,7 +49,7 @@ export default function Index() {
         `)
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date', { ascending: true })
-        .limit(3);
+        .limit(6);
 
       if (error) throw error;
       setUpcomingEvents(data || []);
@@ -149,7 +149,7 @@ export default function Index() {
             </div>
           )}
 
-          {/* Upcoming Events */}
+          {/* Upcoming Events - Dynamic */}
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-emerald-800">Upcoming Events</h2>
@@ -169,36 +169,49 @@ export default function Index() {
                 <Card>
                   <CardContent className="p-6 text-center">
                     <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-                    <p className="text-stone-600">No upcoming events</p>
+                    <p className="text-stone-600 mb-4">No upcoming events scheduled</p>
+                    {user && (
+                      <Button 
+                        onClick={() => window.location.href = '/admin'}
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        Create Event
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ) : (
                 upcomingEvents.map((event) => (
-                  <Card key={event.id} className="overflow-hidden">
+                  <Card key={event.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => window.location.href = '/events'}>
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-emerald-800">{event.title}</h3>
+                        <h3 className="font-semibold text-emerald-800 line-clamp-1">{event.title}</h3>
                         {event.difficulty_level && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">
                             {event.difficulty_level}
                           </Badge>
                         )}
                       </div>
                       
+                      {event.description && (
+                        <p className="text-sm text-stone-600 mb-3 line-clamp-2">{event.description}</p>
+                      )}
+                      
                       <div className="space-y-2 text-sm text-stone-600">
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {new Date(event.date).toLocaleDateString()} at {event.time}
+                          <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
                         </div>
                         
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {event.location}
+                          <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span className="line-clamp-1">{event.location}</span>
                         </div>
                         
                         <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2" />
-                          {event.participants_count || 0} joined
+                          <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span>{event.participants_count || 0} joined</span>
                         </div>
                       </div>
                     </CardContent>
@@ -208,47 +221,39 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Features */}
+          {/* Quick Actions */}
           <div>
-            <h2 className="text-xl font-semibold text-emerald-800 mb-4">What You Can Do</h2>
-            <div className="grid grid-cols-1 gap-3">
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Calendar className="h-8 w-8 text-emerald-600 mr-3" />
-                  <div>
-                    <h3 className="font-semibold">Join Events</h3>
-                    <p className="text-sm text-stone-600">Discover and join climbing adventures</p>
-                  </div>
+            <h2 className="text-xl font-semibold text-emerald-800 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
+                    onClick={() => window.location.href = '/events'}>
+                <CardContent className="p-4 text-center">
+                  <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <h3 className="font-semibold text-sm">Browse Events</h3>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Package className="h-8 w-8 text-emerald-600 mr-3" />
-                  <div>
-                    <h3 className="font-semibold">Manage Gear</h3>
-                    <p className="text-sm text-stone-600">Track and share your climbing equipment</p>
-                  </div>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
+                    onClick={() => window.location.href = '/gear'}>
+                <CardContent className="p-4 text-center">
+                  <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <h3 className="font-semibold text-sm">Manage Gear</h3>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Car className="h-8 w-8 text-emerald-600 mr-3" />
-                  <div>
-                    <h3 className="font-semibold">Carpool</h3>
-                    <p className="text-sm text-stone-600">Share rides to climbing locations</p>
-                  </div>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
+                    onClick={() => window.location.href = '/community'}>
+                <CardContent className="p-4 text-center">
+                  <Users className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <h3 className="font-semibold text-sm">Community</h3>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardContent className="p-4 flex items-center">
-                  <Users className="h-8 w-8 text-emerald-600 mr-3" />
-                  <div>
-                    <h3 className="font-semibold">Community</h3>
-                    <p className="text-sm text-stone-600">Connect with fellow climbers</p>
-                  </div>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
+                    onClick={() => window.location.href = '/profile'}>
+                <CardContent className="p-4 text-center">
+                  <Car className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <h3 className="font-semibold text-sm">Profile</h3>
                 </CardContent>
               </Card>
             </div>
