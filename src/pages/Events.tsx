@@ -147,19 +147,21 @@ export default function Events() {
         </div>
 
         {events.length > 0 ? (
-          /* Centered grid with wider cards for better use of space */
+          /* Centered grid with event cards */
           <div className="flex justify-center">
-            <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-              {events.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  user={user}
-                  onEventClick={handleEventClick}
-                  onJoinEvent={handleJoinEvent}
-                  onLeaveEvent={handleLeaveEvent}
-                />
-              ))}
+            <div className="w-full max-w-5xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
+                {events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    user={user}
+                    onEventClick={handleEventClick}
+                    onJoinEvent={handleJoinEvent}
+                    onLeaveEvent={handleLeaveEvent}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         ) : (

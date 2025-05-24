@@ -28,7 +28,7 @@ interface EventCardProps {
 
 export function EventCard({ event, user, onEventClick, onJoinEvent, onLeaveEvent }: EventCardProps) {
   return (
-    <Card className="overflow-hidden w-full h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
+    <Card className="overflow-hidden w-full max-w-md h-full flex flex-col hover:shadow-lg transition-shadow duration-200 mx-auto">
       <CardHeader className="pb-4 flex-shrink-0">
         <div className="flex justify-between items-start gap-3">
           <div className="flex-1 min-w-0">
