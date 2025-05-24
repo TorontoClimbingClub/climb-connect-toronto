@@ -45,8 +45,7 @@ export default function Index() {
         .from('events_with_participants')
         .select('*')
         .gte('date', new Date().toISOString().split('T')[0])
-        .order('date', { ascending: true })
-        .limit(6);
+        .order('date', { ascending: true });
 
       if (error) throw error;
 
@@ -164,7 +163,7 @@ export default function Index() {
             </div>
           )}
 
-          {/* Combined Upcoming Events Section */}
+          {/* Upcoming Events Section */}
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-emerald-800">Upcoming Events</h2>
@@ -196,9 +195,7 @@ export default function Index() {
                   </CardContent>
                 </Card>
               ) : (
-                upcomingEvents
-                  .slice(0, 6)
-                  .map((event) => (
+                upcomingEvents.map((event) => (
                   <Card key={event.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                         onClick={() => window.location.href = `/events/${event.id}`}>
                     <CardContent className="p-4">
