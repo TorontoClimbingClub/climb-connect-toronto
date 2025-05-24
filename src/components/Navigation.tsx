@@ -63,8 +63,8 @@ export const Navigation = () => {
                 className={cn(
                   "flex flex-col items-center space-y-1 py-2 px-3 rounded-lg transition-colors",
                   isActive 
-                    ? "text-emerald-600 bg-emerald-50" 
-                    : "text-stone-600 hover:text-emerald-600 hover:bg-stone-50"
+                    ? "text-[#E55A2B] bg-orange-50" 
+                    : "text-stone-600 hover:text-[#E55A2B] hover:bg-stone-50"
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -80,8 +80,8 @@ export const Navigation = () => {
               className={cn(
                 "flex flex-col items-center space-y-1 py-2 px-3 rounded-lg transition-colors",
                 currentPath === '/admin'
-                  ? "text-emerald-600 bg-emerald-50" 
-                  : "text-stone-600 hover:text-emerald-600 hover:bg-stone-50"
+                  ? "text-[#E55A2B] bg-orange-50" 
+                  : "text-stone-600 hover:text-[#E55A2B] hover:bg-stone-50"
               )}
             >
               <Settings className="h-5 w-5" />

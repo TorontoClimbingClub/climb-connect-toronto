@@ -108,7 +108,7 @@ export function EquipmentCard({
           {currentUserId && availableEquipment.length > 0 && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                <Button size="sm" className="bg-[#E55A2B] hover:bg-[#D14B20] text-white">
                   <Plus className="h-4 w-4 mr-2" />
                   Share Gear
                 </Button>
@@ -160,7 +160,7 @@ export function EquipmentCard({
                   <Button 
                     onClick={handleAddSelected}
                     disabled={selectedEquipment.length === 0}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-[#E55A2B] hover:bg-[#D14B20] text-white"
                   >
                     Share Selected ({selectedEquipment.length})
                   </Button>

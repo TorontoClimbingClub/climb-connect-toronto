@@ -52,7 +52,7 @@ export function CarpoolCard({
       <CardContent className="space-y-4">
         {/* Current user carpool settings */}
         {isUserJoined && (
-          <div className="p-3 bg-emerald-50 rounded-lg">
+          <div className="p-3 bg-orange-50 rounded-lg">
             <h4 className="font-medium mb-3">Your Carpool Options</h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
