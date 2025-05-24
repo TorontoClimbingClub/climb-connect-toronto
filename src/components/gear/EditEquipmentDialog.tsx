@@ -18,7 +18,7 @@ interface EquipmentCategory {
 interface UserEquipment {
   id: string;
   item_name: string;
-  brand: string | null;
+  quantity: number;
   notes: string | null;
   category_id: string;
   equipment_categories: {
@@ -48,7 +48,7 @@ export function EditEquipmentDialog({
 }: EditEquipmentDialogProps) {
   const [editItem, setEditItem] = useState({
     item_name: equipment.item_name,
-    brand: equipment.brand || "",
+    quantity: equipment.quantity,
     notes: equipment.notes || "",
     category_id: equipment.category_id,
   });
@@ -64,7 +64,7 @@ export function EditEquipmentDialog({
         .from('user_equipment')
         .update({
           item_name: editItem.item_name,
-          brand: editItem.brand || null,
+          quantity: editItem.quantity,
           notes: editItem.notes || null,
           category_id: editItem.category_id,
         })
@@ -128,12 +128,14 @@ export function EditEquipmentDialog({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="brand">Brand (Optional)</Label>
+            <Label htmlFor="quantity">Quantity</Label>
             <Input
-              id="brand"
-              value={editItem.brand}
-              onChange={(e) => setEditItem({...editItem, brand: e.target.value})}
-              placeholder="e.g., Black Diamond"
+              id="quantity"
+              type="number"
+              min="1"
+              value={editItem.quantity}
+              onChange={(e) => setEditItem({...editItem, quantity: parseInt(e.target.value) || 1})}
+              required
             />
           </div>
           

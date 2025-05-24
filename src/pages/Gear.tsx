@@ -23,7 +23,7 @@ interface EquipmentCategory {
 interface UserEquipment {
   id: string;
   item_name: string;
-  brand: string | null;
+  quantity: number;
   notes: string | null;
   category_id: string;
   equipment_categories: {
@@ -44,7 +44,7 @@ export default function Gear() {
   const [editingEquipment, setEditingEquipment] = useState<UserEquipment | null>(null);
   const [newItem, setNewItem] = useState({
     item_name: "",
-    brand: "",
+    quantity: 1,
     notes: "",
     category_id: "",
   });
@@ -145,7 +145,7 @@ export default function Gear() {
         description: "Equipment added to your inventory",
       });
 
-      setNewItem({ item_name: "", brand: "", notes: "", category_id: "" });
+      setNewItem({ item_name: "", quantity: 1, notes: "", category_id: "" });
       setShowAddForm(false);
       fetchEquipment();
     } catch (error: any) {
@@ -286,12 +286,14 @@ export default function Gear() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="brand">Brand (Optional)</Label>
+                  <Label htmlFor="quantity">Quantity</Label>
                   <Input
-                    id="brand"
-                    value={newItem.brand}
-                    onChange={(e) => setNewItem({...newItem, brand: e.target.value})}
-                    placeholder="e.g., Black Diamond"
+                    id="quantity"
+                    type="number"
+                    min="1"
+                    value={newItem.quantity}
+                    onChange={(e) => setNewItem({...newItem, quantity: parseInt(e.target.value) || 1})}
+                    required
                   />
                 </div>
                 
@@ -339,9 +341,7 @@ export default function Gear() {
                         )}
                       </div>
                       <p className="text-sm text-stone-600">{item.equipment_categories.name}</p>
-                      {item.brand && (
-                        <p className="text-sm text-stone-500 mt-1">Brand: {item.brand}</p>
-                      )}
+                      <p className="text-sm text-stone-500 mt-1">Quantity: {item.quantity}</p>
                       {item.assignment_info && (
                         <p className="text-sm text-orange-600 mt-1">
                           Assigned to: {item.assignment_info.event_title} 

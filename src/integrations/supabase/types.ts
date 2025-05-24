@@ -169,6 +169,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          climbing_description: string | null
           created_at: string | null
           full_name: string
           id: string
@@ -178,6 +179,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          climbing_description?: string | null
           created_at?: string | null
           full_name: string
           id: string
@@ -187,6 +189,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          climbing_description?: string | null
           created_at?: string | null
           full_name?: string
           id?: string
@@ -199,30 +202,30 @@ export type Database = {
       }
       user_equipment: {
         Row: {
-          brand: string | null
           category_id: string
           created_at: string | null
           id: string
           item_name: string
           notes: string | null
+          quantity: number
           user_id: string
         }
         Insert: {
-          brand?: string | null
           category_id: string
           created_at?: string | null
           id?: string
           item_name: string
           notes?: string | null
+          quantity?: number
           user_id: string
         }
         Update: {
-          brand?: string | null
           category_id?: string
           created_at?: string | null
           id?: string
           item_name?: string
           notes?: string | null
+          quantity?: number
           user_id?: string
         }
         Relationships: [

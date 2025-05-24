@@ -29,7 +29,7 @@ interface Participant {
 interface Equipment {
   id: string;
   item_name: string;
-  brand: string | null;
+  quantity: number;
   notes: string | null;
   user_id: string;
   owner_name: string;
@@ -39,7 +39,7 @@ interface Equipment {
 interface UserEquipment {
   id: string;
   item_name: string;
-  brand: string | null;
+  quantity: number;
   notes: string | null;
   category_name: string;
   is_assigned?: boolean;
@@ -159,7 +159,7 @@ export function useEventData(eventId: string | undefined) {
           .select(`
             id,
             item_name,
-            brand,
+            quantity,
             notes,
             user_id,
             category_id
@@ -210,7 +210,7 @@ export function useEventData(eventId: string | undefined) {
         .select(`
           id,
           item_name,
-          brand,
+          quantity,
           notes,
           category_id,
           equipment_categories(name)

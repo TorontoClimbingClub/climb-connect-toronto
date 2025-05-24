@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Car, Package, Phone, Mail } from "lucide-react";
+import { Users, Car, Package, Phone, Mail, Mountain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ interface CommunityMember {
   id: string;
   full_name: string;
   phone: string | null;
+  climbing_description: string | null;
   is_carpool_driver: boolean;
   passenger_capacity: number;
   equipment_count?: number;
@@ -128,6 +129,15 @@ export default function Community() {
                     )}
                   </div>
                 </div>
+
+                {member.climbing_description && (
+                  <div className="mb-3 p-3 bg-stone-50 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
+                      <p className="text-sm text-stone-700">{member.climbing_description}</p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-between text-sm text-stone-600">
                   <div className="flex items-center">

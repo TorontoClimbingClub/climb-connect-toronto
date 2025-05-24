@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 interface Equipment {
   id: string;
   item_name: string;
-  brand: string | null;
+  quantity: number;
   notes: string | null;
   user_id: string;
   owner_name: string;
@@ -23,7 +23,7 @@ interface Equipment {
 interface UserEquipment {
   id: string;
   item_name: string;
-  brand: string | null;
+  quantity: number;
   notes: string | null;
   category_name: string;
   is_assigned?: boolean;
@@ -128,7 +128,7 @@ export function EquipmentCard({
                         <TableHead className="w-12">Share</TableHead>
                         <TableHead>Item</TableHead>
                         <TableHead>Category</TableHead>
-                        <TableHead>Brand</TableHead>
+                        <TableHead>Quantity</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -146,7 +146,7 @@ export function EquipmentCard({
                           <TableCell>
                             <Badge variant="outline">{item.category_name}</Badge>
                           </TableCell>
-                          <TableCell>{item.brand || 'N/A'}</TableCell>
+                          <TableCell>{item.quantity}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -177,7 +177,7 @@ export function EquipmentCard({
               <TableRow>
                 <TableHead>Item</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Brand</TableHead>
+                <TableHead>Quantity</TableHead>
                 <TableHead>Owner</TableHead>
                 <TableHead>Notes</TableHead>
                 {currentUserId && <TableHead className="w-12">Actions</TableHead>}
@@ -192,7 +192,7 @@ export function EquipmentCard({
                       {item.category_name}
                     </Badge>
                   </TableCell>
-                  <TableCell>{item.brand || 'N/A'}</TableCell>
+                  <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.owner_name}</TableCell>
                   <TableCell className="max-w-xs">
                     {item.notes ? (

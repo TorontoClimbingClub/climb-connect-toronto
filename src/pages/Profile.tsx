@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Phone, LogOut, Calendar, Package } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { User, Phone, LogOut, Calendar, Package, Mountain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +15,7 @@ interface Profile {
   id: string;
   full_name: string;
   phone: string | null;
+  climbing_description: string | null;
 }
 
 export default function Profile() {
@@ -90,6 +92,7 @@ export default function Profile() {
         .update({
           full_name: profile.full_name,
           phone: profile.phone,
+          climbing_description: profile.climbing_description,
         })
         .eq('id', user.id);
 
@@ -213,6 +216,21 @@ export default function Profile() {
                       onChange={(e) => setProfile({...profile, phone: e.target.value})}
                       className="pl-10"
                       placeholder="(416) 555-0123"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="climbing_description">Climbing Style & Description</Label>
+                  <div className="relative">
+                    <Mountain className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                    <Textarea
+                      id="climbing_description"
+                      value={profile.climbing_description || ""}
+                      onChange={(e) => setProfile({...profile, climbing_description: e.target.value})}
+                      className="pl-10 pt-3 min-h-[80px]"
+                      placeholder="Tell others about your climbing experience, preferred styles, favorite routes, etc."
+                      rows={4}
                     />
                   </div>
                 </div>
