@@ -29,10 +29,8 @@ interface Participant {
   is_carpool_driver: boolean | null;
   available_seats: number | null;
   joined_at: string;
-  profiles: {
-    full_name: string;
-    phone: string | null;
-  };
+  full_name: string;
+  phone: string | null;
 }
 
 interface Equipment {
@@ -41,12 +39,8 @@ interface Equipment {
   brand: string | null;
   notes: string | null;
   user_id: string;
-  profiles: {
-    full_name: string;
-  };
-  equipment_categories: {
-    name: string;
-  };
+  owner_name: string;
+  category_name: string;
 }
 
 export default function EventDetail() {
@@ -101,16 +95,38 @@ export default function EventDetail() {
 
   const fetchParticipants = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch event participants
+      const { data: participantsData, error: participantsError } = await supabase
         .from('event_participants')
-        .select(`
-          *,
-          profiles!inner(full_name, phone)
-        `)
+        .select('*')
         .eq('event_id', eventId);
 
-      if (error) throw error;
-      setParticipants(data || []);
+      if (participantsError) throw participantsError;
+
+      // Fetch profile data separately
+      if (participantsData && participantsData.length > 0) {
+        const userIds = participantsData.map(p => p.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, phone')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Combine the data
+        const participantsWithProfiles = participantsData.map(participant => {
+          const profile = profilesData?.find(p => p.id === participant.user_id);
+          return {
+            ...participant,
+            full_name: profile?.full_name || 'Unknown User',
+            phone: profile?.phone || null,
+          };
+        });
+
+        setParticipants(participantsWithProfiles);
+      } else {
+        setParticipants([]);
+      }
     } catch (error) {
       console.error('Error fetching participants:', error);
     }
@@ -118,34 +134,59 @@ export default function EventDetail() {
 
   const fetchEquipment = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch event equipment
+      const { data: eventEquipmentData, error: eventEquipmentError } = await supabase
         .from('event_equipment')
-        .select(`
-          user_equipment!inner(
+        .select('user_equipment_id, user_id')
+        .eq('event_id', eventId);
+
+      if (eventEquipmentError) throw eventEquipmentError;
+
+      if (eventEquipmentData && eventEquipmentData.length > 0) {
+        // Fetch user equipment details
+        const equipmentIds = eventEquipmentData.map(e => e.user_equipment_id);
+        const { data: equipmentData, error: equipmentError } = await supabase
+          .from('user_equipment')
+          .select(`
             id,
             item_name,
             brand,
             notes,
             user_id,
-            equipment_categories!inner(name)
-          ),
-          profiles!inner(full_name)
-        `)
-        .eq('event_id', eventId);
+            category_id
+          `)
+          .in('id', equipmentIds);
 
-      if (error) throw error;
-      
-      const formattedEquipment = data?.map(item => ({
-        id: item.user_equipment.id,
-        item_name: item.user_equipment.item_name,
-        brand: item.user_equipment.brand,
-        notes: item.user_equipment.notes,
-        user_id: item.user_equipment.user_id,
-        profiles: item.profiles,
-        equipment_categories: item.user_equipment.equipment_categories
-      })) || [];
+        if (equipmentError) throw equipmentError;
 
-      setEquipment(formattedEquipment);
+        // Fetch profiles and categories separately
+        const userIds = [...new Set(equipmentData?.map(e => e.user_id) || [])];
+        const categoryIds = [...new Set(equipmentData?.map(e => e.category_id) || [])];
+
+        const [profilesResult, categoriesResult] = await Promise.all([
+          supabase.from('profiles').select('id, full_name').in('id', userIds),
+          supabase.from('equipment_categories').select('id, name').in('id', categoryIds)
+        ]);
+
+        if (profilesResult.error || categoriesResult.error) {
+          throw profilesResult.error || categoriesResult.error;
+        }
+
+        // Combine all data
+        const equipmentWithDetails = equipmentData?.map(item => {
+          const profile = profilesResult.data?.find(p => p.id === item.user_id);
+          const category = categoriesResult.data?.find(c => c.id === item.category_id);
+          return {
+            ...item,
+            owner_name: profile?.full_name || 'Unknown User',
+            category_name: category?.name || 'Unknown Category',
+          };
+        }) || [];
+
+        setEquipment(equipmentWithDetails);
+      } else {
+        setEquipment([]);
+      }
     } catch (error) {
       console.error('Error fetching equipment:', error);
     } finally {
@@ -324,7 +365,7 @@ export default function EventDetail() {
                       .filter(p => p.is_carpool_driver)
                       .map(driver => (
                         <div key={driver.id} className="flex justify-between items-center py-1">
-                          <span>{driver.profiles.full_name}</span>
+                          <span>{driver.full_name}</span>
                           <Badge variant="secondary">
                             {driver.available_seats || 0} seats
                           </Badge>
@@ -359,9 +400,9 @@ export default function EventDetail() {
                   {participants.map((participant) => (
                     <TableRow key={participant.id}>
                       <TableCell className="font-medium">
-                        {participant.profiles.full_name}
+                        {participant.full_name}
                       </TableCell>
-                      <TableCell>{participant.profiles.phone || 'Not provided'}</TableCell>
+                      <TableCell>{participant.phone || 'Not provided'}</TableCell>
                       <TableCell>
                         {participant.is_carpool_driver ? (
                           <Badge variant="default">
@@ -415,11 +456,11 @@ export default function EventDetail() {
                       <TableCell className="font-medium">{item.item_name}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {item.equipment_categories.name}
+                          {item.category_name}
                         </Badge>
                       </TableCell>
                       <TableCell>{item.brand || 'N/A'}</TableCell>
-                      <TableCell>{item.profiles.full_name}</TableCell>
+                      <TableCell>{item.owner_name}</TableCell>
                       <TableCell className="max-w-xs">
                         {item.notes ? (
                           <span className="text-sm text-stone-600">{item.notes}</span>

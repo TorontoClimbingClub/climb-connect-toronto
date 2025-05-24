@@ -36,7 +36,7 @@ interface User {
   passenger_capacity?: number;
   created_at: string;
   updated_at?: string;
-  user_role?: string;
+  user_role?: 'member' | 'organizer' | 'admin';
 }
 
 interface Event {
@@ -55,7 +55,7 @@ interface Event {
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [userRole, setUserRole] = useState<string>('member');
+  const [userRole, setUserRole] = useState<'member' | 'organizer' | 'admin'>('member');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'events' | 'users'>('events');
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
@@ -101,17 +101,26 @@ export default function Admin() {
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles(role)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
+      // Fetch user roles separately
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      const roleMap = new Map();
+      userRoles?.forEach(ur => {
+        roleMap.set(ur.user_id, ur.role);
+      });
+      
       const usersWithRoles = profiles?.map(profile => ({
         ...profile,
-        user_role: profile.user_roles?.[0]?.role || 'member'
+        user_role: roleMap.get(profile.id) || 'member'
       })) || [];
       
       setUsers(usersWithRoles);
@@ -206,7 +215,7 @@ export default function Admin() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: 'member' | 'organizer' | 'admin') => {
     if (userRole !== 'admin') {
       toast({
         title: "Error",
@@ -228,7 +237,7 @@ export default function Admin() {
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: newRole,
+          role: newRole as 'member' | 'organizer' | 'admin',
         });
 
       if (error) throw error;
@@ -656,7 +665,7 @@ export default function Admin() {
                         <TableCell>
                           <Select
                             value={user.user_role}
-                            onValueChange={(value) => updateUserRole(user.id, value)}
+                            onValueChange={(value: 'member' | 'organizer' | 'admin') => updateUserRole(user.id, value)}
                           >
                             <SelectTrigger className="w-32">
                               <SelectValue />
