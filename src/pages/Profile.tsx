@@ -4,8 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { User, Phone, Car, LogOut, Calendar, Package } from "lucide-react";
+import { User, Phone, LogOut, Calendar, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -15,8 +14,6 @@ interface Profile {
   id: string;
   full_name: string;
   phone: string | null;
-  is_carpool_driver: boolean;
-  passenger_capacity: number;
 }
 
 export default function Profile() {
@@ -93,8 +90,6 @@ export default function Profile() {
         .update({
           full_name: profile.full_name,
           phone: profile.phone,
-          is_carpool_driver: profile.is_carpool_driver,
-          passenger_capacity: profile.passenger_capacity,
         })
         .eq('id', user.id);
 
@@ -133,8 +128,8 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <Card className="max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center px-4">
+        <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <User className="h-12 w-12 text-stone-400 mx-auto mb-4" />
             <p className="text-stone-600 mb-4">Please sign in to view your profile</p>
@@ -157,7 +152,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      <div className="max-w-md mx-auto p-4">
+      <div className="w-full max-w-md mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-emerald-800 mb-2">My Profile</h1>
           <p className="text-stone-600">Manage your account and preferences</p>
@@ -187,7 +182,7 @@ export default function Profile() {
           <CardHeader>
             <CardTitle>Profile Information</CardTitle>
             <CardDescription>
-              Update your personal information and preferences
+              Update your personal information
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -220,43 +215,6 @@ export default function Profile() {
                       placeholder="(416) 555-0123"
                     />
                   </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-base">Can Drive for Carpool</Label>
-                      <p className="text-sm text-stone-600">
-                        Offer rides to fellow climbers
-                      </p>
-                    </div>
-                    <Switch
-                      checked={profile.is_carpool_driver}
-                      onCheckedChange={(checked) => setProfile({...profile, is_carpool_driver: checked})}
-                    />
-                  </div>
-
-                  {profile.is_carpool_driver && (
-                    <div className="space-y-2 pl-4 border-l-2 border-emerald-200">
-                      <Label htmlFor="passenger_capacity">Available Passenger Seats</Label>
-                      <div className="relative">
-                        <Car className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
-                        <Input
-                          id="passenger_capacity"
-                          type="number"
-                          min="1"
-                          max="8"
-                          value={profile.passenger_capacity}
-                          onChange={(e) => setProfile({...profile, passenger_capacity: parseInt(e.target.value) || 1})}
-                          className="pl-10"
-                          placeholder="Number of passengers"
-                        />
-                      </div>
-                      <p className="text-xs text-stone-500">
-                        This will be your default number of available seats for events
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 <Button 

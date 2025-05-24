@@ -66,7 +66,7 @@ export default function EventDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="w-full max-w-6xl mx-auto p-4">
         <EventHeader
           event={event}
           userJoined={userJoined}
@@ -76,7 +76,7 @@ export default function EventDetail() {
           onLeaveEvent={leaveEvent}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <EventDetailsCard event={event} participantsCount={participants.length} />
           <CarpoolCard 
             participants={participants}

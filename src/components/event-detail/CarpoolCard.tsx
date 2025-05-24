@@ -32,7 +32,7 @@ export function CarpoolCard({
   onUpdateCarpoolStatus 
 }: CarpoolCardProps) {
   const [isDriver, setIsDriver] = useState(currentUserParticipation?.is_carpool_driver || false);
-  const [availableSeats, setAvailableSeats] = useState(currentUserParticipation?.available_seats || 0);
+  const [availableSeats, setAvailableSeats] = useState(currentUserParticipation?.available_seats || 1);
 
   const drivers = participants.filter(p => p.is_carpool_driver);
   const isUserJoined = !!currentUserParticipation;
@@ -61,7 +61,7 @@ export function CarpoolCard({
                   checked={isDriver}
                   onCheckedChange={setIsDriver}
                 />
-                <Label htmlFor="carpool-driver">I can offer rides</Label>
+                <Label htmlFor="carpool-driver">I can offer rides for this event</Label>
               </div>
               
               {isDriver && (
@@ -73,7 +73,7 @@ export function CarpoolCard({
                     min="1"
                     max="8"
                     value={availableSeats}
-                    onChange={(e) => setAvailableSeats(parseInt(e.target.value) || 0)}
+                    onChange={(e) => setAvailableSeats(parseInt(e.target.value) || 1)}
                     className="w-20"
                   />
                 </div>
