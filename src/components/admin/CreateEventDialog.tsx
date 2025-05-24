@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,9 +26,10 @@ interface CreateEventDialogProps {
   showForm: boolean;
   onToggleForm: (show: boolean) => void;
   onEventCreated: () => void;
+  hideButton?: boolean;
 }
 
-export function CreateEventDialog({ showForm, onToggleForm, onEventCreated }: CreateEventDialogProps) {
+export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hideButton = false }: CreateEventDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -81,6 +81,147 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated }: Cr
       });
     }
   };
+
+  // If hideButton is true, only show the form
+  if (hideButton && showForm) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Create New Climbing Event</CardTitle>
+          <CardDescription>
+            Add a new outdoor climbing event for TCC members
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmitEvent)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Event Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Rattlesnake Point Climbing" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Event details, what to bring, meeting instructions..." 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Rattlesnake Point, Milton, ON" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="difficulty_level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Difficulty Level</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select difficulty" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Beginner">Beginner</SelectItem>
+                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                        <SelectItem value="Advanced">Advanced</SelectItem>
+                        <SelectItem value="All Levels">All Levels</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="max_participants"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max Participants (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Leave empty for unlimited"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                Create Event
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>

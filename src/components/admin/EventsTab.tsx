@@ -52,72 +52,91 @@ export function EventsTab({
         )}
       </div>
 
-      {/* Mobile-friendly card layout */}
-      <div className="space-y-4">
-        {events.map((event) => (
-          <Card key={event.id} className="w-full">
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                {/* Event Title and Actions */}
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-[#E55A2B] truncate">{event.title}</h3>
-                    {event.description && (
-                      <p className="text-sm text-stone-600 mt-1 line-clamp-2">
-                        {event.description}
-                      </p>
+      {/* Centered Create Event Form */}
+      {showCreateForm && (
+        <div className="flex justify-center">
+          <div className="w-full max-w-2xl">
+            <CreateEventDialog
+              showForm={true}
+              onToggleForm={() => {}} // This won't be used since we're controlling it from parent
+              onEventCreated={() => {
+                setShowCreateForm(false);
+                onRefreshEvents();
+              }}
+              hideButton={true} // Add this prop to hide the button when showing inline
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Only show events list when not creating */}
+      {!showCreateForm && (
+        <div className="space-y-4">
+          {events.map((event) => (
+            <Card key={event.id} className="w-full">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Event Title and Actions */}
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-[#E55A2B] truncate">{event.title}</h3>
+                      {event.description && (
+                        <p className="text-sm text-stone-600 mt-1 line-clamp-2">
+                          {event.description}
+                        </p>
+                      )}
+                    </div>
+                    {canManageUsers && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onDeleteEvent(event.id)}
+                        className="text-red-600 hover:text-red-700 flex-shrink-0 ml-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
-                  {canManageUsers && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onDeleteEvent(event.id)}
-                      className="text-red-600 hover:text-red-700 flex-shrink-0 ml-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
 
-                {/* Event Details - Stacked vertically */}
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-stone-600">
-                    <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-stone-600">
-                    <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{event.location}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
+                  {/* Event Details - Stacked vertically */}
+                  <div className="space-y-2">
                     <div className="flex items-center text-sm text-stone-600">
-                      <Users className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span>{event.participants_count || 0} joined</span>
+                      <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
                     </div>
                     
-                    {event.difficulty_level && (
-                      <Badge variant="outline" className="text-xs">
-                        {event.difficulty_level}
-                      </Badge>
-                    )}
+                    <div className="flex items-center text-sm text-stone-600">
+                      <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-sm text-stone-600">
+                        <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{event.participants_count || 0} joined</span>
+                      </div>
+                      
+                      {event.difficulty_level && (
+                        <Badge variant="outline" className="text-xs">
+                          {event.difficulty_level}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        
-        {events.length === 0 && (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-stone-600">No events found</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+          
+          {events.length === 0 && (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-stone-600">No events found</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }
