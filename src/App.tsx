@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Gear from "./pages/Gear";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
@@ -50,6 +51,7 @@ const AppRoutes = () => {
       <Route path="/" element={user ? <Index /> : <Navigate to="/auth" replace />} />
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
       <Route path="/events" element={<Events />} />
+      <Route path="/events/:eventId" element={<EventDetail />} />
       <Route path="/gear" element={<ProtectedRoute><Gear /></ProtectedRoute>} />
       <Route path="/community" element={<Community />} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

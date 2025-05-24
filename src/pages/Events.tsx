@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ interface Event {
 }
 
 export default function Events() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -35,15 +37,10 @@ export default function Events() {
 
   const fetchEvents = async () => {
     try {
-      let query = supabase
-        .from('events')
-        .select(`
-          *,
-          event_participants!inner(count)
-        `)
+      const { data: eventsData, error } = await supabase
+        .from('events_with_participants')
+        .select('*')
         .order('date', { ascending: true });
-
-      const { data: eventsData, error } = await query;
 
       if (error) throw error;
 
@@ -132,6 +129,10 @@ export default function Events() {
     }
   };
 
+  const handleEventClick = (eventId: string) => {
+    navigate(`/events/${eventId}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
@@ -161,8 +162,13 @@ export default function Events() {
               <Card key={event.id} className="overflow-hidden">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{event.title}</CardTitle>
+                    <div className="flex-1">
+                      <CardTitle 
+                        className="text-lg cursor-pointer hover:text-emerald-700 transition-colors"
+                        onClick={() => handleEventClick(event.id)}
+                      >
+                        {event.title}
+                      </CardTitle>
                       <CardDescription className="mt-1">
                         {event.description}
                       </CardDescription>
@@ -193,37 +199,56 @@ export default function Events() {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEventClick(event.id)}
+                      >
                         <Car className="h-4 w-4 mr-1" />
                         Carpool
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEventClick(event.id)}
+                      >
                         <Package className="h-4 w-4 mr-1" />
                         Gear
                       </Button>
                     </div>
                   </div>
 
-                  {user && (
-                    <div className="pt-2">
-                      {event.user_joined ? (
-                        <Button 
-                          onClick={() => leaveEvent(event.id)}
-                          variant="outline" 
-                          className="w-full"
-                        >
-                          Leave Event
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={() => joinEvent(event.id)}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700"
-                        >
-                          Join Event
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  <div className="pt-2 space-y-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleEventClick(event.id)}
+                      className="w-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                    >
+                      View Details
+                    </Button>
+                    
+                    {user && (
+                      <div>
+                        {event.user_joined ? (
+                          <Button 
+                            onClick={() => leaveEvent(event.id)}
+                            variant="outline" 
+                            className="w-full"
+                          >
+                            Leave Event
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={() => joinEvent(event.id)}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            Join Event
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))

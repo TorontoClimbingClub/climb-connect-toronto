@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Calendar, Users, Settings, Plus, Trash2, Edit } from "lucide-react";
+import { Calendar, Users, Settings, Plus, Trash2, Edit, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +36,7 @@ interface User {
   passenger_capacity?: number;
   created_at: string;
   updated_at?: string;
+  user_role?: string;
 }
 
 interface Event {
@@ -49,14 +49,17 @@ interface Event {
   max_participants: number | null;
   difficulty_level: string | null;
   organizer_id: string;
+  participants_count?: number;
 }
 
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [userRole, setUserRole] = useState<string>('member');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'events' | 'users'>('events');
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -74,19 +77,44 @@ export default function Admin() {
   });
 
   useEffect(() => {
+    fetchUserRole();
     fetchUsers();
     fetchEvents();
-  }, []);
+  }, [user]);
+
+  const fetchUserRole = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .rpc('get_user_role', { _user_id: user.id });
+
+      if (error) throw error;
+      setUserRole(data || 'member');
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      setUserRole('member');
+    }
+  };
 
   const fetchUsers = async () => {
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          user_roles(role)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(profiles || []);
+      
+      const usersWithRoles = profiles?.map(profile => ({
+        ...profile,
+        user_role: profile.user_roles?.[0]?.role || 'member'
+      })) || [];
+      
+      setUsers(usersWithRoles);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -100,7 +128,7 @@ export default function Admin() {
   const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
-        .from('events')
+        .from('events_with_participants')
         .select('*')
         .order('date', { ascending: true });
 
@@ -178,6 +206,120 @@ export default function Admin() {
     }
   };
 
+  const updateUserRole = async (userId: string, newRole: string) => {
+    if (userRole !== 'admin') {
+      toast({
+        title: "Error",
+        description: "Only admins can change user roles",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Delete existing role
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      // Insert new role
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: newRole,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "User role updated successfully",
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user role",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (userRole !== 'admin') {
+      toast({
+        title: "Error",
+        description: "Only admins can delete users",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "User deleted successfully",
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateUserProfile = async (updatedUser: User) => {
+    if (userRole !== 'admin') {
+      toast({
+        title: "Error",
+        description: "Only admins can edit user profiles",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: updatedUser.full_name,
+          phone: updatedUser.phone,
+          is_carpool_driver: updatedUser.is_carpool_driver,
+          passenger_capacity: updatedUser.passenger_capacity,
+        })
+        .eq('id', updatedUser.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "User profile updated successfully",
+      });
+
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user profile",
+        variant: "destructive",
+      });
+    }
+  };
+
   const resetUserPassword = async (userId: string, email: string) => {
     if (!email) {
       toast({
@@ -208,6 +350,10 @@ export default function Admin() {
     }
   };
 
+  // Check if user has permission to create events
+  const canCreateEvents = userRole === 'admin' || userRole === 'organizer';
+  const canManageUsers = userRole === 'admin';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
@@ -221,7 +367,13 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-emerald-800 mb-2">Admin Dashboard</h1>
-          <p className="text-stone-600">Manage TCC events and users</p>
+          <div className="flex items-center gap-2">
+            <p className="text-stone-600">Manage TCC events and users</p>
+            <Badge variant="outline" className="capitalize">
+              <Shield className="h-3 w-3 mr-1" />
+              {userRole}
+            </Badge>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -234,14 +386,16 @@ export default function Admin() {
             <Calendar className="h-4 w-4" />
             Events
           </Button>
-          <Button
-            variant={activeTab === 'users' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('users')}
-            className="flex items-center gap-2"
-          >
-            <Users className="h-4 w-4" />
-            Users
-          </Button>
+          {canManageUsers && (
+            <Button
+              variant={activeTab === 'users' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('users')}
+              className="flex items-center gap-2"
+            >
+              <Users className="h-4 w-4" />
+              Users
+            </Button>
+          )}
         </div>
 
         {/* Events Tab */}
@@ -249,62 +403,92 @@ export default function Admin() {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-emerald-800">Event Management</h2>
-              <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-emerald-600 hover:bg-emerald-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Event
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Create New Climbing Event</DialogTitle>
-                    <DialogDescription>
-                      Add a new outdoor climbing event for TCC members
-                    </DialogDescription>
-                  </DialogHeader>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmitEvent)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Event Title</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Rattlesnake Point Climbing" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Event details, what to bring, meeting instructions..." 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="grid grid-cols-2 gap-4">
+              {canCreateEvents && (
+                <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-emerald-600 hover:bg-emerald-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Event
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Create New Climbing Event</DialogTitle>
+                      <DialogDescription>
+                        Add a new outdoor climbing event for TCC members
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmitEvent)} className="space-y-4">
                         <FormField
                           control={form.control}
-                          name="date"
+                          name="title"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Date</FormLabel>
+                              <FormLabel>Event Title</FormLabel>
                               <FormControl>
-                                <Input type="date" {...field} />
+                                <Input placeholder="e.g., Rattlesnake Point Climbing" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Event details, what to bring, meeting instructions..." 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="date"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Date</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="time"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Time</FormLabel>
+                                <FormControl>
+                                  <Input type="time" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Location</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., Rattlesnake Point, Milton, ON" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -313,92 +497,64 @@ export default function Admin() {
 
                         <FormField
                           control={form.control}
-                          name="time"
+                          name="difficulty_level"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Time</FormLabel>
+                              <FormLabel>Difficulty Level</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select difficulty" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Beginner">Beginner</SelectItem>
+                                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                  <SelectItem value="Advanced">Advanced</SelectItem>
+                                  <SelectItem value="All Levels">All Levels</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="max_participants"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Max Participants (Optional)</FormLabel>
                               <FormControl>
-                                <Input type="time" {...field} />
+                                <Input 
+                                  type="number" 
+                                  placeholder="Leave empty for unlimited"
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      </div>
 
-                      <FormField
-                        control={form.control}
-                        name="location"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Location</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Rattlesnake Point, Milton, ON" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="difficulty_level"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Difficulty Level</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select difficulty" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Beginner">Beginner</SelectItem>
-                                <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                <SelectItem value="Advanced">Advanced</SelectItem>
-                                <SelectItem value="All Levels">All Levels</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="max_participants"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Max Participants (Optional)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="Leave empty for unlimited"
-                                {...field}
-                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="flex gap-2 pt-4">
-                        <Button type="submit" className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-                          Create Event
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => setIsCreateEventOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </DialogContent>
-              </Dialog>
+                        <div className="flex gap-2 pt-4">
+                          <Button type="submit" className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                            Create Event
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => setIsCreateEventOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
 
             <Card>
@@ -412,6 +568,7 @@ export default function Admin() {
                       <TableHead>Event</TableHead>
                       <TableHead>Date & Time</TableHead>
                       <TableHead>Location</TableHead>
+                      <TableHead>Participants</TableHead>
                       <TableHead>Difficulty</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -437,19 +594,26 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>{event.location}</TableCell>
                         <TableCell>
+                          <Badge variant="secondary">
+                            {event.participants_count || 0} joined
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
                           {event.difficulty_level && (
                             <Badge variant="outline">{event.difficulty_level}</Badge>
                           )}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteEvent(event.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canManageUsers && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteEvent(event.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -461,14 +625,14 @@ export default function Admin() {
         )}
 
         {/* Users Tab */}
-        {activeTab === 'users' && (
+        {activeTab === 'users' && canManageUsers && (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-emerald-800">User Management</h2>
             
             <Card>
               <CardHeader>
                 <CardTitle>All Users</CardTitle>
-                <CardDescription>Manage TCC member accounts</CardDescription>
+                <CardDescription>Manage TCC member accounts and permissions</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -476,6 +640,7 @@ export default function Admin() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Phone</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead>Carpool Driver</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead>Actions</TableHead>
@@ -489,6 +654,21 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>{user.phone || 'Not provided'}</TableCell>
                         <TableCell>
+                          <Select
+                            value={user.user_role}
+                            onValueChange={(value) => updateUserRole(user.id, value)}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="member">Member</SelectItem>
+                              <SelectItem value="organizer">Organizer</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={user.is_carpool_driver ? 'default' : 'secondary'}>
                             {user.is_carpool_driver ? 'Yes' : 'No'}
                           </Badge>
@@ -497,13 +677,30 @@ export default function Admin() {
                           {new Date(user.created_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => resetUserPassword(user.id, user.email || '')}
-                          >
-                            Reset Password
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingUser(user)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => resetUserPassword(user.id, user.email || '')}
+                            >
+                              Reset Password
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteUser(user.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -512,6 +709,80 @@ export default function Admin() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Edit User Dialog */}
+        {editingUser && (
+          <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit User Profile</DialogTitle>
+                <DialogDescription>
+                  Update user information and settings
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Full Name</label>
+                  <Input
+                    value={editingUser.full_name}
+                    onChange={(e) => setEditingUser({
+                      ...editingUser,
+                      full_name: e.target.value
+                    })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Phone</label>
+                  <Input
+                    value={editingUser.phone || ''}
+                    onChange={(e) => setEditingUser({
+                      ...editingUser,
+                      phone: e.target.value
+                    })}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={editingUser.is_carpool_driver || false}
+                    onChange={(e) => setEditingUser({
+                      ...editingUser,
+                      is_carpool_driver: e.target.checked
+                    })}
+                  />
+                  <label className="text-sm font-medium">Carpool Driver</label>
+                </div>
+                {editingUser.is_carpool_driver && (
+                  <div>
+                    <label className="text-sm font-medium">Passenger Capacity</label>
+                    <Input
+                      type="number"
+                      value={editingUser.passenger_capacity || 0}
+                      onChange={(e) => setEditingUser({
+                        ...editingUser,
+                        passenger_capacity: parseInt(e.target.value) || 0
+                      })}
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    onClick={() => updateUserProfile(editingUser)}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    Save Changes
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingUser(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
       <Navigation />

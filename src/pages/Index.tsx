@@ -19,6 +19,7 @@ interface Event {
   location: string;
   difficulty_level: string | null;
   participants_count?: number;
+  user_joined?: boolean;
 }
 
 export default function Index() {
@@ -41,18 +42,33 @@ export default function Index() {
 
   const fetchUpcomingEvents = async () => {
     try {
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          *,
-          event_participants!inner(count)
-        `)
+      const { data: eventsData, error } = await supabase
+        .from('events_with_participants')
+        .select('*')
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date', { ascending: true })
         .limit(6);
 
       if (error) throw error;
-      setUpcomingEvents(data || []);
+
+      if (user) {
+        // Check which events the user has joined
+        const { data: userParticipations } = await supabase
+          .from('event_participants')
+          .select('event_id')
+          .eq('user_id', user.id);
+
+        const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
+
+        const eventsWithJoinStatus = eventsData?.map(event => ({
+          ...event,
+          user_joined: joinedEventIds.has(event.id)
+        })) || [];
+
+        setUpcomingEvents(eventsWithJoinStatus);
+      } else {
+        setUpcomingEvents(eventsData || []);
+      }
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
@@ -183,15 +199,22 @@ export default function Index() {
               ) : (
                 upcomingEvents.map((event) => (
                   <Card key={event.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => window.location.href = '/events'}>
+                        onClick={() => window.location.href = `/events/${event.id}`}>
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-semibold text-emerald-800 line-clamp-1">{event.title}</h3>
-                        {event.difficulty_level && (
-                          <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">
-                            {event.difficulty_level}
-                          </Badge>
-                        )}
+                        <div className="flex gap-2 ml-2 flex-shrink-0">
+                          {event.user_joined && (
+                            <Badge variant="default" className="text-xs">
+                              Joined
+                            </Badge>
+                          )}
+                          {event.difficulty_level && (
+                            <Badge variant="outline" className="text-xs">
+                              {event.difficulty_level}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       
                       {event.description && (
