@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface Event {
   id: string;
@@ -22,46 +24,42 @@ interface Event {
 }
 
 export default function Events() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchEvents();
+  }, [user]);
 
   const fetchEvents = async () => {
     try {
-      let query = supabase
+      const { data: eventsData, error } = await supabase
         .from('events_with_participants')
         .select('*')
         .order('date', { ascending: true });
 
-      const { data: eventsData, error } = await query;
-
       if (error) throw error;
 
-      let eventsWithUserStatus = eventsData || [];
-
       if (user) {
-        const eventIds = eventsData?.map(event => event.id) || [];
-        if (eventIds.length > 0) {
-          const { data: participantsData, error: participantsError } = await supabase
-            .from('event_participants')
-            .select('event_id')
-            .eq('user_id', user.id)
-            .in('event_id', eventIds);
+        const { data: userParticipations } = await supabase
+          .from('event_participants')
+          .select('event_id')
+          .eq('user_id', user.id);
 
-          if (participantsError) throw participantsError;
+        const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
 
-          const joinedEventIds = new Set(participantsData?.map(p => p.event_id) || []);
-          
-          eventsWithUserStatus = eventsData?.map(event => ({
-            ...event,
-            user_joined: joinedEventIds.has(event.id)
-          })) || [];
-        }
+        const eventsWithJoinStatus = eventsData?.map(event => ({
+          ...event,
+          user_joined: joinedEventIds.has(event.id)
+        })) || [];
+
+        setEvents(eventsWithJoinStatus);
+      } else {
+        setEvents(eventsData || []);
       }
-
-      setEvents(eventsWithUserStatus);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast({
@@ -74,23 +72,8 @@ export default function Events() {
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, [user]);
-
-  const handleEventClick = (eventId: string) => {
-    navigate(`/events/${eventId}`);
-  };
-
-  const handleJoinEvent = async (eventId: string) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to join events",
-        variant: "destructive",
-      });
-      return;
-    }
+  const joinEvent = async (eventId: string) => {
+    if (!user) return;
 
     try {
       const { error } = await supabase
@@ -117,7 +100,7 @@ export default function Events() {
     }
   };
 
-  const handleLeaveEvent = async (eventId: string) => {
+  const leaveEvent = async (eventId: string) => {
     if (!user) return;
 
     try {
@@ -144,9 +127,13 @@ export default function Events() {
     }
   };
 
+  const handleEventClick = (eventId: string) => {
+    navigate(`/events/${eventId}`);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
         <div className="text-emerald-600">Loading events...</div>
       </div>
     );
@@ -154,43 +141,32 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      {/* Centered container for all content */}
-      <div className="flex justify-center w-full">
-        <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          {/* Header section - centered */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-emerald-800 mb-4">
-              Climbing Events
-            </h1>
-            <p className="text-stone-600 text-base sm:text-lg max-w-2xl mx-auto">
-              Discover and join climbing adventures in Toronto
-            </p>
-          </div>
+      <div className="max-w-md mx-auto p-4">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-emerald-800 mb-2">Upcoming Events</h1>
+          <p className="text-stone-600">Join fellow climbers on exciting adventures</p>
+        </div>
 
-          {/* Events grid - centered */}
-          <div className="flex justify-center">
-            <div className="w-full max-w-5xl">
-              {events.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 place-items-center">
-                  {events.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      user={user}
-                      onEventClick={handleEventClick}
-                      onJoinEvent={handleJoinEvent}
-                      onLeaveEvent={handleLeaveEvent}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-stone-600 text-lg">No events available at the moment.</p>
-                  <p className="text-stone-500 text-sm mt-2">Check back later for new climbing adventures!</p>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="space-y-4">
+          {events.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
+                <p className="text-stone-600">No upcoming events yet</p>
+              </CardContent>
+            </Card>
+          ) : (
+            events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                user={user}
+                onEventClick={handleEventClick}
+                onJoinEvent={joinEvent}
+                onLeaveEvent={leaveEvent}
+              />
+            ))
+          )}
         </div>
       </div>
       <Navigation />

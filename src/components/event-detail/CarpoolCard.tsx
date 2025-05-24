@@ -44,7 +44,7 @@ export function CarpoolCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+        <CardTitle className="flex items-center gap-2">
           <Car className="h-5 w-5" />
           Carpool Options
         </CardTitle>
@@ -53,7 +53,7 @@ export function CarpoolCard({
         {/* Current user carpool settings */}
         {isUserJoined && (
           <div className="p-3 bg-emerald-50 rounded-lg">
-            <h4 className="font-medium mb-3 text-sm sm:text-base">Your Carpool Options</h4>
+            <h4 className="font-medium mb-3">Your Carpool Options</h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Switch
@@ -61,14 +61,12 @@ export function CarpoolCard({
                   checked={isDriver}
                   onCheckedChange={setIsDriver}
                 />
-                <Label htmlFor="carpool-driver" className="text-xs sm:text-sm">
-                  I can offer rides for this event
-                </Label>
+                <Label htmlFor="carpool-driver">I can offer rides for this event</Label>
               </div>
               
               {isDriver && (
                 <div className="space-y-2">
-                  <Label htmlFor="seats" className="text-xs sm:text-sm">Available seats</Label>
+                  <Label htmlFor="seats">Available seats</Label>
                   <Input
                     id="seats"
                     type="number"
@@ -76,12 +74,12 @@ export function CarpoolCard({
                     max="8"
                     value={availableSeats}
                     onChange={(e) => setAvailableSeats(parseInt(e.target.value) || 1)}
-                    className="w-20 text-sm"
+                    className="w-20"
                   />
                 </div>
               )}
               
-              <Button onClick={handleCarpoolUpdate} size="sm" className="text-xs sm:text-sm">
+              <Button onClick={handleCarpoolUpdate} size="sm">
                 Update Carpool Status
               </Button>
             </div>
@@ -89,20 +87,18 @@ export function CarpoolCard({
         )}
 
         {/* Available drivers */}
-        <div className="text-xs sm:text-sm text-stone-600">
+        <div className="text-sm text-stone-600">
           {drivers.length > 0 ? (
             <div>
               <p className="font-medium mb-2">Available drivers:</p>
-              <div className="space-y-2">
-                {drivers.map(driver => (
-                  <div key={driver.id} className="flex justify-between items-center py-1">
-                    <span className="break-words flex-1 mr-2">{driver.full_name}</span>
-                    <Badge variant="secondary" className="text-xs shrink-0">
-                      {driver.available_seats || 0} seats
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+              {drivers.map(driver => (
+                <div key={driver.id} className="flex justify-between items-center py-1">
+                  <span>{driver.full_name}</span>
+                  <Badge variant="secondary">
+                    {driver.available_seats || 0} seats
+                  </Badge>
+                </div>
+              ))}
             </div>
           ) : (
             <p>No carpool drivers available yet</p>

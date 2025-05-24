@@ -28,79 +28,77 @@ interface EventCardProps {
 
 export function EventCard({ event, user, onEventClick, onJoinEvent, onLeaveEvent }: EventCardProps) {
   return (
-    <Card className="overflow-hidden w-full max-w-md h-full flex flex-col hover:shadow-lg transition-shadow duration-200 mx-auto">
-      <CardHeader className="pb-4 flex-shrink-0">
-        <div className="flex justify-between items-start gap-3">
+    <Card className="overflow-hidden w-full">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0">
             <CardTitle 
-              className="text-lg sm:text-xl cursor-pointer hover:text-emerald-700 transition-colors line-clamp-2"
+              className="text-lg cursor-pointer hover:text-emerald-700 transition-colors truncate"
               onClick={() => onEventClick(event.id)}
             >
               {event.title}
             </CardTitle>
-            <CardDescription className="mt-2 line-clamp-3 text-sm">
+            <CardDescription className="mt-1 line-clamp-2">
               {event.description}
             </CardDescription>
           </div>
           {event.difficulty_level && (
-            <Badge variant="outline" className="text-xs shrink-0">
+            <Badge variant="outline" className="ml-2 shrink-0">
               {event.difficulty_level}
             </Badge>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col p-6 pt-0">
-        <div className="space-y-3">
+      <CardContent className="space-y-3">
+        <div className="flex items-center text-sm text-stone-600">
+          <Calendar className="h-4 w-4 mr-2 shrink-0" />
+          <span className="truncate">
+            {new Date(event.date).toLocaleDateString()} at {event.time}
+          </span>
+        </div>
+        
+        <div className="flex items-center text-sm text-stone-600">
+          <MapPin className="h-4 w-4 mr-2 shrink-0" />
+          <span className="truncate">{event.location}</span>
+        </div>
+
+        <div className="flex items-center justify-between">
           <div className="flex items-center text-sm text-stone-600">
-            <Calendar className="h-4 w-4 mr-3 shrink-0" />
-            <span className="break-words">
-              {new Date(event.date).toLocaleDateString()} at {event.time}
+            <Users className="h-4 w-4 mr-2 shrink-0" />
+            <span>
+              {event.participants_count || 0} joined
+              {event.max_participants && ` / ${event.max_participants} max`}
             </span>
           </div>
           
-          <div className="flex items-center text-sm text-stone-600">
-            <MapPin className="h-4 w-4 mr-3 shrink-0" />
-            <span className="break-words">{event.location}</span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-stone-600">
-              <Users className="h-4 w-4 mr-3 shrink-0" />
-              <span>
-                {event.participants_count || 0} joined
-                {event.max_participants && ` / ${event.max_participants} max`}
-              </span>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => onEventClick(event.id)}
-                className="px-3 text-xs"
-              >
-                <Car className="h-4 w-4 mr-1" />
-                Carpool
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => onEventClick(event.id)}
-                className="px-3 text-xs"
-              >
-                <Package className="h-4 w-4 mr-1" />
-                Gear
-              </Button>
-            </div>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => onEventClick(event.id)}
+              className="px-2"
+            >
+              <Car className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Carpool</span>
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => onEventClick(event.id)}
+              className="px-2"
+            >
+              <Package className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Gear</span>
+            </Button>
           </div>
         </div>
 
-        <div className="pt-4 space-y-3 mt-auto border-t border-stone-100">
+        <div className="pt-2 space-y-2">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => onEventClick(event.id)}
-            className="w-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 text-sm"
+            className="w-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
           >
             View Details
           </Button>
@@ -111,14 +109,14 @@ export function EventCard({ event, user, onEventClick, onJoinEvent, onLeaveEvent
                 <Button 
                   onClick={() => onLeaveEvent(event.id)}
                   variant="outline" 
-                  className="w-full text-sm"
+                  className="w-full"
                 >
                   Leave Event
                 </Button>
               ) : (
                 <Button 
                   onClick={() => onJoinEvent(event.id)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-sm"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700"
                 >
                   Join Event
                 </Button>

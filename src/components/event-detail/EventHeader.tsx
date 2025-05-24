@@ -33,25 +33,25 @@ export function EventHeader({
   onLeaveEvent 
 }: EventHeaderProps) {
   return (
-    <div className="mb-6 sm:mb-8">
+    <div className="mb-6">
       <Button 
         variant="ghost" 
         onClick={onBack}
-        className="mb-4 text-sm sm:text-base"
+        className="mb-4"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Events
       </Button>
       
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-800 mb-2 break-words">{event.title}</h1>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-emerald-800 mb-2">{event.title}</h1>
           {event.description && (
-            <p className="text-stone-600 mb-4 text-sm sm:text-base">{event.description}</p>
+            <p className="text-stone-600 mb-4">{event.description}</p>
           )}
         </div>
         {event.difficulty_level && (
-          <Badge variant="outline" className="text-xs sm:text-sm shrink-0">
+          <Badge variant="outline" className="ml-4">
             {event.difficulty_level}
           </Badge>
         )}
@@ -63,7 +63,7 @@ export function EventHeader({
             <Button 
               onClick={onLeaveEvent}
               variant="outline" 
-              className="w-full sm:w-auto text-sm sm:text-base"
+              className="w-full md:w-auto"
             >
               <UserMinus className="h-4 w-4 mr-2" />
               Leave Event
@@ -71,7 +71,7 @@ export function EventHeader({
           ) : (
             <Button 
               onClick={onJoinEvent}
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-sm sm:text-base"
+              className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Join Event
