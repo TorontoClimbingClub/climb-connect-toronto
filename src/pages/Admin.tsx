@@ -292,17 +292,17 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-emerald-600">Loading admin dashboard...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading admin dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-6xl mx-auto p-4">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-emerald-800 mb-2">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Admin Dashboard</h1>
           <div className="flex items-center gap-2">
             <p className="text-stone-600">Manage TCC events and users</p>
             <Badge variant="outline" className="capitalize">
@@ -316,7 +316,7 @@ export default function Admin() {
           <Button
             variant={activeTab === 'events' ? 'default' : 'outline'}
             onClick={() => setActiveTab('events')}
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 ${activeTab === 'events' ? 'bg-[#E55A2B] hover:bg-[#D14B20] text-white' : ''}`}
           >
             <Calendar className="h-4 w-4" />
             Events
@@ -325,7 +325,7 @@ export default function Admin() {
             <Button
               variant={activeTab === 'users' ? 'default' : 'outline'}
               onClick={() => setActiveTab('users')}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${activeTab === 'users' ? 'bg-[#E55A2B] hover:bg-[#D14B20] text-white' : ''}`}
             >
               <Users className="h-4 w-4" />
               Users

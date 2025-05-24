@@ -128,7 +128,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <User className="h-12 w-12 text-stone-400 mx-auto mb-4" />
@@ -144,17 +144,17 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-emerald-600">Loading profile...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading profile...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="w-full max-w-md mx-auto p-4">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-emerald-800 mb-2">My Profile</h1>
+          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">My Profile</h1>
           <p className="text-stone-600">Manage your account and preferences</p>
         </div>
 
@@ -162,16 +162,16 @@ export default function Profile() {
         <div className="grid grid-cols-2 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
-              <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-emerald-800">{joinedEventsCount}</p>
+              <Calendar className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+              <p className="text-2xl font-bold text-[#E55A2B]">{joinedEventsCount}</p>
               <p className="text-sm text-stone-600">Events Joined</p>
             </CardContent>
           </Card>
           
           <Card>
             <CardContent className="p-4 text-center">
-              <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-emerald-800">{equipmentCount}</p>
+              <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+              <p className="text-2xl font-bold text-[#E55A2B]">{equipmentCount}</p>
               <p className="text-sm text-stone-600">Gear Items</p>
             </CardContent>
           </Card>
@@ -219,7 +219,7 @@ export default function Profile() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
                   disabled={saving}
                 >
                   {saving ? "Saving..." : "Save Changes"}

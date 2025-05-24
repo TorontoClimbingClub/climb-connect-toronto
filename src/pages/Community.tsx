@@ -75,25 +75,25 @@ export default function Community() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-emerald-600">Loading community...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading community...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-emerald-800 mb-2">Community</h1>
+          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Community</h1>
           <p className="text-stone-600">Connect with fellow TCC members</p>
         </div>
 
         <div className="mb-6">
           <Card>
             <CardContent className="p-4 text-center">
-              <Users className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-emerald-800">{members.length}</p>
+              <Users className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+              <p className="text-2xl font-bold text-[#E55A2B]">{members.length}</p>
               <p className="text-sm text-stone-600">Active Members</p>
             </CardContent>
           </Card>
@@ -101,11 +101,11 @@ export default function Community() {
 
         <div className="space-y-4">
           {members.map((member) => (
-            <Card key={member.id} className={member.id === user?.id ? "border-emerald-200 bg-emerald-50" : ""}>
+            <Card key={member.id} className={member.id === user?.id ? "border-orange-200 bg-orange-50" : ""}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-semibold text-emerald-800">
+                    <h3 className="font-semibold text-[#E55A2B]">
                       {member.full_name}
                       {member.id === user?.id && (
                         <Badge variant="outline" className="ml-2 text-xs">You</Badge>
