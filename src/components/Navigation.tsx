@@ -2,6 +2,8 @@
 import { Home, Calendar, User, Package, Users, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const navigationItems = [
   { icon: Home, label: "Home", href: "/" },
@@ -14,6 +16,29 @@ const navigationItems = [
 export const Navigation = () => {
   const currentPath = window.location.pathname;
   const { user } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .rpc('get_user_role', { _user_id: user.id });
+        
+        if (error) {
+          console.error('Error fetching user role:', error);
+          return;
+        }
+        
+        setUserRole(data);
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
 
   const handleNavigation = (href: string, requiresAuth?: boolean) => {
     if (requiresAuth && !user) {
@@ -48,8 +73,8 @@ export const Navigation = () => {
             );
           })}
           
-          {/* Admin button - only show for authenticated users */}
-          {user && (
+          {/* Admin button - only show for admin users */}
+          {user && userRole === 'admin' && (
             <button
               onClick={() => handleNavigation('/admin')}
               className={cn(

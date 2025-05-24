@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Package, Plus } from "lucide-react";
+import { Package, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Equipment {
   id: string;
@@ -43,6 +45,7 @@ export function EquipmentCard({
 }: EquipmentCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const availableEquipment = userEquipment.filter(item => !item.is_assigned);
 
@@ -59,6 +62,32 @@ export function EquipmentCard({
       onAddEquipment(selectedEquipment);
       setSelectedEquipment([]);
       setIsDialogOpen(false);
+    }
+  };
+
+  const handleRemoveEquipment = async (equipmentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('event_equipment')
+        .delete()
+        .eq('user_equipment_id', equipmentId)
+        .eq('user_id', currentUserId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Equipment removed from event",
+      });
+
+      // Refresh the page to update the equipment list
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove equipment",
+        variant: "destructive",
+      });
     }
   };
 
@@ -151,6 +180,7 @@ export function EquipmentCard({
                 <TableHead>Brand</TableHead>
                 <TableHead>Owner</TableHead>
                 <TableHead>Notes</TableHead>
+                {currentUserId && <TableHead className="w-12">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -171,6 +201,20 @@ export function EquipmentCard({
                       <span className="text-stone-400">No notes</span>
                     )}
                   </TableCell>
+                  {currentUserId && (
+                    <TableCell>
+                      {item.user_id === currentUserId && (
+                        <Button
+                          onClick={() => handleRemoveEquipment(item.id)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

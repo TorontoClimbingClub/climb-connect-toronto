@@ -8,11 +8,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Package, Plus, Trash2, Calendar } from "lucide-react";
+import { Package, Plus, Trash2, Calendar, Edit2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
+import { EditEquipmentDialog } from "@/components/gear/EditEquipmentDialog";
 
 interface EquipmentCategory {
   id: string;
@@ -41,6 +42,7 @@ export default function Gear() {
   const [categories, setCategories] = useState<EquipmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<UserEquipment | null>(null);
   const [newItem, setNewItem] = useState({
     item_name: "",
     brand: "",
@@ -339,15 +341,25 @@ export default function Gear() {
                         <p className="text-sm text-stone-500 mt-2">{item.notes}</p>
                       )}
                     </div>
-                    <Button
-                      onClick={() => deleteEquipment(item.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      disabled={!!item.assignment_info}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => setEditingEquipment(item)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => deleteEquipment(item.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        disabled={!!item.assignment_info}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -355,6 +367,17 @@ export default function Gear() {
           )}
         </div>
       </div>
+
+      {editingEquipment && (
+        <EditEquipmentDialog
+          equipment={editingEquipment}
+          categories={categories}
+          isOpen={!!editingEquipment}
+          onClose={() => setEditingEquipment(null)}
+          onSuccess={fetchEquipment}
+        />
+      )}
+
       <Navigation />
     </div>
   );
