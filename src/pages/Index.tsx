@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { AuthModal } from "@/components/AuthModal";
-import { JoinedEventsSection } from "@/components/home/JoinedEventsSection";
 
 interface Event {
   id: string;
@@ -25,7 +23,6 @@ interface Event {
 
 export default function Index() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [joinedEvents, setJoinedEvents] = useState<Event[]>([]);
   const [userStats, setUserStats] = useState({
     joinedEvents: 0,
     equipmentCount: 0,
@@ -39,7 +36,6 @@ export default function Index() {
     fetchUpcomingEvents();
     if (user) {
       fetchUserStats();
-      fetchJoinedEvents();
     }
   }, [user]);
 
@@ -76,36 +72,6 @@ export default function Index() {
       console.error('Error fetching events:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchJoinedEvents = async () => {
-    if (!user) return;
-
-    try {
-      const { data: userParticipations, error: participationsError } = await supabase
-        .from('event_participants')
-        .select('event_id')
-        .eq('user_id', user.id);
-
-      if (participationsError) throw participationsError;
-
-      if (userParticipations && userParticipations.length > 0) {
-        const joinedEventIds = userParticipations.map(p => p.event_id);
-        
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('events_with_participants')
-          .select('*')
-          .in('id', joinedEventIds)
-          .gte('date', new Date().toISOString().split('T')[0])
-          .order('date', { ascending: true });
-
-        if (eventsError) throw eventsError;
-
-        setJoinedEvents(eventsData || []);
-      }
-    } catch (error) {
-      console.error('Error fetching joined events:', error);
     }
   };
 
@@ -198,25 +164,10 @@ export default function Index() {
             </div>
           )}
 
-          {/* Joined Events Section (if logged in) */}
-          {user && (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-emerald-800">Your Upcoming Events</h2>
-                <Button variant="ghost" onClick={() => window.location.href = '/events'}>
-                  View All
-                </Button>
-              </div>
-              <JoinedEventsSection events={joinedEvents} />
-            </div>
-          )}
-
-          {/* Upcoming Events - Dynamic */}
+          {/* Combined Upcoming Events Section */}
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-emerald-800">
-                {user ? 'Other Events' : 'Upcoming Events'}
-              </h2>
+              <h2 className="text-xl font-semibold text-emerald-800">Upcoming Events</h2>
               <Button variant="ghost" onClick={() => window.location.href = '/events'}>
                 View All
               </Button>
@@ -246,8 +197,7 @@ export default function Index() {
                 </Card>
               ) : (
                 upcomingEvents
-                  .filter(event => !user || !event.user_joined) // Show all events if not logged in, or only non-joined events if logged in
-                  .slice(0, 3) // Limit to 3 events to make space for joined events
+                  .slice(0, 6)
                   .map((event) => (
                   <Card key={event.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                         onClick={() => window.location.href = `/events/${event.id}`}>
