@@ -1,244 +1,268 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mountain, Calendar, Users, Car, Package, MapPin, Clock } from "lucide-react";
-import { AuthModal } from "@/components/AuthModal";
+import { Calendar, MapPin, Users, Mountain, ArrowRight, Package, Car } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
+import { AuthModal } from "@/components/AuthModal";
 
-const Index = () => {
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  date: string;
+  time: string;
+  location: string;
+  difficulty_level: string | null;
+  participants_count?: number;
+}
+
+export default function Index() {
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [userStats, setUserStats] = useState({
+    joinedEvents: 0,
+    equipmentCount: 0,
+  });
+  const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  // Mock data for upcoming events
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Blue Mountain Outdoor Climbing",
-      date: "2025-05-30",
-      time: "08:00",
-      location: "Blue Mountain, Collingwood",
-      participants: 12,
-      maxParticipants: 15,
-      difficulty: "Intermediate",
-      description: "Join us for a fantastic day of outdoor climbing at Blue Mountain's scenic crags.",
-      organizer: "Sarah Johnson",
-      carpoolsAvailable: 2
-    },
-    {
-      id: 2,
-      title: "Bouldering Session - The Gym",
-      date: "2025-05-26",
-      time: "19:00",
-      location: "Basecamp Climbing Gym",
-      participants: 8,
-      maxParticipants: 12,
-      difficulty: "All Levels",
-      description: "Weekly indoor bouldering session perfect for all skill levels.",
-      organizer: "Mike Chen",
-      carpoolsAvailable: 0
-    },
-    {
-      id: 3,
-      title: "Rattlesnake Point Adventure",
-      date: "2025-06-07",
-      time: "07:30",
-      location: "Rattlesnake Point, Milton",
-      participants: 6,
-      maxParticipants: 10,
-      difficulty: "Advanced",
-      description: "Technical climbing at one of Ontario's premier outdoor destinations.",
-      organizer: "Alex Rivera",
-      carpoolsAvailable: 1
+  useEffect(() => {
+    fetchUpcomingEvents();
+    if (user) {
+      fetchUserStats();
     }
-  ];
+  }, [user]);
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const fetchUpcomingEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          event_participants!inner(count)
+        `)
+        .gte('date', new Date().toISOString().split('T')[0])
+        .order('date', { ascending: true })
+        .limit(3);
+
+      if (error) throw error;
+      setUpcomingEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserStats = async () => {
+    if (!user) return;
+
+    try {
+      // Get joined events count
+      const { count: eventsCount } = await supabase
+        .from('event_participants')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id);
+
+      // Get equipment count
+      const { count: gearCount } = await supabase
+        .from('user_equipment')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id);
+
+      setUserStats({
+        joinedEvents: eventsCount || 0,
+        equipmentCount: gearCount || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (user) {
+      window.location.href = '/events';
+    } else {
+      setShowAuthModal(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
     setShowAuthModal(false);
+    toast({
+      title: "Welcome to TCC!",
+      description: "You're now part of Toronto's climbing community",
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-stone-100">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-50">
-        <div className="max-w-md mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-2 rounded-xl">
-                <Mountain className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-stone-800">TCC</h1>
-                <p className="text-xs text-stone-600">Toronto Climbing Club</p>
-              </div>
-            </div>
-            {!isLoggedIn ? (
-              <Button 
-                onClick={() => setShowAuthModal(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                Sign In
-              </Button>
-            ) : (
-              <Avatar>
-                <AvatarImage src="/placeholder.svg" alt="User" />
-                <AvatarFallback className="bg-emerald-100 text-emerald-700">JD</AvatarFallback>
-              </Avatar>
-            )}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+      <div className="max-w-md mx-auto">
+        {/* Hero Section */}
+        <div className="text-center py-8 px-4">
+          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
+            <Mountain className="h-12 w-12 text-white" />
           </div>
-        </div>
-      </header>
-
-      <main className="max-w-md mx-auto px-4 pb-20">
-        {/* Welcome Section */}
-        <div className="py-6">
-          <h2 className="text-2xl font-bold text-stone-800 mb-2">
-            {isLoggedIn ? "Welcome back!" : "Discover Climbing Adventures"}
-          </h2>
-          <p className="text-stone-600">
-            {isLoggedIn 
-              ? "Ready for your next climbing adventure?" 
-              : "Join Toronto's premier climbing community and explore amazing outdoor destinations together."
-            }
+          <h1 className="text-3xl font-bold text-emerald-800 mb-2">
+            Toronto Climbing Club
+          </h1>
+          <p className="text-stone-600 mb-6">
+            Connect with fellow climbers, join events, and share your gear with the community
           </p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="text-center">
-            <CardContent className="p-4">
-              <Calendar className="h-5 w-5 text-emerald-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-stone-800">12</p>
-              <p className="text-xs text-stone-600">Events This Month</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="p-4">
-              <Users className="h-5 w-5 text-blue-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-stone-800">284</p>
-              <p className="text-xs text-stone-600">Active Members</p>
-            </CardContent>
-          </Card>
-          <Card className="text-center">
-            <CardContent className="p-4">
-              <Mountain className="h-5 w-5 text-amber-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-stone-800">47</p>
-              <p className="text-xs text-stone-600">Locations Visited</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-stone-800">Upcoming Events</h3>
-            <Button variant="ghost" size="sm" className="text-emerald-600">
-              View All
-            </Button>
-          </div>
           
-          <div className="space-y-4">
-            {upcomingEvents.map((event) => (
-              <Card key={event.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-base mb-1">{event.title}</CardTitle>
-                      <div className="flex items-center space-x-4 text-sm text-stone-600 mb-2">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(event.date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{event.time}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-1 text-sm text-stone-600 mb-3">
-                        <MapPin className="h-4 w-4" />
-                        <span>{event.location}</span>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="secondary" 
-                      className={event.difficulty === "Advanced" ? "bg-red-100 text-red-700" : 
-                                event.difficulty === "Intermediate" ? "bg-amber-100 text-amber-700" : 
-                                "bg-green-100 text-green-700"}
-                    >
-                      {event.difficulty}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <CardDescription className="mb-4">
-                    {event.description}
-                  </CardDescription>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4 text-sm">
-                      <div className="flex items-center space-x-1">
-                        <Users className="h-4 w-4 text-emerald-600" />
-                        <span>{event.participants}/{event.maxParticipants}</span>
-                      </div>
-                      {event.carpoolsAvailable > 0 && (
-                        <div className="flex items-center space-x-1">
-                          <Car className="h-4 w-4 text-blue-600" />
-                          <span>{event.carpoolsAvailable} carpool{event.carpoolsAvailable > 1 ? 's' : ''}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+          {!user && (
+            <Button 
+              onClick={handleGetStarted}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full text-lg"
+            >
+              Get Started
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          )}
+        </div>
 
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-stone-500">Organized by {event.organizer}</p>
-                    <Button 
-                      size="sm" 
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                      disabled={!isLoggedIn}
-                    >
-                      {isLoggedIn ? "Join Event" : "Sign in to Join"}
-                    </Button>
+        <div className="px-4 space-y-6">
+          {/* User Stats (if logged in) */}
+          {user && (
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-emerald-800">{userStats.joinedEvents}</p>
+                  <p className="text-sm text-stone-600">Events Joined</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-emerald-800">{userStats.equipmentCount}</p>
+                  <p className="text-sm text-stone-600">Gear Items</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Upcoming Events */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-emerald-800">Upcoming Events</h2>
+              <Button variant="ghost" onClick={() => window.location.href = '/events'}>
+                View All
+              </Button>
+            </div>
+            
+            <div className="space-y-3">
+              {loading ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <div className="text-stone-500">Loading events...</div>
+                  </CardContent>
+                </Card>
+              ) : upcomingEvents.length === 0 ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
+                    <p className="text-stone-600">No upcoming events</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                upcomingEvents.map((event) => (
+                  <Card key={event.id} className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-emerald-800">{event.title}</h3>
+                        {event.difficulty_level && (
+                          <Badge variant="outline" className="text-xs">
+                            {event.difficulty_level}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2 text-sm text-stone-600">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {new Date(event.date).toLocaleDateString()} at {event.time}
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          {event.location}
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-2" />
+                          {event.participants_count || 0} joined
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Features */}
+          <div>
+            <h2 className="text-xl font-semibold text-emerald-800 mb-4">What You Can Do</h2>
+            <div className="grid grid-cols-1 gap-3">
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <Calendar className="h-8 w-8 text-emerald-600 mr-3" />
+                  <div>
+                    <h3 className="font-semibold">Join Events</h3>
+                    <p className="text-sm text-stone-600">Discover and join climbing adventures</p>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <Package className="h-8 w-8 text-emerald-600 mr-3" />
+                  <div>
+                    <h3 className="font-semibold">Manage Gear</h3>
+                    <p className="text-sm text-stone-600">Track and share your climbing equipment</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <Car className="h-8 w-8 text-emerald-600 mr-3" />
+                  <div>
+                    <h3 className="font-semibold">Carpool</h3>
+                    <p className="text-sm text-stone-600">Share rides to climbing locations</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 flex items-center">
+                  <Users className="h-8 w-8 text-emerald-600 mr-3" />
+                  <div>
+                    <h3 className="font-semibold">Community</h3>
+                    <p className="text-sm text-stone-600">Connect with fellow climbers</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-
-        {/* Call to Action for Non-logged Users */}
-        {!isLoggedIn && (
-          <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white">
-            <CardContent className="p-6 text-center">
-              <Mountain className="h-12 w-12 mx-auto mb-4 opacity-90" />
-              <h3 className="text-lg font-semibold mb-2">Ready to Start Climbing?</h3>
-              <p className="text-emerald-100 mb-4 text-sm">
-                Join our community and discover amazing climbing adventures across Ontario.
-              </p>
-              <Button 
-                onClick={() => setShowAuthModal(true)}
-                className="bg-white text-emerald-700 hover:bg-stone-100"
-              >
-                Get Started
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </main>
-
-      {/* Bottom Navigation */}
-      {isLoggedIn && <Navigation />}
-
-      {/* Auth Modal */}
+      </div>
+      
+      <Navigation />
+      
       <AuthModal 
-        isOpen={showAuthModal} 
+        isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onLogin={handleLogin}
+        onLogin={handleAuthSuccess}
       />
     </div>
   );
-};
-
-export default Index;
+}

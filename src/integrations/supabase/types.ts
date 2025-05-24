@@ -9,7 +9,211 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      equipment_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      event_equipment: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          user_equipment_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          user_equipment_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          user_equipment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_equipment_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_equipment_user_equipment_id_fkey"
+            columns: ["user_equipment_id"]
+            isOneToOne: false
+            referencedRelation: "user_equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_participants: {
+        Row: {
+          available_seats: number | null
+          event_id: string
+          id: string
+          is_carpool_driver: boolean | null
+          joined_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_seats?: number | null
+          event_id: string
+          id?: string
+          is_carpool_driver?: boolean | null
+          joined_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_seats?: number | null
+          event_id?: string
+          id?: string
+          is_carpool_driver?: boolean | null
+          joined_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          date: string
+          description: string | null
+          difficulty_level: string | null
+          id: string
+          location: string
+          max_participants: number | null
+          organizer_id: string
+          time: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          location: string
+          max_participants?: number | null
+          organizer_id: string
+          time: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          location?: string
+          max_participants?: number | null
+          organizer_id?: string
+          time?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string
+          id: string
+          is_carpool_driver: boolean | null
+          passenger_capacity: number | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name: string
+          id: string
+          is_carpool_driver?: boolean | null
+          passenger_capacity?: number | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          is_carpool_driver?: boolean | null
+          passenger_capacity?: number | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_equipment: {
+        Row: {
+          brand: string | null
+          category_id: string
+          created_at: string | null
+          id: string
+          item_name: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          category_id: string
+          created_at?: string | null
+          id?: string
+          item_name: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          item_name?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_equipment_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
