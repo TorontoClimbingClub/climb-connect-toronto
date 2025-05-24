@@ -34,7 +34,7 @@ export function EventsTab({
   onDeleteEvent, 
   onRefreshEvents 
 }: EventsTabProps) {
-  const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -42,10 +42,10 @@ export function EventsTab({
         <h2 className="text-xl font-semibold text-emerald-800">Event Management</h2>
         {canCreateEvents && (
           <CreateEventDialog
-            isOpen={isCreateEventOpen}
-            onOpenChange={setIsCreateEventOpen}
+            showForm={showCreateForm}
+            onToggleForm={setShowCreateForm}
             onEventCreated={() => {
-              setIsCreateEventOpen(false);
+              setShowCreateForm(false);
               onRefreshEvents();
             }}
           />
