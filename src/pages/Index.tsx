@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,34 +42,85 @@ export default function Index() {
 
   const fetchUpcomingEvents = async () => {
     try {
+      console.log('Fetching upcoming events...');
+      
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date();
+      const todayString = today.toISOString().split('T')[0];
+      console.log('Today date string:', todayString);
+
       const { data: eventsData, error } = await supabase
-        .from('events_with_participants')
+        .from('events')
         .select('*')
-        .gte('date', new Date().toISOString().split('T')[0])
-        .order('date', { ascending: true });
+        .gte('date', todayString)
+        .order('date', { ascending: true })
+        .order('time', { ascending: true })
+        .limit(3);
 
-      if (error) throw error;
+      console.log('Events query result:', { eventsData, error });
 
-      if (user) {
-        // Check which events the user has joined
-        const { data: userParticipations } = await supabase
+      if (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+
+      // Get participant counts for each event
+      if (eventsData && eventsData.length > 0) {
+        const eventIds = eventsData.map(event => event.id);
+        const { data: participantCounts } = await supabase
           .from('event_participants')
           .select('event_id')
-          .eq('user_id', user.id);
+          .in('event_id', eventIds);
 
-        const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
+        console.log('Participant counts:', participantCounts);
 
-        const eventsWithJoinStatus = eventsData?.map(event => ({
-          ...event,
-          user_joined: joinedEventIds.has(event.id)
-        })) || [];
+        // Count participants per event
+        const participantCountMap = new Map();
+        participantCounts?.forEach(p => {
+          const currentCount = participantCountMap.get(p.event_id) || 0;
+          participantCountMap.set(p.event_id, currentCount + 1);
+        });
 
-        setUpcomingEvents(eventsWithJoinStatus);
+        if (user) {
+          // Check which events the user has joined
+          const { data: userParticipations } = await supabase
+            .from('event_participants')
+            .select('event_id')
+            .eq('user_id', user.id)
+            .in('event_id', eventIds);
+
+          console.log('User participations:', userParticipations);
+
+          const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
+
+          const eventsWithJoinStatus = eventsData.map(event => ({
+            ...event,
+            participants_count: participantCountMap.get(event.id) || 0,
+            user_joined: joinedEventIds.has(event.id)
+          }));
+
+          setUpcomingEvents(eventsWithJoinStatus);
+        } else {
+          const eventsWithCounts = eventsData.map(event => ({
+            ...event,
+            participants_count: participantCountMap.get(event.id) || 0,
+            user_joined: false
+          }));
+
+          setUpcomingEvents(eventsWithCounts);
+        }
       } else {
-        setUpcomingEvents(eventsData || []);
+        setUpcomingEvents([]);
       }
+
+      console.log('Final upcoming events:', eventsData);
     } catch (error) {
       console.error('Error fetching events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load upcoming events",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

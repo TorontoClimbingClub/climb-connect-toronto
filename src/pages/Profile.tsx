@@ -225,7 +225,7 @@ export default function Profile() {
                 <div className="space-y-4 pt-4 border-t">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label className="text-base">Carpool Driver</Label>
+                      <Label className="text-base">Can Drive for Carpool</Label>
                       <p className="text-sm text-stone-600">
                         Offer rides to fellow climbers
                       </p>
@@ -237,21 +237,24 @@ export default function Profile() {
                   </div>
 
                   {profile.is_carpool_driver && (
-                    <div className="space-y-2">
-                      <Label htmlFor="passenger_capacity">Passenger Capacity</Label>
+                    <div className="space-y-2 pl-4 border-l-2 border-emerald-200">
+                      <Label htmlFor="passenger_capacity">Available Passenger Seats</Label>
                       <div className="relative">
                         <Car className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                         <Input
                           id="passenger_capacity"
                           type="number"
-                          min="0"
+                          min="1"
                           max="8"
                           value={profile.passenger_capacity}
-                          onChange={(e) => setProfile({...profile, passenger_capacity: parseInt(e.target.value) || 0})}
+                          onChange={(e) => setProfile({...profile, passenger_capacity: parseInt(e.target.value) || 1})}
                           className="pl-10"
                           placeholder="Number of passengers"
                         />
                       </div>
+                      <p className="text-xs text-stone-500">
+                        This will be your default number of available seats for events
+                      </p>
                     </div>
                   )}
                 </div>
