@@ -1,93 +1,20 @@
 
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useEquipmentManagement } from "./useEquipmentManagement";
 
-export function useEventActions(eventId: string | undefined, refreshCallbacks: {
-  fetchEventDetails: () => void;
-  fetchParticipants: () => void;
-  fetchEquipment: () => void;
-  fetchUserEquipment: () => void;
-  setUserJoined: (joined: boolean) => void;
-  setCurrentUserParticipation: (participation: any) => void;
-}) {
-  const { user } = useAuth();
+export function useEventActions() {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { removeUserEquipmentFromEvent } = useEquipmentManagement();
 
-  const updateCarpoolStatus = async (isDriver: boolean, seats: number) => {
-    if (!user || !eventId) return;
-
+  const joinEvent = async (eventId: string, userId: string) => {
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('event_participants')
-        .update({
-          is_carpool_driver: isDriver,
-          available_seats: isDriver ? seats : null
-        })
-        .eq('event_id', eventId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Carpool status updated",
-      });
-
-      // Refresh both participants and current user participation
-      refreshCallbacks.fetchParticipants();
-      refreshCallbacks.fetchEventDetails();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update carpool status",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const addEquipment = async (equipmentIds: string[]) => {
-    if (!user || !eventId) return;
-
-    try {
-      const equipmentRecords = equipmentIds.map(id => ({
-        event_id: eventId,
-        user_equipment_id: id,
-        user_id: user.id
-      }));
-
-      const { error } = await supabase
-        .from('event_equipment')
-        .insert(equipmentRecords);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: `Added ${equipmentIds.length} item(s) to event equipment`,
-      });
-
-      refreshCallbacks.fetchEquipment();
-      refreshCallbacks.fetchUserEquipment();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add equipment",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const joinEvent = async () => {
-    if (!user || !eventId) return;
-
-    try {
-      const { error } = await supabase
-        .from('event_participants')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-        });
+        .insert({ event_id: eventId, user_id: userId });
 
       if (error) throw error;
 
@@ -96,51 +23,88 @@ export function useEventActions(eventId: string | undefined, refreshCallbacks: {
         description: "You've joined the event",
       });
 
-      refreshCallbacks.setUserJoined(true);
-      refreshCallbacks.fetchParticipants();
-      refreshCallbacks.fetchEventDetails(); // Refresh to get current user participation
+      return { success: true };
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to join event",
         variant: "destructive",
       });
+      return { success: false };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const leaveEvent = async () => {
-    if (!user || !eventId) return;
-
+  const leaveEvent = async (eventId: string, userId: string) => {
     try {
+      setLoading(true);
+
+      // First remove user's equipment from the event
+      await removeUserEquipmentFromEvent(userId, eventId);
+
+      // Then remove user from participants
       const { error } = await supabase
         .from('event_participants')
         .delete()
         .eq('event_id', eventId)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error) throw error;
 
       toast({
         title: "Success!",
-        description: "You've left the event",
+        description: "You've left the event and your equipment has been removed",
       });
 
-      refreshCallbacks.setUserJoined(false);
-      refreshCallbacks.setCurrentUserParticipation(null);
-      refreshCallbacks.fetchParticipants();
+      return { success: true };
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to leave event",
         variant: "destructive",
       });
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateCarpoolStatus = async (participationId: string, isDriver: boolean, seats: number) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('event_participants')
+        .update({
+          is_carpool_driver: isDriver,
+          available_seats: isDriver ? seats : null
+        })
+        .eq('id', participationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Carpool status updated",
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update carpool status",
+        variant: "destructive",
+      });
+      return { success: false };
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
-    updateCarpoolStatus,
-    addEquipment,
     joinEvent,
-    leaveEvent
+    leaveEvent,
+    updateCarpoolStatus,
+    loading
   };
 }

@@ -14,6 +14,9 @@ interface Event {
   max_participants: number | null;
   difficulty_level: string | null;
   organizer_id: string;
+  participants_count?: number;
+  carpool_seats?: number;
+  equipment_count?: number;
 }
 
 interface Participant {
@@ -59,6 +62,7 @@ export function useEventData(eventId: string | undefined) {
 
   const fetchEventDetails = async () => {
     try {
+      // Fetch basic event details
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -66,7 +70,22 @@ export function useEventData(eventId: string | undefined) {
         .single();
 
       if (error) throw error;
-      setEvent(data);
+
+      // Get additional stats
+      const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
+        supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', eventId),
+        supabase.from('event_participants').select('available_seats').eq('event_id', eventId).not('available_seats', 'is', null),
+        supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', eventId)
+      ]);
+
+      const totalCarpoolSeats = carpoolResult.data?.reduce((sum, p) => sum + (p.available_seats || 0), 0) || 0;
+
+      setEvent({
+        ...data,
+        participants_count: participantsResult.count || 0,
+        carpool_seats: totalCarpoolSeats,
+        equipment_count: equipmentResult.count || 0
+      });
 
       if (user) {
         // Fetch user participation with profile data
@@ -241,14 +260,18 @@ export function useEventData(eventId: string | undefined) {
     }
   };
 
+  const refreshData = () => {
+    fetchEventDetails();
+    fetchParticipants();
+    fetchEquipment();
+    if (user) {
+      fetchUserEquipment();
+    }
+  };
+
   useEffect(() => {
     if (eventId) {
-      fetchEventDetails();
-      fetchParticipants();
-      fetchEquipment();
-      if (user) {
-        fetchUserEquipment();
-      }
+      refreshData();
     }
   }, [eventId, user]);
 
@@ -265,6 +288,7 @@ export function useEventData(eventId: string | undefined) {
     fetchEventDetails,
     fetchParticipants,
     fetchEquipment,
-    fetchUserEquipment
+    fetchUserEquipment,
+    refreshData
   };
 }

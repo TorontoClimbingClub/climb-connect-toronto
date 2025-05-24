@@ -2,13 +2,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, ArrowRight, Package, Car } from "lucide-react";
+import { Calendar, MapPin, Users, Car, Package, Mountain, ArrowRight } from "lucide-react";
+import { EventCard } from "@/components/events/EventCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useEventActions } from "@/hooks/useEventActions";
 import { Navigation } from "@/components/Navigation";
-import { AuthModal } from "@/components/AuthModal";
+import { useNavigate } from "react-router-dom";
 
 interface Event {
   id: string;
@@ -17,334 +18,217 @@ interface Event {
   date: string;
   time: string;
   location: string;
+  max_participants: number | null;
   difficulty_level: string | null;
+  organizer_id: string;
   participants_count?: number;
-  user_joined?: boolean;
+  carpool_seats?: number;
+  equipment_count?: number;
 }
 
 export default function Index() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [userStats, setUserStats] = useState({
-    joinedEvents: 0,
-    equipmentCount: 0,
-  });
+  const [userParticipations, setUserParticipations] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { joinEvent, loading: actionLoading } = useEventActions();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUpcomingEvents();
     if (user) {
-      fetchUserStats();
+      fetchUserParticipations();
     }
   }, [user]);
 
   const fetchUpcomingEvents = async () => {
     try {
-      console.log('Fetching upcoming events...');
+      const today = new Date().toISOString().split('T')[0];
       
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
-      console.log('Today date string:', todayString);
-
-      const { data: eventsData, error } = await supabase
+      const { data: events, error } = await supabase
         .from('events')
         .select('*')
-        .gte('date', todayString)
+        .gte('date', today)
         .order('date', { ascending: true })
-        .order('time', { ascending: true })
         .limit(3);
 
-      console.log('Events query result:', { eventsData, error });
+      if (error) throw error;
 
-      if (error) {
-        console.error('Error fetching events:', error);
-        throw error;
-      }
+      // Fetch additional stats for each event
+      const eventsWithStats = await Promise.all(
+        (events || []).map(async (event) => {
+          const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
+            supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', event.id),
+            supabase.from('event_participants').select('available_seats').eq('event_id', event.id).not('available_seats', 'is', null),
+            supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', event.id)
+          ]);
 
-      // Get participant counts for each event
-      if (eventsData && eventsData.length > 0) {
-        const eventIds = eventsData.map(event => event.id);
-        const { data: participantCounts } = await supabase
-          .from('event_participants')
-          .select('event_id')
-          .in('event_id', eventIds);
+          const totalCarpoolSeats = carpoolResult.data?.reduce((sum, p) => sum + (p.available_seats || 0), 0) || 0;
 
-        console.log('Participant counts:', participantCounts);
-
-        // Count participants per event
-        const participantCountMap = new Map();
-        participantCounts?.forEach(p => {
-          const currentCount = participantCountMap.get(p.event_id) || 0;
-          participantCountMap.set(p.event_id, currentCount + 1);
-        });
-
-        if (user) {
-          // Check which events the user has joined
-          const { data: userParticipations } = await supabase
-            .from('event_participants')
-            .select('event_id')
-            .eq('user_id', user.id)
-            .in('event_id', eventIds);
-
-          console.log('User participations:', userParticipations);
-
-          const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
-
-          const eventsWithJoinStatus = eventsData.map(event => ({
+          return {
             ...event,
-            participants_count: participantCountMap.get(event.id) || 0,
-            user_joined: joinedEventIds.has(event.id)
-          }));
+            participants_count: participantsResult.count || 0,
+            carpool_seats: totalCarpoolSeats,
+            equipment_count: equipmentResult.count || 0
+          };
+        })
+      );
 
-          setUpcomingEvents(eventsWithJoinStatus);
-        } else {
-          const eventsWithCounts = eventsData.map(event => ({
-            ...event,
-            participants_count: participantCountMap.get(event.id) || 0,
-            user_joined: false
-          }));
-
-          setUpcomingEvents(eventsWithCounts);
-        }
-      } else {
-        setUpcomingEvents([]);
-      }
-
-      console.log('Final upcoming events:', eventsData);
+      setUpcomingEvents(eventsWithStats);
     } catch (error) {
       console.error('Error fetching events:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load upcoming events",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchUserStats = async () => {
+  const fetchUserParticipations = async () => {
     if (!user) return;
-
+    
     try {
-      // Get joined events count
-      const { count: eventsCount } = await supabase
+      const { data, error } = await supabase
         .from('event_participants')
-        .select('*', { count: 'exact' })
+        .select('event_id')
         .eq('user_id', user.id);
 
-      // Get equipment count
-      const { count: gearCount } = await supabase
-        .from('user_equipment')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id);
-
-      setUserStats({
-        joinedEvents: eventsCount || 0,
-        equipmentCount: gearCount || 0,
-      });
+      if (error) throw error;
+      
+      const participatedEventIds = new Set(data?.map(p => p.event_id) || []);
+      setUserParticipations(participatedEventIds);
     } catch (error) {
-      console.error('Error fetching user stats:', error);
+      console.error('Error fetching user participations:', error);
     }
   };
 
-  const handleGetStarted = () => {
-    if (user) {
-      window.location.href = '/events';
-    } else {
-      setShowAuthModal(true);
+  const handleJoinEvent = async (eventId: string) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    const result = await joinEvent(eventId, user.id);
+    if (result.success) {
+      setUserParticipations(prev => new Set([...prev, eventId]));
+      fetchUpcomingEvents(); // Refresh to update participant counts
     }
   };
 
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-    toast({
-      title: "Welcome to TCC!",
-      description: "You're now part of Toronto's climbing community",
-    });
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-md mx-auto">
-        {/* Hero Section */}
-        <div className="text-center py-8 px-4">
-          <div className="w-20 h-20 mx-auto mb-6">
-            <img 
-              src="/lovable-uploads/363ed955-51f1-41ee-a0d2-40e27bbe162e.png" 
-              alt="Toronto Climbing Club Logo" 
-              className="w-full h-full object-contain"
-            />
+      <div className="max-w-md mx-auto p-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <Mountain className="h-12 w-12 text-[#E55A2B]" />
           </div>
           <h1 className="text-3xl font-bold text-[#E55A2B] mb-2">
             Toronto Climbing Club
           </h1>
-          <p className="text-stone-600 mb-6">
-            Connect with fellow climbers, join events, and share your gear with the community
+          <p className="text-stone-600">
+            Join the community of passionate climbers in Toronto
           </p>
-          
-          {!user && (
+        </div>
+
+        {/* Welcome Message or Auth CTA */}
+        {!user ? (
+          <Card className="mb-6">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-xl font-semibold text-[#E55A2B] mb-2">Welcome!</h2>
+              <p className="text-stone-600 mb-4">
+                Sign up to join climbing events, share gear, and connect with fellow climbers.
+              </p>
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="bg-[#E55A2B] hover:bg-[#D14B20] text-white"
+              >
+                Get Started
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-6">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-xl font-semibold text-[#E55A2B] mb-2">
+                Welcome back, {user.email?.split('@')[0]}!
+              </h2>
+              <p className="text-stone-600">
+                Ready for your next climbing adventure?
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Upcoming Events */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-[#E55A2B]">Upcoming Events</h2>
             <Button 
-              onClick={handleGetStarted}
-              className="bg-[#E55A2B] hover:bg-orange-700 text-white px-8 py-3 rounded-full text-lg"
+              variant="ghost" 
+              onClick={() => navigate('/events')}
+              className="text-[#E55A2B] hover:bg-orange-50"
             >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
+              View All <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
+          </div>
+
+          {upcomingEvents.length > 0 ? (
+            <div className="space-y-4">
+              {upcomingEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  showJoinButton={!!user}
+                  userJoined={userParticipations.has(event.id)}
+                  onJoin={() => handleJoinEvent(event.id)}
+                  isLoading={actionLoading}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Calendar className="h-8 w-8 text-stone-400 mx-auto mb-2" />
+                <p className="text-stone-600">No upcoming events</p>
+              </CardContent>
+            </Card>
           )}
         </div>
 
-        <div className="px-4 space-y-6">
-          {/* User Stats (if logged in) */}
-          {user && (
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-[#E55A2B]">{userStats.joinedEvents}</p>
-                  <p className="text-sm text-stone-600">Events Joined</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-[#E55A2B]">{userStats.equipmentCount}</p>
-                  <p className="text-sm text-stone-600">Gear Items</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/community')}
+          >
+            <CardContent className="p-4 text-center">
+              <Users className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+              <p className="font-medium text-[#E55A2B]">Community</p>
+              <p className="text-xs text-stone-600">Meet climbers</p>
+            </CardContent>
+          </Card>
 
-          {/* Upcoming Events Section */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-[#E55A2B]">Upcoming Events</h2>
-              <Button variant="ghost" onClick={() => window.location.href = '/events'}>
-                View All
-              </Button>
-            </div>
-            
-            <div className="space-y-3">
-              {loading ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <div className="text-stone-500">Loading events...</div>
-                  </CardContent>
-                </Card>
-              ) : upcomingEvents.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-                    <p className="text-stone-600 mb-4">No upcoming events scheduled</p>
-                    {user && (
-                      <Button 
-                        onClick={() => window.location.href = '/admin'}
-                        className="bg-[#E55A2B] hover:bg-orange-700"
-                      >
-                        Create Event
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                upcomingEvents.map((event) => (
-                  <Card key={event.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => window.location.href = `/events/${event.id}`}>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-[#E55A2B] line-clamp-1">{event.title}</h3>
-                        <div className="flex gap-2 ml-2 flex-shrink-0">
-                          {event.user_joined && (
-                            <Badge variant="default" className="text-xs">
-                              Joined
-                            </Badge>
-                          )}
-                          {event.difficulty_level && (
-                            <Badge variant="outline" className="text-xs">
-                              {event.difficulty_level}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {event.description && (
-                        <p className="text-sm text-stone-600 mb-3 line-clamp-2">{event.description}</p>
-                      )}
-                      
-                      <div className="space-y-2 text-sm text-stone-600">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                          <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                          <span className="line-clamp-1">{event.location}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2 flex-shrink-0" />
-                          <span>{event.participants_count || 0} joined</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/events'}>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Browse Events</h3>
-                </CardContent>
-              </Card>
-              
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/gear'}>
-                <CardContent className="p-4 text-center">
-                  <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Manage Gear</h3>
-                </CardContent>
-              </Card>
-              
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/community'}>
-                <CardContent className="p-4 text-center">
-                  <Users className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Community</h3>
-                </CardContent>
-              </Card>
-              
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/profile'}>
-                <CardContent className="p-4 text-center">
-                  <Car className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Profile</h3>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/gear')}
+          >
+            <CardContent className="p-4 text-center">
+              <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+              <p className="font-medium text-[#E55A2B]">Gear</p>
+              <p className="text-xs text-stone-600">Manage equipment</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
-      
       <Navigation />
-      
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLogin={handleAuthSuccess}
-      />
     </div>
   );
 }

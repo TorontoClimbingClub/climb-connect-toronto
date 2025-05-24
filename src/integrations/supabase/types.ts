@@ -175,6 +175,7 @@ export type Database = {
           id: string
           is_carpool_driver: boolean | null
           passenger_capacity: number | null
+          personal_message: string | null
           phone: string | null
           updated_at: string | null
         }
@@ -185,6 +186,7 @@ export type Database = {
           id: string
           is_carpool_driver?: boolean | null
           passenger_capacity?: number | null
+          personal_message?: string | null
           phone?: string | null
           updated_at?: string | null
         }
@@ -195,6 +197,7 @@ export type Database = {
           id?: string
           is_carpool_driver?: boolean | null
           passenger_capacity?: number | null
+          personal_message?: string | null
           phone?: string | null
           updated_at?: string | null
         }

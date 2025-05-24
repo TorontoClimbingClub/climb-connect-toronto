@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Phone, LogOut, Calendar, Package, Mountain } from "lucide-react";
+import { User, Phone, LogOut, Calendar, Package, Mountain, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ interface Profile {
   full_name: string;
   phone: string | null;
   climbing_description: string | null;
+  personal_message: string | null;
 }
 
 export default function Profile() {
@@ -93,6 +94,7 @@ export default function Profile() {
           full_name: profile.full_name,
           phone: profile.phone,
           climbing_description: profile.climbing_description,
+          personal_message: profile.personal_message,
         })
         .eq('id', user.id);
 
@@ -216,6 +218,21 @@ export default function Profile() {
                       onChange={(e) => setProfile({...profile, phone: e.target.value})}
                       className="pl-10"
                       placeholder="(416) 555-0123"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="personal_message">Personal Message</Label>
+                  <div className="relative">
+                    <MessageCircle className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                    <Textarea
+                      id="personal_message"
+                      value={profile.personal_message || ""}
+                      onChange={(e) => setProfile({...profile, personal_message: e.target.value})}
+                      className="pl-10 pt-3 min-h-[60px]"
+                      placeholder="A brief message that will appear in the community page..."
+                      rows={2}
                     />
                   </div>
                 </div>

@@ -1,12 +1,14 @@
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, Plus, Users, Car, Package } from "lucide-react";
+import { EventCard } from "@/components/events/EventCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useEventActions } from "@/hooks/useEventActions";
 import { Navigation } from "@/components/Navigation";
-import { EventCard } from "@/components/events/EventCard";
 
 interface Event {
   id: string;
@@ -19,46 +21,58 @@ interface Event {
   difficulty_level: string | null;
   organizer_id: string;
   participants_count?: number;
-  user_joined?: boolean;
+  carpool_seats?: number;
+  equipment_count?: number;
 }
 
 export default function Events() {
-  const navigate = useNavigate();
-  const [events, setEvents] = useState<Event[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [userParticipations, setUserParticipations] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { joinEvent, loading: actionLoading } = useEventActions();
 
   useEffect(() => {
     fetchEvents();
+    if (user) {
+      fetchUserParticipations();
+    }
   }, [user]);
 
   const fetchEvents = async () => {
     try {
-      const { data: eventsData, error } = await supabase
-        .from('events_with_participants')
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: events, error } = await supabase
+        .from('events')
         .select('*')
+        .gte('date', today)
         .order('date', { ascending: true });
 
       if (error) throw error;
 
-      if (user) {
-        const { data: userParticipations } = await supabase
-          .from('event_participants')
-          .select('event_id')
-          .eq('user_id', user.id);
+      // Fetch additional stats for each event
+      const eventsWithStats = await Promise.all(
+        (events || []).map(async (event) => {
+          const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
+            supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', event.id),
+            supabase.from('event_participants').select('available_seats').eq('event_id', event.id).not('available_seats', 'is', null),
+            supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', event.id)
+          ]);
 
-        const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
+          const totalCarpoolSeats = carpoolResult.data?.reduce((sum, p) => sum + (p.available_seats || 0), 0) || 0;
 
-        const eventsWithJoinStatus = eventsData?.map(event => ({
-          ...event,
-          user_joined: joinedEventIds.has(event.id)
-        })) || [];
+          return {
+            ...event,
+            participants_count: participantsResult.count || 0,
+            carpool_seats: totalCarpoolSeats,
+            equipment_count: equipmentResult.count || 0
+          };
+        })
+      );
 
-        setEvents(eventsWithJoinStatus);
-      } else {
-        setEvents(eventsData || []);
-      }
+      setUpcomingEvents(eventsWithStats);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast({
@@ -71,63 +85,39 @@ export default function Events() {
     }
   };
 
-  const joinEvent = async (eventId: string) => {
+  const fetchUserParticipations = async () => {
     if (!user) return;
-
+    
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('event_participants')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "You've joined the event",
-      });
-
-      fetchEvents();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to join event",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const leaveEvent = async (eventId: string) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('event_participants')
-        .delete()
-        .eq('event_id', eventId)
+        .select('event_id')
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "You've left the event",
-      });
-
-      fetchEvents();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to leave event",
-        variant: "destructive",
-      });
+      
+      const participatedEventIds = new Set(data?.map(p => p.event_id) || []);
+      setUserParticipations(participatedEventIds);
+    } catch (error) {
+      console.error('Error fetching user participations:', error);
     }
   };
 
-  const handleEventClick = (eventId: string) => {
-    navigate(`/events/${eventId}`);
+  const handleJoinEvent = async (eventId: string) => {
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to join events",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await joinEvent(eventId, user.id);
+    if (result.success) {
+      setUserParticipations(prev => new Set([...prev, eventId]));
+      fetchEvents(); // Refresh to update participant counts
+    }
   };
 
   if (loading) {
@@ -140,37 +130,34 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="w-full max-w-6xl mx-auto p-4">
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Upcoming Events</h1>
-              <p className="text-stone-600">Join fellow climbers on exciting adventures</p>
-            </div>
-
-            <div className="space-y-4">
-              {events.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-                    <p className="text-stone-600">No upcoming events yet</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                events.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    user={user}
-                    onEventClick={handleEventClick}
-                    onJoinEvent={joinEvent}
-                    onLeaveEvent={leaveEvent}
-                  />
-                ))
-              )}
-            </div>
-          </div>
+      <div className="max-w-md mx-auto p-4">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Upcoming Events</h1>
+          <p className="text-stone-600">Join climbing events and adventures</p>
         </div>
+
+        {upcomingEvents.length > 0 ? (
+          <div className="space-y-4">
+            {upcomingEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                showJoinButton={!!user}
+                userJoined={userParticipations.has(event.id)}
+                onJoin={() => handleJoinEvent(event.id)}
+                isLoading={actionLoading}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
+              <p className="text-stone-600 mb-4">No upcoming events scheduled</p>
+              <p className="text-sm text-stone-500">Check back later for new climbing adventures!</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
       <Navigation />
     </div>

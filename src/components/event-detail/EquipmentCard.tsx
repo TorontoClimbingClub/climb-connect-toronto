@@ -7,8 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Package, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useEquipmentManagement } from "@/hooks/useEquipmentManagement";
 
 interface Equipment {
   id: string;
@@ -34,18 +33,20 @@ interface EquipmentCardProps {
   equipment: Equipment[];
   userEquipment: UserEquipment[];
   currentUserId?: string;
-  onAddEquipment: (equipmentIds: string[]) => void;
+  eventId: string;
+  onRefresh: () => void;
 }
 
 export function EquipmentCard({ 
   equipment, 
   userEquipment, 
   currentUserId,
-  onAddEquipment 
+  eventId,
+  onRefresh 
 }: EquipmentCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
-  const { toast } = useToast();
+  const { addEquipmentToEvent, removeUserEquipmentFromEvent, loading } = useEquipmentManagement();
 
   const availableEquipment = userEquipment.filter(item => !item.is_assigned);
 
@@ -57,37 +58,23 @@ export function EquipmentCard({
     }
   };
 
-  const handleAddSelected = () => {
-    if (selectedEquipment.length > 0) {
-      onAddEquipment(selectedEquipment);
-      setSelectedEquipment([]);
-      setIsDialogOpen(false);
+  const handleAddSelected = async () => {
+    if (selectedEquipment.length > 0 && currentUserId) {
+      const result = await addEquipmentToEvent(selectedEquipment, eventId, currentUserId);
+      if (result.success) {
+        setSelectedEquipment([]);
+        setIsDialogOpen(false);
+        onRefresh();
+      }
     }
   };
 
   const handleRemoveEquipment = async (equipmentId: string) => {
-    try {
-      const { error } = await supabase
-        .from('event_equipment')
-        .delete()
-        .eq('user_equipment_id', equipmentId)
-        .eq('user_id', currentUserId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Equipment removed from event",
-      });
-
-      // Refresh the page to update the equipment list
-      window.location.reload();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove equipment",
-        variant: "destructive",
-      });
+    if (!currentUserId) return;
+    
+    const result = await removeUserEquipmentFromEvent(currentUserId, eventId);
+    if (result.success) {
+      onRefresh();
     }
   };
 
@@ -159,10 +146,10 @@ export function EquipmentCard({
                   </Button>
                   <Button 
                     onClick={handleAddSelected}
-                    disabled={selectedEquipment.length === 0}
+                    disabled={selectedEquipment.length === 0 || loading}
                     className="bg-[#E55A2B] hover:bg-[#D14B20] text-white"
                   >
-                    Share Selected ({selectedEquipment.length})
+                    {loading ? "Sharing..." : `Share Selected (${selectedEquipment.length})`}
                   </Button>
                 </div>
               </DialogContent>
@@ -208,6 +195,7 @@ export function EquipmentCard({
                           onClick={() => handleRemoveEquipment(item.id)}
                           variant="ghost"
                           size="sm"
+                          disabled={loading}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
