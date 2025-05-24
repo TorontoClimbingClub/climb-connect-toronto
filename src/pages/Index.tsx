@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, Mountain, ArrowRight, Package, Car } from "lucide-react";
+import { Calendar, MapPin, Users, ArrowRight, Package, Car } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -172,8 +172,12 @@ export default function Index() {
       <div className="max-w-md mx-auto">
         {/* Hero Section */}
         <div className="text-center py-8 px-4">
-          <div className="bg-gradient-to-br from-orange-600 to-red-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
-            <Mountain className="h-12 w-12 text-white" />
+          <div className="w-20 h-20 mx-auto mb-6">
+            <img 
+              src="/lovable-uploads/363ed955-51f1-41ee-a0d2-40e27bbe162e.png" 
+              alt="Toronto Climbing Club Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-[#E55A2B] mb-2">
             Toronto Climbing Club

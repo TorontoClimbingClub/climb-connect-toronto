@@ -4,11 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Package, Plus, Trash2, Calendar, Edit2 } from "lucide-react";
+import { Package, Plus, Trash2, Calendar, Edit2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -41,7 +40,7 @@ export default function Gear() {
   const [equipment, setEquipment] = useState<UserEquipment[]>([]);
   const [categories, setCategories] = useState<EquipmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<UserEquipment | null>(null);
   const [newItem, setNewItem] = useState({
     item_name: "",
@@ -147,7 +146,7 @@ export default function Gear() {
       });
 
       setNewItem({ item_name: "", brand: "", notes: "", category_id: "" });
-      setIsDialogOpen(false);
+      setShowAddForm(false);
       fetchEquipment();
     } catch (error: any) {
       toast({
@@ -230,20 +229,34 @@ export default function Gear() {
             <p className="text-stone-600">Manage your climbing equipment</p>
           </div>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#E55A2B] hover:bg-orange-700">
+          <Button 
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={`${showAddForm ? 'bg-stone-500 hover:bg-stone-600' : 'bg-[#E55A2B] hover:bg-orange-700'}`}
+          >
+            {showAddForm ? (
+              <>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </>
+            ) : (
+              <>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Gear
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md mx-4">
-              <DialogHeader>
-                <DialogTitle>Add Equipment</DialogTitle>
-                <DialogDescription>
-                  Add new climbing gear to your inventory
-                </DialogDescription>
-              </DialogHeader>
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Inline Add Form */}
+        {showAddForm && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Add Equipment</CardTitle>
+              <CardDescription>
+                Add new climbing gear to your inventory
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <form onSubmit={addEquipment} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
@@ -297,9 +310,9 @@ export default function Gear() {
                   Add Equipment
                 </Button>
               </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="space-y-4">
           {equipment.length === 0 ? (

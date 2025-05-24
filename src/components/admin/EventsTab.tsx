@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Calendar, MapPin, Users } from "lucide-react";
 import { CreateEventDialog } from "./CreateEventDialog";
 
 interface Event {
@@ -53,70 +52,72 @@ export function EventsTab({
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Events</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>Date & Time</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Participants</TableHead>
-                <TableHead>Difficulty</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{event.title}</div>
-                      {event.description && (
-                        <div className="text-sm text-stone-600 truncate max-w-xs">
-                          {event.description}
-                        </div>
-                      )}
+      {/* Mobile-friendly card layout */}
+      <div className="space-y-4">
+        {events.map((event) => (
+          <Card key={event.id} className="w-full">
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                {/* Event Title and Actions */}
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-[#E55A2B] truncate">{event.title}</h3>
+                    {event.description && (
+                      <p className="text-sm text-stone-600 mt-1 line-clamp-2">
+                        {event.description}
+                      </p>
+                    )}
+                  </div>
+                  {canManageUsers && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDeleteEvent(event.id)}
+                      className="text-red-600 hover:text-red-700 flex-shrink-0 ml-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Event Details - Stacked vertically */}
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-stone-600">
+                    <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-stone-600">
+                    <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{event.location}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-sm text-stone-600">
+                      <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span>{event.participants_count || 0} joined</span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{new Date(event.date).toLocaleDateString()}</div>
-                      <div className="text-stone-600">{event.time}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{event.location}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {event.participants_count || 0} joined
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
+                    
                     {event.difficulty_level && (
-                      <Badge variant="outline">{event.difficulty_level}</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {event.difficulty_level}
+                      </Badge>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    {canManageUsers && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDeleteEvent(event.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        {events.length === 0 && (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-stone-600">No events found</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
