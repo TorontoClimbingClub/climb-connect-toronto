@@ -30,9 +30,13 @@ const eventSchema = z.object({
 
 interface User {
   id: string;
-  email: string;
+  email?: string;
   full_name: string;
+  phone?: string;
+  is_carpool_driver?: boolean;
+  passenger_capacity?: number;
   created_at: string;
+  updated_at?: string;
 }
 
 interface Event {
@@ -121,7 +125,11 @@ export default function Admin() {
       const { error } = await supabase
         .from('events')
         .insert({
-          ...values,
+          title: values.title,
+          description: values.description || null,
+          date: values.date,
+          time: values.time,
+          location: values.location,
           max_participants: values.max_participants || null,
           difficulty_level: values.difficulty_level || null,
           organizer_id: user.id,
@@ -171,6 +179,15 @@ export default function Admin() {
   };
 
   const resetUserPassword = async (userId: string, email: string) => {
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "User email not available",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth?type=recovery`,
@@ -483,7 +500,7 @@ export default function Admin() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => resetUserPassword(user.id, user.email)}
+                            onClick={() => resetUserPassword(user.id, user.email || '')}
                           >
                             Reset Password
                           </Button>
