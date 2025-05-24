@@ -45,9 +45,9 @@ export function EventHeader({
       
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-emerald-800 mb-2">{event.title}</h1>
+          <h1 className="text-2xl font-bold text-primary mb-2">{event.title}</h1>
           {event.description && (
-            <p className="text-stone-600 mb-4">{event.description}</p>
+            <p className="text-muted-foreground mb-4">{event.description}</p>
           )}
         </div>
         {event.difficulty_level && (
@@ -71,7 +71,7 @@ export function EventHeader({
           ) : (
             <Button 
               onClick={onJoinEvent}
-              className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700"
+              className="w-full md:w-auto"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Join Event
