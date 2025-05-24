@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,15 +98,20 @@ export default function EventDetail() {
           `)
           .eq('event_id', eventId)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (participationError && participationError.code !== 'PGRST116') {
+        if (participationError) {
           console.error('Error fetching participation:', participationError);
         } else if (participation) {
           setUserJoined(true);
           // Transform the data to match Participant interface
-          const participantData = {
-            ...participation,
+          const participantData: Participant = {
+            id: participation.id,
+            user_id: participation.user_id,
+            event_id: participation.event_id,
+            is_carpool_driver: participation.is_carpool_driver,
+            available_seats: participation.available_seats,
+            joined_at: participation.joined_at,
             full_name: participation.profiles.full_name,
             phone: participation.profiles.phone
           };

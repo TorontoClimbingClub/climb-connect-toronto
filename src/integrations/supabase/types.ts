@@ -116,6 +116,13 @@ export type Database = {
             referencedRelation: "events_with_participants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_event_participants_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       events: {
