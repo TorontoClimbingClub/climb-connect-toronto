@@ -141,7 +141,7 @@ export default function Events() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
       {/* Responsive container with proper max-width for different screen sizes */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-6 sm:mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-emerald-800 mb-2">Climbing Events</h1>
           <p className="text-stone-600 text-sm sm:text-base">Discover and join climbing adventures in Toronto</p>
         </div>
