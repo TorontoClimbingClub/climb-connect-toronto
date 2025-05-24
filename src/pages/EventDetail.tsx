@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
@@ -22,12 +23,7 @@ export default function EventDetail() {
     userJoined,
     currentUserParticipation,
     loading,
-    setUserJoined,
-    setCurrentUserParticipation,
-    fetchEventDetails,
-    fetchParticipants,
-    fetchEquipment,
-    fetchUserEquipment
+    refreshData
   } = useEventData(eventId);
 
   const {
@@ -35,14 +31,39 @@ export default function EventDetail() {
     addEquipment,
     joinEvent,
     leaveEvent
-  } = useEventActions(eventId, {
-    fetchEventDetails,
-    fetchParticipants,
-    fetchEquipment,
-    fetchUserEquipment,
-    setUserJoined,
-    setCurrentUserParticipation
-  });
+  } = useEventActions();
+
+  const handleJoinEvent = async () => {
+    if (!eventId || !user?.id) return;
+    const result = await joinEvent(eventId, user.id);
+    if (result.success) {
+      refreshData();
+    }
+  };
+
+  const handleLeaveEvent = async () => {
+    if (!eventId || !user?.id) return;
+    const result = await leaveEvent(eventId, user.id);
+    if (result.success) {
+      refreshData();
+    }
+  };
+
+  const handleUpdateCarpoolStatus = async (isDriver: boolean, seats: number) => {
+    if (!currentUserParticipation) return;
+    const result = await updateCarpoolStatus(currentUserParticipation.id, isDriver, seats);
+    if (result.success) {
+      refreshData();
+    }
+  };
+
+  const handleAddEquipment = async (equipmentIds: string[]) => {
+    if (!eventId || !user?.id) return;
+    const result = await addEquipment(equipmentIds, eventId, user.id);
+    if (result.success) {
+      refreshData();
+    }
+  };
 
   if (loading) {
     return (
@@ -71,8 +92,8 @@ export default function EventDetail() {
           userJoined={userJoined}
           user={user}
           onBack={() => navigate('/events')}
-          onJoinEvent={joinEvent}
-          onLeaveEvent={leaveEvent}
+          onJoinEvent={handleJoinEvent}
+          onLeaveEvent={handleLeaveEvent}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -81,7 +102,7 @@ export default function EventDetail() {
             participants={participants}
             currentUserId={user?.id}
             currentUserParticipation={currentUserParticipation}
-            onUpdateCarpoolStatus={updateCarpoolStatus}
+            onUpdateCarpoolStatus={handleUpdateCarpoolStatus}
           />
         </div>
 
@@ -91,7 +112,8 @@ export default function EventDetail() {
             equipment={equipment}
             userEquipment={userEquipment}
             currentUserId={user?.id}
-            onAddEquipment={addEquipment}
+            eventId={eventId!}
+            onRefresh={refreshData}
           />
         </div>
       </div>

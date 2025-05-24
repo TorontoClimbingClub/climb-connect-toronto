@@ -7,7 +7,7 @@ import { useEquipmentManagement } from "./useEquipmentManagement";
 export function useEventActions() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { removeUserEquipmentFromEvent } = useEquipmentManagement();
+  const { removeUserEquipmentFromEvent, addEquipmentToEvent } = useEquipmentManagement();
 
   const joinEvent = async (eventId: string, userId: string) => {
     try {
@@ -101,10 +101,15 @@ export function useEventActions() {
     }
   };
 
+  const addEquipment = async (equipmentIds: string[], eventId: string, userId: string) => {
+    return await addEquipmentToEvent(equipmentIds, eventId, userId);
+  };
+
   return {
     joinEvent,
     leaveEvent,
     updateCarpoolStatus,
+    addEquipment,
     loading
   };
 }
