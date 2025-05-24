@@ -1,13 +1,10 @@
-
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { Navigation } from "@/components/Navigation";
-import { EventCard } from "@/components/events/EventCard";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { EventCard } from '@/components/events/EventCard';
+import { Navigation } from '@/components/Navigation';
+import { useToast } from '@/hooks/use-toast';
 
 interface Event {
   id: string;
@@ -24,10 +21,10 @@ interface Event {
 }
 
 export default function Events() {
-  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,7 +69,7 @@ export default function Events() {
     }
   };
 
-  const joinEvent = async (eventId: string) => {
+  const handleJoinEvent = async (eventId: string) => {
     if (!user) return;
 
     try {
@@ -100,7 +97,7 @@ export default function Events() {
     }
   };
 
-  const leaveEvent = async (eventId: string) => {
+  const handleLeaveEvent = async (eventId: string) => {
     if (!user) return;
 
     try {
@@ -133,7 +130,7 @@ export default function Events() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center px-4">
         <div className="text-emerald-600">Loading events...</div>
       </div>
     );
@@ -141,33 +138,33 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      <div className="max-w-md mx-auto p-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-emerald-800 mb-2">Upcoming Events</h1>
-          <p className="text-stone-600">Join fellow climbers on exciting adventures</p>
+      {/* Responsive container with proper max-width for different screen sizes */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-emerald-800 mb-2">Climbing Events</h1>
+          <p className="text-stone-600 text-sm sm:text-base">Discover and join climbing adventures in Toronto</p>
         </div>
 
-        <div className="space-y-4">
-          {events.length === 0 ? (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-                <p className="text-stone-600">No upcoming events yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            events.map((event) => (
+        {events.length > 0 ? (
+          /* Responsive grid: 1 column on mobile, 2 on tablet, 3+ on desktop */
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+            {events.map((event) => (
               <EventCard
                 key={event.id}
                 event={event}
                 user={user}
                 onEventClick={handleEventClick}
-                onJoinEvent={joinEvent}
-                onLeaveEvent={leaveEvent}
+                onJoinEvent={handleJoinEvent}
+                onLeaveEvent={handleLeaveEvent}
               />
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 sm:py-16">
+            <p className="text-stone-600 text-base sm:text-lg">No events available at the moment.</p>
+            <p className="text-stone-500 text-sm sm:text-base mt-2">Check back later for new climbing adventures!</p>
+          </div>
+        )}
       </div>
       <Navigation />
     </div>

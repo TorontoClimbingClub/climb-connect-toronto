@@ -1,14 +1,11 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, Mountain, ArrowRight, Package, Car } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { Navigation } from "@/components/Navigation";
-import { AuthModal } from "@/components/AuthModal";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Navigation } from '@/components/Navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Users, Mountain, UserPlus, Package } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -17,330 +14,255 @@ interface Event {
   date: string;
   time: string;
   location: string;
+  max_participants: number | null;
   difficulty_level: string | null;
+  organizer_id: string;
   participants_count?: number;
-  user_joined?: boolean;
 }
 
 export default function Index() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [userStats, setUserStats] = useState({
-    joinedEvents: 0,
-    equipmentCount: 0,
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    totalMembers: 0,
+    upcomingEvents: 0
   });
   const [loading, setLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchUpcomingEvents();
-    if (user) {
-      fetchUserStats();
-    }
-  }, [user]);
+  const navigate = useNavigate();
 
   const fetchUpcomingEvents = async () => {
     try {
-      console.log('Fetching upcoming events...');
-      
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
-      console.log('Today date string:', todayString);
-
-      const { data: eventsData, error } = await supabase
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
         .from('events')
-        .select('*')
-        .gte('date', todayString)
+        .select('id, title, description, date, time, location, max_participants')
+        .gte('date', today)
         .order('date', { ascending: true })
-        .order('time', { ascending: true })
         .limit(3);
 
-      console.log('Events query result:', { eventsData, error });
-
       if (error) {
-        console.error('Error fetching events:', error);
-        throw error;
+        console.error("Error fetching upcoming events:", error);
+        return;
       }
 
-      // Get participant counts for each event
-      if (eventsData && eventsData.length > 0) {
-        const eventIds = eventsData.map(event => event.id);
-        const { data: participantCounts } = await supabase
-          .from('event_participants')
-          .select('event_id')
-          .in('event_id', eventIds);
+      if (data && data.length > 0) {
+        const eventsWithParticipants = await Promise.all(
+          data.map(async (event) => {
+            const { data: participantsData, error: participantsError } = await supabase
+              .from('event_participants')
+              .select('count(*)')
+              .eq('event_id', event.id);
 
-        console.log('Participant counts:', participantCounts);
+            if (participantsError) {
+              console.error("Error fetching participants count:", participantsError);
+              return { ...event, participants_count: 0 };
+            }
 
-        // Count participants per event
-        const participantCountMap = new Map();
-        participantCounts?.forEach(p => {
-          const currentCount = participantCountMap.get(p.event_id) || 0;
-          participantCountMap.set(p.event_id, currentCount + 1);
-        });
+            const participants_count = participantsData && participantsData.length > 0 ?
+              parseInt(participantsData[0].count) : 0;
 
-        if (user) {
-          // Check which events the user has joined
-          const { data: userParticipations } = await supabase
-            .from('event_participants')
-            .select('event_id')
-            .eq('user_id', user.id)
-            .in('event_id', eventIds);
-
-          console.log('User participations:', userParticipations);
-
-          const joinedEventIds = new Set(userParticipations?.map(p => p.event_id) || []);
-
-          const eventsWithJoinStatus = eventsData.map(event => ({
-            ...event,
-            participants_count: participantCountMap.get(event.id) || 0,
-            user_joined: joinedEventIds.has(event.id)
-          }));
-
-          setUpcomingEvents(eventsWithJoinStatus);
-        } else {
-          const eventsWithCounts = eventsData.map(event => ({
-            ...event,
-            participants_count: participantCountMap.get(event.id) || 0,
-            user_joined: false
-          }));
-
-          setUpcomingEvents(eventsWithCounts);
-        }
+            return { ...event, participants_count };
+          })
+        );
+        setUpcomingEvents(eventsWithParticipants);
       } else {
         setUpcomingEvents([]);
       }
 
-      console.log('Final upcoming events:', eventsData);
     } catch (error) {
-      console.error('Error fetching events:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load upcoming events",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      console.error("Unexpected error fetching upcoming events:", error);
     }
   };
 
-  const fetchUserStats = async () => {
-    if (!user) return;
-
+  const fetchStats = async () => {
     try {
-      // Get joined events count
-      const { count: eventsCount } = await supabase
-        .from('event_participants')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id);
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('count(*)');
 
-      // Get equipment count
-      const { count: gearCount } = await supabase
-        .from('user_equipment')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id);
+      const { data: membersData, error: membersError } = await supabase
+        .from('profiles')
+        .select('count(*)');
 
-      setUserStats({
-        joinedEvents: eventsCount || 0,
-        equipmentCount: gearCount || 0,
+      const today = new Date().toISOString().split('T')[0];
+      const { data: upcomingEventsData, error: upcomingEventsError } = await supabase
+        .from('events')
+        .select('count(*)')
+        .gte('date', today);
+
+      if (eventsError || membersError || upcomingEventsError) {
+        console.error("Error fetching stats:", eventsError, membersError, upcomingEventsError);
+        return;
+      }
+
+      const totalEvents = eventsData ? parseInt(eventsData[0].count) : 0;
+      const totalMembers = membersData ? parseInt(membersData[0].count) : 0;
+      const upcomingEventsCount = upcomingEventsData ? parseInt(upcomingEventsData[0].count) : 0;
+
+      setStats({
+        totalEvents,
+        totalMembers,
+        upcomingEvents: upcomingEventsCount
       });
+
     } catch (error) {
-      console.error('Error fetching user stats:', error);
+      console.error("Unexpected error fetching stats:", error);
     }
   };
 
-  const handleGetStarted = () => {
-    if (user) {
-      window.location.href = '/events';
-    } else {
-      setShowAuthModal(true);
-    }
-  };
+  useEffect(() => {
+    const loadData = async () => {
+      await Promise.all([fetchUpcomingEvents(), fetchStats()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
 
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-    toast({
-      title: "Welcome to TCC!",
-      description: "You're now part of Toronto's climbing community",
-    });
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center px-4">
+        <div className="text-emerald-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      <div className="max-w-md mx-auto">
+      {/* Responsive container with proper max-width for different screen sizes */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Hero Section */}
-        <div className="text-center py-8 px-4">
-          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
-            <Mountain className="h-12 w-12 text-white" />
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <Mountain className="h-12 w-12 sm:h-16 sm:w-16 text-emerald-600" />
           </div>
-          <h1 className="text-3xl font-bold text-emerald-800 mb-2">
-            Toronto Climbing Club
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-emerald-800 mb-3 sm:mb-4">
+            Climb Connect Toronto
           </h1>
-          <p className="text-stone-600 mb-6">
-            Connect with fellow climbers, join events, and share your gear with the community
+          <p className="text-base sm:text-lg lg:text-xl text-stone-600 max-w-2xl mx-auto px-4">
+            Join Toronto's premier climbing community. Discover events, share gear, and connect with fellow climbers.
           </p>
-          
-          {!user && (
-            <Button 
-              onClick={handleGetStarted}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full text-lg"
-            >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          )}
         </div>
 
-        <div className="px-4 space-y-6">
-          {/* User Stats (if logged in) */}
-          {user && (
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-emerald-800">{userStats.joinedEvents}</p>
-                  <p className="text-sm text-stone-600">Events Joined</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-emerald-800">{userStats.equipmentCount}</p>
-                  <p className="text-sm text-stone-600">Gear Items</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+        {/* Stats Section - Responsive grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <Card>
+            <CardContent className="flex flex-col items-center p-4 sm:p-6">
+              <Calendar className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-600 mb-2 sm:mb-3" />
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-800">{stats.totalEvents}</div>
+              <div className="text-xs sm:text-sm text-stone-600">Total Events</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex flex-col items-center p-4 sm:p-6">
+              <Users className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-600 mb-2 sm:mb-3" />
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-800">{stats.totalMembers}</div>
+              <div className="text-xs sm:text-sm text-stone-600">Community Members</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex flex-col items-center p-4 sm:p-6">
+              <Mountain className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-600 mb-2 sm:mb-3" />
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-800">{stats.upcomingEvents}</div>
+              <div className="text-xs sm:text-sm text-stone-600">Upcoming Events</div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Upcoming Events Section */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-emerald-800">Upcoming Events</h2>
-              <Button variant="ghost" onClick={() => window.location.href = '/events'}>
-                View All
-              </Button>
-            </div>
-            
-            <div className="space-y-3">
-              {loading ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <div className="text-stone-500">Loading events...</div>
-                  </CardContent>
-                </Card>
-              ) : upcomingEvents.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-                    <p className="text-stone-600 mb-4">No upcoming events scheduled</p>
-                    {user && (
-                      <Button 
-                        onClick={() => window.location.href = '/admin'}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        Create Event
+        {/* Upcoming Events Section */}
+        <Card className="mb-8 sm:mb-12">
+          <CardHeader>
+            <CardTitle className="text-xl sm:text-2xl">Upcoming Events</CardTitle>
+            <CardDescription className="text-sm sm:text-base">Join the next climbing adventures</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {upcomingEvents.length > 0 ? (
+              <div className="space-y-3 sm:space-y-4">
+                {upcomingEvents.map((event) => (
+                  <div 
+                    key={event.id} 
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-emerald-50 rounded-lg cursor-pointer hover:bg-emerald-100 transition-colors"
+                    onClick={() => navigate(`/events/${event.id}`)}
+                  >
+                    <div className="flex-1 min-w-0 mb-3 sm:mb-0">
+                      <h3 className="font-semibold text-emerald-800 text-sm sm:text-base truncate">{event.title}</h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1 text-xs sm:text-sm text-stone-600">
+                        <div className="flex items-center">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+                          <span className="truncate">{new Date(event.date).toLocaleDateString()} at {event.time}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 shrink-0" />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-3">
+                      <div className="flex items-center text-xs sm:text-sm text-stone-600">
+                        <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span>{event.participants_count || 0} joined</span>
+                      </div>
+                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-xs sm:text-sm px-2 sm:px-3">
+                        View Details
                       </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                upcomingEvents.map((event) => (
-                  <Card key={event.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => window.location.href = `/events/${event.id}`}>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-emerald-800 line-clamp-1">{event.title}</h3>
-                        <div className="flex gap-2 ml-2 flex-shrink-0">
-                          {event.user_joined && (
-                            <Badge variant="default" className="text-xs">
-                              Joined
-                            </Badge>
-                          )}
-                          {event.difficulty_level && (
-                            <Badge variant="outline" className="text-xs">
-                              {event.difficulty_level}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {event.description && (
-                        <p className="text-sm text-stone-600 mb-3 line-clamp-2">{event.description}</p>
-                      )}
-                      
-                      <div className="space-y-2 text-sm text-stone-600">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                          <span>{new Date(event.date).toLocaleDateString()} at {event.time}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                          <span className="line-clamp-1">{event.location}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2 flex-shrink-0" />
-                          <span>{event.participants_count || 0} joined</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 sm:py-8 text-stone-600">
+                <p className="text-sm sm:text-base">No upcoming events at the moment.</p>
+                <p className="text-xs sm:text-sm mt-1">Check back later for new adventures!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-xl font-semibold text-emerald-800 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/events'}>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Browse Events</h3>
-                </CardContent>
-              </Card>
-              
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/gear'}>
-                <CardContent className="p-4 text-center">
-                  <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Manage Gear</h3>
-                </CardContent>
-              </Card>
-              
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/community'}>
-                <CardContent className="p-4 text-center">
-                  <Users className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Community</h3>
-                </CardContent>
-              </Card>
-              
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => window.location.href = '/profile'}>
-                <CardContent className="p-4 text-center">
-                  <Car className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <h3 className="font-semibold text-sm">Profile</h3>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+        {/* Call to Action Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <UserPlus className="h-5 w-5 sm:h-6 sm:w-6" />
+                Join Events
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Discover climbing events and connect with the community
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => navigate('/events')} 
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-sm sm:text-base"
+              >
+                Browse All Events
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Package className="h-5 w-5 sm:h-6 sm:w-6" />
+                Manage Gear
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Track your equipment and share with other climbers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => navigate('/gear')} 
+                variant="outline" 
+                className="w-full text-sm sm:text-base"
+              >
+                View My Gear
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
-      
       <Navigation />
-      
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLogin={handleAuthSuccess}
-      />
     </div>
   );
 }
