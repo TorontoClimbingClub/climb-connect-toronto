@@ -67,7 +67,7 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
       {/* Responsive container with proper max-width for different screen sizes */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <EventHeader
           event={event}
           userJoined={userJoined}

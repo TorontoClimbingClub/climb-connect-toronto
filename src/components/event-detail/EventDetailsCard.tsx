@@ -23,26 +23,28 @@ export function EventDetailsCard({ event, participantsCount }: EventDetailsCardP
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Calendar className="h-5 w-5" />
           Event Details
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center text-sm">
-          <Calendar className="h-4 w-4 mr-2" />
-          {new Date(event.date).toLocaleDateString()} at {event.time}
+      <CardContent className="space-y-3 sm:space-y-4">
+        <div className="flex items-center text-sm sm:text-base break-words">
+          <Calendar className="h-4 w-4 mr-2 shrink-0" />
+          <span className="truncate">{new Date(event.date).toLocaleDateString()} at {event.time}</span>
         </div>
         
-        <div className="flex items-center text-sm">
-          <MapPin className="h-4 w-4 mr-2" />
-          {event.location}
+        <div className="flex items-center text-sm sm:text-base">
+          <MapPin className="h-4 w-4 mr-2 shrink-0" />
+          <span className="break-words">{event.location}</span>
         </div>
 
-        <div className="flex items-center text-sm">
-          <Users className="h-4 w-4 mr-2" />
-          {participantsCount} participants
-          {event.max_participants && ` / ${event.max_participants} max`}
+        <div className="flex items-center text-sm sm:text-base">
+          <Users className="h-4 w-4 mr-2 shrink-0" />
+          <span>
+            {participantsCount} participants
+            {event.max_participants && ` / ${event.max_participants} max`}
+          </span>
         </div>
       </CardContent>
     </Card>
