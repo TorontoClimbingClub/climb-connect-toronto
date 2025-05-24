@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,7 +107,6 @@ export default function EventDetail() {
           const participantData: Participant = {
             id: participation.id,
             user_id: participation.user_id,
-            event_id: participation.event_id,
             is_carpool_driver: participation.is_carpool_driver,
             available_seats: participation.available_seats,
             joined_at: participation.joined_at,
