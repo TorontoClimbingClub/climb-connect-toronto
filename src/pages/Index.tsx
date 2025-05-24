@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,7 +37,7 @@ export default function Index() {
       const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
         .from('events')
-        .select('id, title, description, date, time, location, max_participants')
+        .select('id, title, description, date, time, location, max_participants, difficulty_level, organizer_id')
         .gte('date', today)
         .order('date', { ascending: true })
         .limit(3);
@@ -49,9 +50,9 @@ export default function Index() {
       if (data && data.length > 0) {
         const eventsWithParticipants = await Promise.all(
           data.map(async (event) => {
-            const { data: participantsData, error: participantsError } = await supabase
+            const { count, error: participantsError } = await supabase
               .from('event_participants')
-              .select('count(*)')
+              .select('*', { count: 'exact', head: true })
               .eq('event_id', event.id);
 
             if (participantsError) {
@@ -59,10 +60,7 @@ export default function Index() {
               return { ...event, participants_count: 0 };
             }
 
-            const participants_count = participantsData && participantsData.length > 0 ?
-              parseInt(participantsData[0].count) : 0;
-
-            return { ...event, participants_count };
+            return { ...event, participants_count: count || 0 };
           })
         );
         setUpcomingEvents(eventsWithParticipants);
@@ -77,18 +75,18 @@ export default function Index() {
 
   const fetchStats = async () => {
     try {
-      const { data: eventsData, error: eventsError } = await supabase
+      const { count: eventsCount, error: eventsError } = await supabase
         .from('events')
-        .select('count(*)');
+        .select('*', { count: 'exact', head: true });
 
-      const { data: membersData, error: membersError } = await supabase
+      const { count: membersCount, error: membersError } = await supabase
         .from('profiles')
-        .select('count(*)');
+        .select('*', { count: 'exact', head: true });
 
       const today = new Date().toISOString().split('T')[0];
-      const { data: upcomingEventsData, error: upcomingEventsError } = await supabase
+      const { count: upcomingEventsCount, error: upcomingEventsError } = await supabase
         .from('events')
-        .select('count(*)')
+        .select('*', { count: 'exact', head: true })
         .gte('date', today);
 
       if (eventsError || membersError || upcomingEventsError) {
@@ -96,14 +94,10 @@ export default function Index() {
         return;
       }
 
-      const totalEvents = eventsData ? parseInt(eventsData[0].count) : 0;
-      const totalMembers = membersData ? parseInt(membersData[0].count) : 0;
-      const upcomingEventsCount = upcomingEventsData ? parseInt(upcomingEventsData[0].count) : 0;
-
       setStats({
-        totalEvents,
-        totalMembers,
-        upcomingEvents: upcomingEventsCount
+        totalEvents: eventsCount || 0,
+        totalMembers: membersCount || 0,
+        upcomingEvents: upcomingEventsCount || 0
       });
 
     } catch (error) {
