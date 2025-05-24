@@ -88,15 +88,29 @@ export default function EventDetail() {
       setEvent(data);
 
       if (user) {
-        const { data: participation } = await supabase
+        // Fetch user participation with profile data
+        const { data: participation, error: participationError } = await supabase
           .from('event_participants')
-          .select('*')
+          .select(`
+            *,
+            profiles!inner(full_name, phone)
+          `)
           .eq('event_id', eventId)
           .eq('user_id', user.id)
           .single();
 
-        setUserJoined(!!participation);
-        setCurrentUserParticipation(participation);
+        if (participationError && participationError.code !== 'PGRST116') {
+          console.error('Error fetching participation:', participationError);
+        } else if (participation) {
+          setUserJoined(true);
+          // Transform the data to match Participant interface
+          const participantData = {
+            ...participation,
+            full_name: participation.profiles.full_name,
+            phone: participation.profiles.phone
+          };
+          setCurrentUserParticipation(participantData);
+        }
       }
     } catch (error) {
       console.error('Error fetching event details:', error);
@@ -262,7 +276,9 @@ export default function EventDetail() {
         description: "Carpool status updated",
       });
 
+      // Refresh both participants and current user participation
       fetchParticipants();
+      fetchEventDetails();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -324,6 +340,7 @@ export default function EventDetail() {
 
       setUserJoined(true);
       fetchParticipants();
+      fetchEventDetails(); // Refresh to get current user participation
     } catch (error: any) {
       toast({
         title: "Error",
@@ -351,6 +368,7 @@ export default function EventDetail() {
       });
 
       setUserJoined(false);
+      setCurrentUserParticipation(null);
       fetchParticipants();
     } catch (error: any) {
       toast({
