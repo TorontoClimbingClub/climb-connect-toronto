@@ -168,14 +168,14 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto">
         {/* Hero Section */}
         <div className="text-center py-8 px-4">
-          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
+          <div className="bg-gradient-to-br from-orange-600 to-red-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
             <Mountain className="h-12 w-12 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-emerald-800 mb-2">
+          <h1 className="text-3xl font-bold text-[#E55A2B] mb-2">
             Toronto Climbing Club
           </h1>
           <p className="text-stone-600 mb-6">
@@ -185,7 +185,7 @@ export default function Index() {
           {!user && (
             <Button 
               onClick={handleGetStarted}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-full text-lg"
+              className="bg-[#E55A2B] hover:bg-orange-700 text-white px-8 py-3 rounded-full text-lg"
             >
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -199,16 +199,16 @@ export default function Index() {
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-emerald-800">{userStats.joinedEvents}</p>
+                  <Calendar className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-[#E55A2B]">{userStats.joinedEvents}</p>
                   <p className="text-sm text-stone-600">Events Joined</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-emerald-800">{userStats.equipmentCount}</p>
+                  <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-[#E55A2B]">{userStats.equipmentCount}</p>
                   <p className="text-sm text-stone-600">Gear Items</p>
                 </CardContent>
               </Card>
@@ -218,7 +218,7 @@ export default function Index() {
           {/* Upcoming Events Section */}
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-emerald-800">Upcoming Events</h2>
+              <h2 className="text-xl font-semibold text-[#E55A2B]">Upcoming Events</h2>
               <Button variant="ghost" onClick={() => window.location.href = '/events'}>
                 View All
               </Button>
@@ -239,7 +239,7 @@ export default function Index() {
                     {user && (
                       <Button 
                         onClick={() => window.location.href = '/admin'}
-                        className="bg-emerald-600 hover:bg-emerald-700"
+                        className="bg-[#E55A2B] hover:bg-orange-700"
                       >
                         Create Event
                       </Button>
@@ -252,7 +252,7 @@ export default function Index() {
                         onClick={() => window.location.href = `/events/${event.id}`}>
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-emerald-800 line-clamp-1">{event.title}</h3>
+                        <h3 className="font-semibold text-[#E55A2B] line-clamp-1">{event.title}</h3>
                         <div className="flex gap-2 ml-2 flex-shrink-0">
                           {event.user_joined && (
                             <Badge variant="default" className="text-xs">
@@ -296,12 +296,12 @@ export default function Index() {
 
           {/* Quick Actions */}
           <div>
-            <h2 className="text-xl font-semibold text-emerald-800 mb-4">Quick Actions</h2>
+            <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               <Card className="cursor-pointer hover:shadow-md transition-shadow" 
                     onClick={() => window.location.href = '/events'}>
                 <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <Calendar className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Browse Events</h3>
                 </CardContent>
               </Card>
@@ -309,7 +309,7 @@ export default function Index() {
               <Card className="cursor-pointer hover:shadow-md transition-shadow" 
                     onClick={() => window.location.href = '/gear'}>
                 <CardContent className="p-4 text-center">
-                  <Package className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Manage Gear</h3>
                 </CardContent>
               </Card>
@@ -317,7 +317,7 @@ export default function Index() {
               <Card className="cursor-pointer hover:shadow-md transition-shadow" 
                     onClick={() => window.location.href = '/community'}>
                 <CardContent className="p-4 text-center">
-                  <Users className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <Users className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Community</h3>
                 </CardContent>
               </Card>
@@ -325,7 +325,7 @@ export default function Index() {
               <Card className="cursor-pointer hover:shadow-md transition-shadow" 
                     onClick={() => window.location.href = '/profile'}>
                 <CardContent className="p-4 text-center">
-                  <Car className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <Car className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
                   <h3 className="font-semibold text-sm">Profile</h3>
                 </CardContent>
               </Card>

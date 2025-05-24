@@ -199,7 +199,7 @@ export default function Gear() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <Package className="h-12 w-12 text-stone-400 mx-auto mb-4" />
@@ -215,24 +215,24 @@ export default function Gear() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-emerald-600">Loading your gear...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading your gear...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-emerald-800">My Gear</h1>
+            <h1 className="text-2xl font-bold text-[#E55A2B]">My Gear</h1>
             <p className="text-stone-600">Manage your climbing equipment</p>
           </div>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
+              <Button className="bg-[#E55A2B] hover:bg-orange-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Gear
               </Button>
@@ -293,7 +293,7 @@ export default function Gear() {
                   />
                 </div>
                 
-                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                <Button type="submit" className="w-full bg-[#E55A2B] hover:bg-orange-700">
                   Add Equipment
                 </Button>
               </form>
@@ -317,7 +317,7 @@ export default function Gear() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-emerald-800">{item.item_name}</h3>
+                        <h3 className="font-semibold text-[#E55A2B]">{item.item_name}</h3>
                         {item.assignment_info && (
                           <Badge variant="outline" className="text-xs">
                             <Calendar className="h-3 w-3 mr-1" />
@@ -346,7 +346,7 @@ export default function Gear() {
                         onClick={() => setEditingEquipment(item)}
                         variant="ghost"
                         size="sm"
-                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                        className="text-[#E55A2B] hover:text-orange-700 hover:bg-orange-50"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
