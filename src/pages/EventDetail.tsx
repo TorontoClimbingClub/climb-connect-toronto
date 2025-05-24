@@ -1,15 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, MapPin, Users, Car, Package, ArrowLeft, UserPlus, UserMinus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
+import { EventHeader } from "@/components/event-detail/EventHeader";
+import { EventDetailsCard } from "@/components/event-detail/EventDetailsCard";
+import { CarpoolCard } from "@/components/event-detail/CarpoolCard";
+import { ParticipantsTable } from "@/components/event-detail/ParticipantsTable";
+import { EquipmentTable } from "@/components/event-detail/EquipmentTable";
 
 interface Event {
   id: string;
@@ -95,7 +95,6 @@ export default function EventDetail() {
 
   const fetchParticipants = async () => {
     try {
-      // Fetch event participants
       const { data: participantsData, error: participantsError } = await supabase
         .from('event_participants')
         .select('*')
@@ -103,7 +102,6 @@ export default function EventDetail() {
 
       if (participantsError) throw participantsError;
 
-      // Fetch profile data separately
       if (participantsData && participantsData.length > 0) {
         const userIds = participantsData.map(p => p.user_id);
         const { data: profilesData, error: profilesError } = await supabase
@@ -113,7 +111,6 @@ export default function EventDetail() {
 
         if (profilesError) throw profilesError;
 
-        // Combine the data
         const participantsWithProfiles = participantsData.map(participant => {
           const profile = profilesData?.find(p => p.id === participant.user_id);
           return {
@@ -134,7 +131,6 @@ export default function EventDetail() {
 
   const fetchEquipment = async () => {
     try {
-      // Fetch event equipment
       const { data: eventEquipmentData, error: eventEquipmentError } = await supabase
         .from('event_equipment')
         .select('user_equipment_id, user_id')
@@ -143,7 +139,6 @@ export default function EventDetail() {
       if (eventEquipmentError) throw eventEquipmentError;
 
       if (eventEquipmentData && eventEquipmentData.length > 0) {
-        // Fetch user equipment details
         const equipmentIds = eventEquipmentData.map(e => e.user_equipment_id);
         const { data: equipmentData, error: equipmentError } = await supabase
           .from('user_equipment')
@@ -159,7 +154,6 @@ export default function EventDetail() {
 
         if (equipmentError) throw equipmentError;
 
-        // Fetch profiles and categories separately
         const userIds = [...new Set(equipmentData?.map(e => e.user_id) || [])];
         const categoryIds = [...new Set(equipmentData?.map(e => e.category_id) || [])];
 
@@ -172,7 +166,6 @@ export default function EventDetail() {
           throw profilesResult.error || categoriesResult.error;
         }
 
-        // Combine all data
         const equipmentWithDetails = equipmentData?.map(item => {
           const profile = profilesResult.data?.find(p => p.id === item.user_id);
           const category = categoriesResult.data?.find(c => c.id === item.category_id);
@@ -264,7 +257,7 @@ export default function EventDetail() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-stone-600 mb-4">Event not found</p>
-          <Button onClick={() => navigate('/events')}>Back to Events</Button>
+          <button onClick={() => navigate('/events')}>Back to Events</button>
         </div>
       </div>
     );
@@ -273,212 +266,24 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
       <div className="max-w-4xl mx-auto p-4">
-        <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/events')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Events
-          </Button>
-          
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold text-emerald-800 mb-2">{event.title}</h1>
-              {event.description && (
-                <p className="text-stone-600 mb-4">{event.description}</p>
-              )}
-            </div>
-            {event.difficulty_level && (
-              <Badge variant="outline" className="ml-4">
-                {event.difficulty_level}
-              </Badge>
-            )}
-          </div>
-        </div>
+        <EventHeader
+          event={event}
+          userJoined={userJoined}
+          user={user}
+          onBack={() => navigate('/events')}
+          onJoinEvent={joinEvent}
+          onLeaveEvent={leaveEvent}
+        />
 
-        {/* Event Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Event Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center text-sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                {new Date(event.date).toLocaleDateString()} at {event.time}
-              </div>
-              
-              <div className="flex items-center text-sm">
-                <MapPin className="h-4 w-4 mr-2" />
-                {event.location}
-              </div>
-
-              <div className="flex items-center text-sm">
-                <Users className="h-4 w-4 mr-2" />
-                {participants.length} participants
-                {event.max_participants && ` / ${event.max_participants} max`}
-              </div>
-
-              {user && (
-                <div className="pt-3">
-                  {userJoined ? (
-                    <Button 
-                      onClick={leaveEvent}
-                      variant="outline" 
-                      className="w-full"
-                    >
-                      <UserMinus className="h-4 w-4 mr-2" />
-                      Leave Event
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={joinEvent}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Join Event
-                    </Button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Car className="h-5 w-5" />
-                Carpool Options
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-stone-600">
-                {participants.filter(p => p.is_carpool_driver).length > 0 ? (
-                  <div>
-                    <p className="font-medium mb-2">Available drivers:</p>
-                    {participants
-                      .filter(p => p.is_carpool_driver)
-                      .map(driver => (
-                        <div key={driver.id} className="flex justify-between items-center py-1">
-                          <span>{driver.full_name}</span>
-                          <Badge variant="secondary">
-                            {driver.available_seats || 0} seats
-                          </Badge>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p>No carpool drivers available yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <EventDetailsCard event={event} participantsCount={participants.length} />
+          <CarpoolCard participants={participants} />
         </div>
 
-        {/* Participants */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Participants ({participants.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {participants.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Carpool</TableHead>
-                    <TableHead>Joined</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {participants.map((participant) => (
-                    <TableRow key={participant.id}>
-                      <TableCell className="font-medium">
-                        {participant.full_name}
-                      </TableCell>
-                      <TableCell>{participant.phone || 'Not provided'}</TableCell>
-                      <TableCell>
-                        {participant.is_carpool_driver ? (
-                          <Badge variant="default">
-                            Driver ({participant.available_seats || 0} seats)
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">Passenger</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(participant.joined_at).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-6 text-stone-600">
-                No participants yet. Be the first to join!
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Equipment */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Equipment Available ({equipment.length} items)
-            </CardTitle>
-            <CardDescription>
-              Gear that participants are bringing to share
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {equipment.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Brand</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Notes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {equipment.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.item_name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {item.category_name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{item.brand || 'N/A'}</TableCell>
-                      <TableCell>{item.owner_name}</TableCell>
-                      <TableCell className="max-w-xs">
-                        {item.notes ? (
-                          <span className="text-sm text-stone-600">{item.notes}</span>
-                        ) : (
-                          <span className="text-stone-400">No notes</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-6 text-stone-600">
-                No equipment shared yet. Participants can add gear from their profile.
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <ParticipantsTable participants={participants} />
+          <EquipmentTable equipment={equipment} />
+        </div>
       </div>
       <Navigation />
     </div>
