@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
@@ -47,15 +46,15 @@ export default function EventDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-emerald-600">Loading event details...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading event details...</div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-stone-600 mb-4">Event not found</p>
           <button onClick={() => navigate('/events')}>Back to Events</button>
@@ -65,7 +64,7 @@ export default function EventDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="w-full max-w-6xl mx-auto p-4">
         <EventHeader
           event={event}

@@ -33,7 +33,7 @@ export function EventCard({ event, user, onEventClick, onJoinEvent, onLeaveEvent
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0">
             <CardTitle 
-              className="text-lg cursor-pointer hover:text-emerald-700 transition-colors truncate"
+              className="text-lg cursor-pointer hover:text-[#E55A2B] transition-colors truncate"
               onClick={() => onEventClick(event.id)}
             >
               {event.title}
@@ -98,7 +98,7 @@ export function EventCard({ event, user, onEventClick, onJoinEvent, onLeaveEvent
             variant="ghost" 
             size="sm"
             onClick={() => onEventClick(event.id)}
-            className="w-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+            className="w-full text-[#E55A2B] hover:text-[#E55A2B] hover:bg-orange-50"
           >
             View Details
           </Button>
@@ -116,7 +116,7 @@ export function EventCard({ event, user, onEventClick, onJoinEvent, onLeaveEvent
               ) : (
                 <Button 
                   onClick={() => onJoinEvent(event.id)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
                 >
                   Join Event
                 </Button>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -133,40 +132,44 @@ export default function Events() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
-        <div className="text-emerald-600">Loading events...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading events...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      <div className="max-w-md mx-auto p-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-emerald-800 mb-2">Upcoming Events</h1>
-          <p className="text-stone-600">Join fellow climbers on exciting adventures</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+      <div className="w-full max-w-6xl mx-auto p-4">
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Upcoming Events</h1>
+              <p className="text-stone-600">Join fellow climbers on exciting adventures</p>
+            </div>
 
-        <div className="space-y-4">
-          {events.length === 0 ? (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-                <p className="text-stone-600">No upcoming events yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                user={user}
-                onEventClick={handleEventClick}
-                onJoinEvent={joinEvent}
-                onLeaveEvent={leaveEvent}
-              />
-            ))
-          )}
+            <div className="space-y-4">
+              {events.length === 0 ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Calendar className="h-12 w-12 text-stone-400 mx-auto mb-4" />
+                    <p className="text-stone-600">No upcoming events yet</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    user={user}
+                    onEventClick={handleEventClick}
+                    onJoinEvent={joinEvent}
+                    onLeaveEvent={leaveEvent}
+                  />
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
       <Navigation />
