@@ -71,10 +71,10 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-3 rounded-xl w-16 h-16 mx-auto mb-4">
+          <div className="bg-gradient-to-br from-orange-600 to-red-700 p-3 rounded-xl w-16 h-16 mx-auto mb-4">
             <Mountain className="h-10 w-10 text-white" />
           </div>
           <CardTitle className="text-2xl">Toronto Climbing Club</CardTitle>
@@ -126,7 +126,7 @@ export default function Auth() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full bg-[#E55A2B] hover:bg-orange-700"
                   disabled={loading}
                 >
                   {loading ? "Signing in..." : "Sign In"}
@@ -186,7 +186,7 @@ export default function Auth() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full bg-[#E55A2B] hover:bg-orange-700"
                   disabled={loading}
                 >
                   {loading ? "Creating account..." : "Create Account"}
