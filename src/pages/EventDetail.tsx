@@ -66,37 +66,39 @@ export default function EventDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 pb-20">
-      {/* Responsive container with proper max-width for different screen sizes */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <EventHeader
-          event={event}
-          userJoined={userJoined}
-          user={user}
-          onBack={() => navigate('/events')}
-          onJoinEvent={joinEvent}
-          onLeaveEvent={leaveEvent}
-        />
-
-        {/* Responsive grid that adjusts from 1 column on mobile to 2 columns on large screens */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
-          <EventDetailsCard event={event} participantsCount={participants.length} />
-          <CarpoolCard 
-            participants={participants}
-            currentUserId={user?.id}
-            currentUserParticipation={currentUserParticipation}
-            onUpdateCarpoolStatus={updateCarpoolStatus}
+      {/* Centered responsive container */}
+      <div className="flex justify-center w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="w-full max-w-7xl">
+          <EventHeader
+            event={event}
+            userJoined={userJoined}
+            user={user}
+            onBack={() => navigate('/events')}
+            onJoinEvent={joinEvent}
+            onLeaveEvent={leaveEvent}
           />
-        </div>
 
-        {/* Full width sections with proper spacing */}
-        <div className="space-y-4 sm:space-y-6">
-          <ParticipantsTable participants={participants} />
-          <EquipmentCard 
-            equipment={equipment}
-            userEquipment={userEquipment}
-            currentUserId={user?.id}
-            onAddEquipment={addEquipment}
-          />
+          {/* Responsive grid that adjusts from 1 column on mobile to 2 columns on large screens */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
+            <EventDetailsCard event={event} participantsCount={participants.length} />
+            <CarpoolCard 
+              participants={participants}
+              currentUserId={user?.id}
+              currentUserParticipation={currentUserParticipation}
+              onUpdateCarpoolStatus={updateCarpoolStatus}
+            />
+          </div>
+
+          {/* Full width sections with proper spacing */}
+          <div className="space-y-4 sm:space-y-6">
+            <ParticipantsTable participants={participants} />
+            <EquipmentCard 
+              equipment={equipment}
+              userEquipment={userEquipment}
+              currentUserId={user?.id}
+              onAddEquipment={addEquipment}
+            />
+          </div>
         </div>
       </div>
       <Navigation />
