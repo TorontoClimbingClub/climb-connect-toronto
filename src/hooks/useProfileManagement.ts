@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { forceLogoutAndRedirect } from "@/utils/authCleanup";
 
 interface UserProfile {
   id: string;
@@ -57,15 +58,20 @@ export function useProfileManagement() {
       if (error) {
         console.error('Profile fetch error:', error);
         
-        // If no profile exists or there's a session issue, redirect to login
-        if (error.code === 'PGRST116' || error.message?.includes('JWT') || error.message?.includes('session')) {
-          console.log('Profile not found or session issue, redirecting to login...');
+        // If profile doesn't exist, session issue, or auth error - force logout
+        if (error.code === 'PGRST116' || 
+            error.message?.includes('JWT') || 
+            error.message?.includes('session') ||
+            error.message?.includes('auth')) {
+          console.log('Session broken or profile access denied, forcing logout...');
           toast({
             title: "Session Error",
-            description: "Please log in again to access your profile",
+            description: "Your session has expired. Please log in again.",
             variant: "destructive",
           });
-          window.location.href = '/auth';
+          
+          // Force logout and redirect to login
+          await forceLogoutAndRedirect();
           return;
         }
         
@@ -81,13 +87,12 @@ export function useProfileManagement() {
       console.error('Error in fetchProfile:', error);
       toast({
         title: "Error",
-        description: "Failed to load profile. Please try logging in again.",
+        description: "Failed to load profile. Redirecting to login...",
         variant: "destructive",
       });
-      // Redirect to login on any profile fetch error
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 2000);
+      
+      // Force logout on any error
+      await forceLogoutAndRedirect();
     } finally {
       setLoading(false);
     }

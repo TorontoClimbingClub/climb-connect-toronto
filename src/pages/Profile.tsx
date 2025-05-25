@@ -1,13 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
 import { ProfileInformation } from "@/components/profile/ProfileInformation";
 import { EquipmentInventory } from "@/components/profile/EquipmentInventory";
+import { forceLogoutAndRedirect } from "@/utils/authCleanup";
 
 export default function Profile() {
   const {
@@ -34,20 +34,22 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      toast({
+        title: "Logging out...",
+        description: "Clearing session data",
+      });
       
-      // Clear any local storage if needed
-      localStorage.clear();
-      
-      // Redirect to auth page
-      window.location.href = '/auth';
+      // Use the comprehensive logout function
+      await forceLogoutAndRedirect();
     } catch (error: any) {
+      console.error('Logout error:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to logout",
+        description: "Logout failed, but redirecting to login anyway",
         variant: "destructive",
       });
+      // Force redirect even if logout fails
+      window.location.href = '/auth';
     }
   };
 
