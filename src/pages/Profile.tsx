@@ -1,35 +1,56 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Phone, LogOut, Calendar, Package, Mountain } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { User, Phone, Car, Package, Edit, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
+import { AddEquipmentDialog } from "@/components/gear/AddEquipmentDialog";
+import { EditEquipmentDialog } from "@/components/gear/EditEquipmentDialog";
 
-interface Profile {
+interface UserProfile {
   id: string;
   full_name: string;
-  phone: string | null;
-  climbing_description: string | null;
+  phone?: string;
+  is_carpool_driver: boolean;
+  passenger_capacity?: number;
+  climbing_description?: string;
+}
+
+interface UserEquipment {
+  id: string;
+  item_name: string;
+  quantity: number;
+  notes: string | null;
+  category_name: string;
 }
 
 export default function Profile() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [equipment, setEquipment] = useState<UserEquipment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [joinedEventsCount, setJoinedEventsCount] = useState(0);
-  const [equipmentCount, setEquipmentCount] = useState(0);
-  const { user, signOut } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState<UserProfile>({
+    id: '',
+    full_name: '',
+    phone: '',
+    is_carpool_driver: false,
+    passenger_capacity: 0,
+    climbing_description: '',
+  });
+  const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchStats();
+      fetchEquipment();
     }
   }, [user]);
 
@@ -44,7 +65,11 @@ export default function Profile() {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      if (data) {
+        setProfile(data);
+        setFormData(data);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
@@ -57,46 +82,55 @@ export default function Profile() {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchEquipment = async () => {
     if (!user) return;
 
     try {
-      // Get joined events count
-      const { count: eventsCount } = await supabase
-        .from('event_participants')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id);
-
-      // Get equipment count
-      const { count: gearCount } = await supabase
+      const { data, error } = await supabase
         .from('user_equipment')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id);
+        .select(`
+          id,
+          item_name,
+          quantity,
+          notes,
+          equipment_categories(name)
+        `)
+        .eq('user_id', user.id)
+        .order('item_name');
 
-      setJoinedEventsCount(eventsCount || 0);
-      setEquipmentCount(gearCount || 0);
+      if (error) throw error;
+
+      const equipmentWithCategories = data?.map(item => ({
+        ...item,
+        category_name: item.equipment_categories?.name || 'Unknown'
+      })) || [];
+
+      setEquipment(equipmentWithCategories);
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error fetching equipment:', error);
     }
   };
 
-  const updateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !profile) return;
+  const handleSave = async () => {
+    if (!user) return;
 
-    setSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: profile.full_name,
-          phone: profile.phone,
-          climbing_description: profile.climbing_description,
+          full_name: formData.full_name,
+          phone: formData.phone,
+          is_carpool_driver: formData.is_carpool_driver,
+          passenger_capacity: formData.is_carpool_driver ? formData.passenger_capacity : null,
+          climbing_description: formData.climbing_description,
         })
         .eq('id', user.id);
 
       if (error) throw error;
 
+      setProfile(formData);
+      setEditing(false);
+      
       toast({
         title: "Success!",
         description: "Profile updated successfully",
@@ -107,42 +141,39 @@ export default function Profile() {
         description: error.message || "Failed to update profile",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
-  const handleSignOut = async () => {
+  const handleCancel = () => {
+    if (profile) {
+      setFormData(profile);
+    }
+    setEditing(false);
+  };
+
+  const deleteEquipment = async (equipmentId: string) => {
     try {
-      await signOut();
+      const { error } = await supabase
+        .from('user_equipment')
+        .delete()
+        .eq('id', equipmentId);
+
+      if (error) throw error;
+
       toast({
-        title: "Signed out",
-        description: "You've been successfully signed out",
+        title: "Success!",
+        description: "Equipment deleted successfully",
       });
-    } catch (error) {
+
+      fetchEquipment();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to sign out",
+        description: error.message || "Failed to delete equipment",
         variant: "destructive",
       });
     }
   };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <User className="h-12 w-12 text-stone-400 mx-auto mb-4" />
-            <p className="text-stone-600 mb-4">Please sign in to view your profile</p>
-            <Button onClick={() => window.location.href = '/auth'}>
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -154,109 +185,163 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="w-full max-w-md mx-auto p-4">
+      <div className="max-w-2xl mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">My Profile</h1>
-          <p className="text-stone-600">Manage your account and preferences</p>
+          <p className="text-stone-600">Manage your climbing profile and equipment</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Calendar className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-              <p className="text-2xl font-bold text-[#E55A2B]">{joinedEventsCount}</p>
-              <p className="text-sm text-stone-600">Events Joined</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-              <p className="text-2xl font-bold text-[#E55A2B]">{equipmentCount}</p>
-              <p className="text-sm text-stone-600">Gear Items</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Profile Form */}
+        {/* Profile Information */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Update your personal information
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {profile && (
-              <form onSubmit={updateProfile} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
-                    <Input
-                      id="full_name"
-                      value={profile.full_name}
-                      onChange={(e) => setProfile({...profile, full_name: e.target.value})}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={profile.phone || ""}
-                      onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                      className="pl-10"
-                      placeholder="(416) 555-0123"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="climbing_description">Describe your climbing style</Label>
-                  <div className="relative">
-                    <Mountain className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
-                    <Textarea
-                      id="climbing_description"
-                      value={profile.climbing_description || ""}
-                      onChange={(e) => setProfile({...profile, climbing_description: e.target.value})}
-                      className="pl-10 pt-3 min-h-[80px]"
-                      placeholder="Tell others about your climbing experience, preferred styles, favorite routes, etc."
-                      rows={4}
-                    />
-                  </div>
-                </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
-                  disabled={saving}
-                >
-                  {saving ? "Saving..." : "Save Changes"}
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Profile Information
+                </CardTitle>
+                <CardDescription>Your personal details and preferences</CardDescription>
+              </div>
+              {!editing ? (
+                <Button onClick={() => setEditing(true)} variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
                 </Button>
-              </form>
-            )}
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} size="sm" className="bg-[#E55A2B] hover:bg-[#D14B20] text-white">
+                    <Check className="h-4 w-4 mr-2" />
+                    Save
+                  </Button>
+                  <Button onClick={handleCancel} variant="outline" size="sm">
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="full_name">Full Name</Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                disabled={!editing}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  value={formData.phone || ''}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  disabled={!editing}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="climbing_description">Describe your climbing style</Label>
+              <Textarea
+                id="climbing_description"
+                placeholder="Tell other members about your climbing experience, preferred styles, goals, etc."
+                value={formData.climbing_description || ''}
+                onChange={(e) => setFormData({ ...formData, climbing_description: e.target.value })}
+                disabled={!editing}
+                rows={4}
+              />
+            </div>
+
+            {/* Carpool Settings */}
+            <div className="space-y-3 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Car className="h-5 w-5 text-[#E55A2B]" />
+                  <div>
+                    <Label htmlFor="is_carpool_driver">I can drive to events</Label>
+                    <p className="text-sm text-stone-600">Offer rides to fellow climbers</p>
+                  </div>
+                </div>
+                <Switch
+                  id="is_carpool_driver"
+                  checked={formData.is_carpool_driver}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_carpool_driver: checked })}
+                  disabled={!editing}
+                />
+              </div>
+
+              {formData.is_carpool_driver && (
+                <div>
+                  <Label htmlFor="passenger_capacity">Available Seats</Label>
+                  <Input
+                    id="passenger_capacity"
+                    type="number"
+                    min="1"
+                    max="8"
+                    value={formData.passenger_capacity || ''}
+                    onChange={(e) => setFormData({ ...formData, passenger_capacity: parseInt(e.target.value) || 0 })}
+                    disabled={!editing}
+                  />
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Sign Out */}
+        {/* Equipment Inventory */}
         <Card>
-          <CardContent className="p-4">
-            <Button 
-              onClick={handleSignOut}
-              variant="outline" 
-              className="w-full text-red-600 border-red-200 hover:bg-red-50"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Equipment Inventory ({equipment.length} items)
+                </CardTitle>
+                <CardDescription>Manage your climbing gear collection</CardDescription>
+              </div>
+              <AddEquipmentDialog onEquipmentAdded={fetchEquipment} />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {equipment.length > 0 ? (
+              <div className="space-y-3">
+                {equipment.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium">{item.item_name}</h4>
+                        <span className="text-sm bg-stone-200 px-2 py-1 rounded">
+                          {item.category_name}
+                        </span>
+                      </div>
+                      <div className="text-sm text-stone-600">
+                        Quantity: {item.quantity}
+                        {item.notes && <span className="ml-2">• {item.notes}</span>}
+                      </div>
+                    </div>
+                    <EditEquipmentDialog
+                      equipment={item}
+                      onEquipmentUpdated={fetchEquipment}
+                      onEquipmentDeleted={() => deleteEquipment(item.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-stone-600">
+                <Package className="h-12 w-12 mx-auto mb-3 text-stone-400" />
+                <p>No equipment added yet</p>
+                <p className="text-sm">Add your climbing gear to share with the community</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

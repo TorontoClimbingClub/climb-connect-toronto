@@ -1,44 +1,54 @@
 
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useState, useEffect } from "react";
 
-interface EquipmentCategory {
+const equipmentSchema = z.object({
+  item_name: z.string().min(1, "Item name is required"),
+  category_id: z.string().min(1, "Category is required"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  notes: z.string().optional(),
+});
+
+interface Category {
   id: string;
   name: string;
-  description: string | null;
 }
 
 interface AddEquipmentDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  onEquipmentAdded: () => void;
 }
 
-export function AddEquipmentDialog({ isOpen, onClose, onSuccess }: AddEquipmentDialogProps) {
-  const [categories, setCategories] = useState<EquipmentCategory[]>([]);
-  const [newItem, setNewItem] = useState({
-    item_name: "",
-    quantity: 1,
-    notes: "",
-    category_id: "",
-  });
-  const [saving, setSaving] = useState(false);
+export function AddEquipmentDialog({ onEquipmentAdded }: AddEquipmentDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const form = useForm<z.infer<typeof equipmentSchema>>({
+    resolver: zodResolver(equipmentSchema),
+    defaultValues: {
+      item_name: "",
+      category_id: "",
+      quantity: undefined,
+      notes: "",
+    },
+  });
+
   useEffect(() => {
-    if (isOpen) {
-      fetchCategories();
-    }
-  }, [isOpen]);
+    fetchCategories();
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -54,117 +64,148 @@ export function AddEquipmentDialog({ isOpen, onClose, onSuccess }: AddEquipmentD
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: z.infer<typeof equipmentSchema>) => {
     if (!user) return;
 
-    setSaving(true);
     try {
       const { error } = await supabase
         .from('user_equipment')
         .insert({
-          item_name: newItem.item_name,
-          quantity: newItem.quantity,
-          notes: newItem.notes || null,
-          category_id: newItem.category_id,
           user_id: user.id,
+          item_name: values.item_name,
+          category_id: values.category_id,
+          quantity: values.quantity,
+          notes: values.notes || null,
         });
 
       if (error) throw error;
 
       toast({
         title: "Success!",
-        description: "Equipment added successfully",
+        description: "Equipment added to your inventory",
       });
 
-      setNewItem({
-        item_name: "",
-        quantity: 1,
-        notes: "",
-        category_id: "",
-      });
-      onSuccess();
-      onClose();
+      form.reset();
+      setIsOpen(false);
+      onEquipmentAdded();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to add equipment",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md mx-4 top-4 translate-y-0 data-[state=open]:slide-in-from-top-4">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-[#E55A2B] hover:bg-[#D14B20] text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Equipment
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Equipment</DialogTitle>
           <DialogDescription>
-            Add a new piece of climbing gear to your inventory
+            Add gear to your personal inventory
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={newItem.category_id} onValueChange={(value) => setNewItem({...newItem, category_id: value})}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="item_name">Item Name</Label>
-            <Input
-              id="item_name"
-              value={newItem.item_name}
-              onChange={(e) => setNewItem({...newItem, item_name: e.target.value})}
-              placeholder="e.g., Dynamic Rope 70m"
-              required
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="item_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Item Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Dynamic Rope 60m" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity</Label>
-            <Input
-              id="quantity"
-              type="number"
-              min="1"
-              value={newItem.quantity}
-              onChange={(e) => setNewItem({...newItem, quantity: parseInt(e.target.value) || 1})}
-              required
+
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              value={newItem.notes}
-              onChange={(e) => setNewItem({...newItem, notes: e.target.value})}
-              placeholder="Additional details..."
-              rows={3}
+
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                      style={{ 
+                        appearance: 'textfield',
+                        MozAppearance: 'textfield',
+                        WebkitAppearance: 'none'
+                      }}
+                      className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div className="flex space-x-2">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-              {saving ? "Adding..." : "Add Equipment"}
-            </Button>
-          </div>
-        </form>
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Condition, specifications, etc."
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-[#E55A2B] hover:bg-[#D14B20] text-white">
+                Add Equipment
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { UsersTab } from "@/components/admin/UsersTab";
+import { ResetPasswordDialog } from "@/components/admin/ResetPasswordDialog";
 
 interface User {
   id: string;
@@ -256,53 +257,6 @@ export default function Admin() {
     }
   };
 
-  const resetUserPassword = async (userId: string) => {
-    if (userRole !== 'admin') {
-      toast({
-        title: "Error",
-        description: "Only admins can reset passwords",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Get user from profiles table first to get their basic info
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) throw profileError;
-
-      if (!profile) {
-        toast({
-          title: "Error",
-          description: "User not found",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Since we can't access auth.users directly, we'll need to use a different approach
-      // We'll create a temporary password reset link using the user's ID
-      const resetUrl = `${window.location.origin}/auth?type=recovery&userId=${userId}`;
-      
-      toast({
-        title: "Password Reset",
-        description: `Password reset initiated for ${profile.full_name}. They will need to use the password recovery option on the login page.`,
-      });
-
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to initiate password reset",
-        variant: "destructive",
-      });
-    }
-  };
-
   const canCreateEvents = userRole === 'admin' || userRole === 'organizer';
   const canManageUsers = userRole === 'admin';
 
@@ -364,7 +318,6 @@ export default function Admin() {
             users={users}
             onUpdateUserRole={updateUserRole}
             onDeleteUser={deleteUser}
-            onResetPassword={resetUserPassword}
             onUpdateUser={updateUserProfile}
           />
         )}

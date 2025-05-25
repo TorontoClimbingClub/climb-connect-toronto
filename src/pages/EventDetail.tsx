@@ -57,14 +57,6 @@ export default function EventDetail() {
     }
   };
 
-  const handleAddEquipment = async (equipmentIds: string[]) => {
-    if (!eventId || !user?.id) return;
-    const result = await addEquipment(equipmentIds, eventId, user.id);
-    if (result.success) {
-      refreshData();
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">

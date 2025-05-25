@@ -1,220 +1,103 @@
-import { useState, useEffect } from "react";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Car, Package, Mountain, ArrowRight } from "lucide-react";
-import { EventCard } from "@/components/events/EventCard";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { useEventActions } from "@/hooks/useEventActions";
-import { Navigation } from "@/components/Navigation";
+import { Calendar, Users, Mountain, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  max_participants: number | null;
-  difficulty_level: string | null;
-  organizer_id: string;
-  participants_count?: number;
-  carpool_seats?: number;
-  equipment_count?: number;
-}
+import { Navigation } from "@/components/Navigation";
 
 export default function Index() {
-  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [userParticipations, setUserParticipations] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { joinEvent, loading: actionLoading } = useEventActions();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchUpcomingEvents();
-    if (user) {
-      fetchUserParticipations();
-    }
-  }, [user]);
-
-  const fetchUpcomingEvents = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { data: events, error } = await supabase
-        .from('events')
-        .select('*')
-        .gte('date', today)
-        .order('date', { ascending: true })
-        .limit(3);
-
-      if (error) throw error;
-
-      // Fetch additional stats for each event
-      const eventsWithStats = await Promise.all(
-        (events || []).map(async (event) => {
-          const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
-            supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', event.id),
-            supabase.from('event_participants').select('available_seats').eq('event_id', event.id).not('available_seats', 'is', null),
-            supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', event.id)
-          ]);
-
-          const totalCarpoolSeats = carpoolResult.data?.reduce((sum, p) => sum + (p.available_seats || 0), 0) || 0;
-
-          return {
-            ...event,
-            participants_count: participantsResult.count || 0,
-            carpool_seats: totalCarpoolSeats,
-            equipment_count: equipmentResult.count || 0
-          };
-        })
-      );
-
-      setUpcomingEvents(eventsWithStats);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUserParticipations = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('event_participants')
-        .select('event_id')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-      const participatedEventIds = new Set(data?.map(p => p.event_id) || []);
-      setUserParticipations(participatedEventIds);
-    } catch (error) {
-      console.error('Error fetching user participations:', error);
-    }
-  };
-
-  const handleJoinEvent = async (eventId: string) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    const result = await joinEvent(eventId, user.id);
-    if (result.success) {
-      setUserParticipations(prev => new Set([...prev, eventId]));
-      fetchUpcomingEvents(); // Refresh to update participant counts
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="text-[#E55A2B]">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
-        {/* Header */}
+        {/* Hero Section */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Mountain className="h-12 w-12 text-[#E55A2B]" />
+          <div className="bg-gradient-to-br from-orange-600 to-red-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
+            <Mountain className="h-12 w-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-[#E55A2B] mb-2">
             Toronto Climbing Club
           </h1>
-          <p className="text-stone-600">
-            Join the community of passionate climbers in Toronto
+          <p className="text-stone-600 text-lg">
+            Connect with fellow climbers and explore Ontario's amazing crags
           </p>
         </div>
 
-        {/* Welcome Message or Auth CTA - Only show for non-logged in users */}
-        {!user && (
-          <Card className="mb-6">
-            <CardContent className="p-6 text-center">
-              <h2 className="text-xl font-semibold text-[#E55A2B] mb-2">Welcome!</h2>
-              <p className="text-stone-600 mb-4">
-                Sign up to join climbing events, share gear, and connect with fellow climbers.
-              </p>
-              <Button 
-                onClick={() => navigate('/auth')}
-                className="bg-[#E55A2B] hover:bg-[#D14B20] text-white"
-              >
-                Get Started
-              </Button>
-            </CardContent>
+        {/* Quick Actions Grid */}
+        <div className="grid grid-cols-1 gap-4 mb-8">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/events')}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-orange-100 p-2 rounded-lg">
+                    <Calendar className="h-5 w-5 text-[#E55A2B]" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Upcoming Events</CardTitle>
+                    <CardDescription>Join outdoor climbing adventures</CardDescription>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-stone-400" />
+              </div>
+            </CardHeader>
           </Card>
-        )}
 
-        {/* Upcoming Events */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-[#E55A2B]">Upcoming Events</h2>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/events')}
-              className="text-[#E55A2B] hover:bg-orange-50"
-            >
-              View All <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/community')}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-orange-100 p-2 rounded-lg">
+                    <Users className="h-5 w-5 text-[#E55A2B]" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Community</CardTitle>
+                    <CardDescription>Meet fellow climbers</CardDescription>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-stone-400" />
+              </div>
+            </CardHeader>
+          </Card>
+        </div>
 
-          {upcomingEvents.length > 0 ? (
-            <div className="space-y-4">
-              {upcomingEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  showJoinButton={!!user}
-                  userJoined={userParticipations.has(event.id)}
-                  onJoin={() => handleJoinEvent(event.id)}
-                  isLoading={actionLoading}
-                />
-              ))}
+        {/* Featured Content */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl">About TCC</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-stone-600 mb-4">
+              We're a community of outdoor climbing enthusiasts exploring Ontario's incredible rock formations. From the Escarpment to Muskoka, we organize regular trips for climbers of all levels.
+            </p>
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <div className="text-2xl font-bold text-[#E55A2B]">50+</div>
+                <div className="text-sm text-stone-600">Active Members</div>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <div className="text-2xl font-bold text-[#E55A2B]">12</div>
+                <div className="text-sm text-stone-600">Events This Month</div>
+              </div>
             </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Calendar className="h-8 w-8 text-stone-400 mx-auto mb-2" />
-                <p className="text-stone-600">No upcoming events</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card 
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => navigate('/community')}
-          >
-            <CardContent className="p-4 text-center">
-              <Users className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-              <p className="font-medium text-[#E55A2B]">Community</p>
-              <p className="text-xs text-stone-600">Meet climbers</p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => navigate('/gear')}
-          >
-            <CardContent className="p-4 text-center">
-              <Package className="h-8 w-8 text-[#E55A2B] mx-auto mb-2" />
-              <p className="font-medium text-[#E55A2B]">Gear</p>
-              <p className="text-xs text-stone-600">Manage equipment</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Call to Action */}
+        <Card>
+          <CardContent className="p-6 text-center">
+            <h3 className="text-lg font-semibold mb-2">Ready to climb?</h3>
+            <p className="text-stone-600 mb-4">
+              Check out our upcoming events and join the adventure!
+            </p>
+            <Button 
+              onClick={() => navigate('/events')}
+              className="w-full bg-[#E55A2B] hover:bg-orange-700"
+            >
+              View Events
+            </Button>
+          </CardContent>
+        </Card>
       </div>
       <Navigation />
     </div>
