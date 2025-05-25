@@ -57,15 +57,23 @@ export default function Profile() {
 
   useEffect(() => {
     if (user) {
+      console.log('User found, fetching profile for user ID:', user.id);
       fetchProfile();
       fetchEquipment();
       fetchCategories();
+    } else {
+      console.log('No user found');
     }
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user available for profile fetch');
+      return;
+    }
 
+    console.log('Starting profile fetch for user:', user.id);
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -73,14 +81,28 @@ export default function Profile() {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      console.log('Profile fetch response:', { data, error });
+
+      if (error) {
+        console.error('Profile fetch error:', error);
+        
+        // If no profile exists, create one
+        if (error.code === 'PGRST116') {
+          console.log('No profile found, creating new profile...');
+          await createProfile();
+          return;
+        }
+        
+        throw error;
+      }
       
       if (data) {
+        console.log('Profile data loaded successfully:', data);
         setProfile(data);
         setFormData(data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error in fetchProfile:', error);
       toast({
         title: "Error",
         description: "Failed to load profile",
@@ -88,6 +110,50 @@ export default function Profile() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createProfile = async () => {
+    if (!user) return;
+
+    console.log('Creating new profile for user:', user.id);
+    
+    try {
+      const newProfile = {
+        id: user.id,
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'New Member',
+        phone: '',
+        is_carpool_driver: false,
+        passenger_capacity: 0,
+        climbing_description: '',
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .single();
+
+      console.log('Profile creation response:', { data, error });
+
+      if (error) throw error;
+
+      if (data) {
+        console.log('New profile created successfully:', data);
+        setProfile(data);
+        setFormData(data);
+        toast({
+          title: "Welcome!",
+          description: "Your profile has been created successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error creating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create profile",
+        variant: "destructive",
+      });
     }
   };
 
