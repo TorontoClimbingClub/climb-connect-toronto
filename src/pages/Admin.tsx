@@ -37,6 +37,18 @@ interface Event {
   capacity_limit?: number | null;
 }
 
+interface ProfileData {
+  id: string;
+  full_name: string;
+  phone?: string;
+  is_carpool_driver?: boolean;
+  passenger_capacity?: number;
+  created_at: string;
+  updated_at?: string;
+  climbing_level?: string;
+  climbing_experience?: string[];
+}
+
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -95,7 +107,7 @@ export default function Admin() {
       if (authError) throw authError;
 
       const usersWithRoles = await Promise.all(
-        (profiles || []).map(async (profile: any) => {
+        (profiles || []).map(async (profile: ProfileData) => {
           const authUser = authUsers.users.find(u => u.id === profile.id);
           const { data: role } = await supabase.rpc('get_user_role', { _user_id: profile.id });
           

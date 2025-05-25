@@ -35,6 +35,7 @@ interface UserEquipment {
 interface EquipmentCategory {
   id: string;
   name: string;
+  description: string | null;
 }
 
 export default function Profile() {
@@ -95,7 +96,7 @@ export default function Profile() {
     try {
       const { data, error } = await supabase
         .from('equipment_categories')
-        .select('id, name')
+        .select('id, name, description')
         .order('name');
 
       if (error) throw error;
