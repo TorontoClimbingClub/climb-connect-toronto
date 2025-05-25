@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,10 +87,15 @@ export default function Profile() {
       if (error) {
         console.error('Profile fetch error:', error);
         
-        // If no profile exists, create one
-        if (error.code === 'PGRST116') {
-          console.log('No profile found, creating new profile...');
-          await createProfile();
+        // If no profile exists or there's a session issue, redirect to login
+        if (error.code === 'PGRST116' || error.message?.includes('JWT') || error.message?.includes('session')) {
+          console.log('Profile not found or session issue, redirecting to login...');
+          toast({
+            title: "Session Error",
+            description: "Please log in again to access your profile",
+            variant: "destructive",
+          });
+          window.location.href = '/auth';
           return;
         }
         
@@ -105,9 +111,13 @@ export default function Profile() {
       console.error('Error in fetchProfile:', error);
       toast({
         title: "Error",
-        description: "Failed to load profile",
+        description: "Failed to load profile. Please try logging in again.",
         variant: "destructive",
       });
+      // Redirect to login on any profile fetch error
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 2000);
     } finally {
       setLoading(false);
     }
