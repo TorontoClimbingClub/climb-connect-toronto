@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Phone, Car, Package, Edit, Check, X } from "lucide-react";
+import { User, Phone, Car, Package, Edit, Check, X, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -170,6 +169,25 @@ export default function Profile() {
     setEditing(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear any local storage if needed
+      localStorage.clear();
+      
+      // Redirect to auth page
+      window.location.href = '/auth';
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to logout",
+        variant: "destructive",
+      });
+    }
+  };
+
   const addEquipment = async (equipment: {
     item_name: string;
     category_id: string;
@@ -238,9 +256,19 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-2xl mx-auto p-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">My Profile</h1>
-          <p className="text-stone-600">Manage your climbing profile and equipment</p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">My Profile</h1>
+            <p className="text-stone-600">Manage your climbing profile and equipment</p>
+          </div>
+          <Button 
+            onClick={handleLogout}
+            variant="outline"
+            className="text-red-600 border-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
         </div>
 
         {/* Profile Information */}
