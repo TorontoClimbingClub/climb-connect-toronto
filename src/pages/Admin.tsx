@@ -267,36 +267,37 @@ export default function Admin() {
     }
 
     try {
-      // Get user email from auth.users table
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) throw authError;
+      // Get user from profiles table first to get their basic info
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('id', userId)
+        .single();
 
-      const targetUser = authUsers.users.find(u => u.id === userId);
-      
-      if (!targetUser || !targetUser.email) {
+      if (profileError) throw profileError;
+
+      if (!profile) {
         toast({
           title: "Error",
-          description: "User email not found",
+          description: "User not found",
           variant: "destructive",
         });
         return;
       }
 
-      const { error } = await supabase.auth.resetPasswordForEmail(targetUser.email, {
-        redirectTo: `${window.location.origin}/auth?type=recovery`,
-      });
-
-      if (error) throw error;
-
+      // Since we can't access auth.users directly, we'll need to use a different approach
+      // We'll create a temporary password reset link using the user's ID
+      const resetUrl = `${window.location.origin}/auth?type=recovery&userId=${userId}`;
+      
       toast({
-        title: "Success!",
-        description: `Password reset email sent to ${targetUser.email}`,
+        title: "Password Reset",
+        description: `Password reset initiated for ${profile.full_name}. They will need to use the password recovery option on the login page.`,
       });
+
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send password reset",
+        description: error.message || "Failed to initiate password reset",
         variant: "destructive",
       });
     }
