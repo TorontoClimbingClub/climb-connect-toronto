@@ -87,35 +87,6 @@ export function useEventData(eventId: string | undefined) {
         equipment_count: equipmentResult.count || 0
       });
 
-      if (user) {
-        // Fetch user participation with profile data
-        const { data: participation, error: participationError } = await supabase
-          .from('event_participants')
-          .select(`
-            *,
-            profiles!inner(full_name, phone)
-          `)
-          .eq('event_id', eventId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (participationError) {
-          console.error('Error fetching participation:', participationError);
-        } else if (participation) {
-          setUserJoined(true);
-          // Transform the data to match Participant interface
-          const participantData: Participant = {
-            id: participation.id,
-            user_id: participation.user_id,
-            is_carpool_driver: participation.is_carpool_driver,
-            available_seats: participation.available_seats,
-            joined_at: participation.joined_at,
-            full_name: participation.profiles.full_name,
-            phone: participation.profiles.phone
-          };
-          setCurrentUserParticipation(participantData);
-        }
-      }
     } catch (error) {
       console.error('Error fetching event details:', error);
       toast({
@@ -123,6 +94,57 @@ export function useEventData(eventId: string | undefined) {
         description: "Failed to load event details",
         variant: "destructive",
       });
+    }
+  };
+
+  const checkUserParticipation = async () => {
+    if (!user || !eventId) return;
+
+    try {
+      console.log('Checking participation for user:', user.id, 'in event:', eventId);
+      
+      const { data: participation, error } = await supabase
+        .from('event_participants')
+        .select('*')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking participation:', error);
+        return;
+      }
+
+      console.log('Participation result:', participation);
+
+      if (participation) {
+        setUserJoined(true);
+        
+        // Get user profile data for the participation
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          const participantData: Participant = {
+            id: participation.id,
+            user_id: participation.user_id,
+            is_carpool_driver: participation.is_carpool_driver,
+            available_seats: participation.available_seats,
+            joined_at: participation.joined_at,
+            full_name: profile.full_name,
+            phone: profile.phone
+          };
+          setCurrentUserParticipation(participantData);
+        }
+      } else {
+        setUserJoined(false);
+        setCurrentUserParticipation(null);
+      }
+    } catch (error) {
+      console.error('Error checking user participation:', error);
     }
   };
 
@@ -264,6 +286,7 @@ export function useEventData(eventId: string | undefined) {
     fetchEventDetails();
     fetchParticipants();
     fetchEquipment();
+    checkUserParticipation();
     if (user) {
       fetchUserEquipment();
     }
@@ -271,7 +294,18 @@ export function useEventData(eventId: string | undefined) {
 
   useEffect(() => {
     if (eventId) {
-      refreshData();
+      Promise.all([
+        fetchEventDetails(),
+        fetchParticipants(),
+        fetchEquipment(),
+        checkUserParticipation()
+      ]).finally(() => {
+        setLoading(false);
+      });
+      
+      if (user) {
+        fetchUserEquipment();
+      }
     }
   }, [eventId, user]);
 
