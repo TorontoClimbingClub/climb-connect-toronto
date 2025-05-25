@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Car, Package, Phone, Mail, Mountain, MessageCircle } from "lucide-react";
+import { Users, Car, Package, Phone, Mail, Mountain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -130,15 +130,6 @@ export default function Community() {
                     )}
                   </div>
                 </div>
-
-                {member.personal_message && (
-                  <div className="mb-3 p-3 bg-amber-50 rounded-lg border-l-4 border-amber-200">
-                    <div className="flex items-start gap-2">
-                      <MessageCircle className="h-4 w-4 text-amber-600 mt-1 flex-shrink-0" />
-                      <p className="text-sm text-amber-800 font-medium">{member.personal_message}</p>
-                    </div>
-                  </div>
-                )}
 
                 {member.climbing_description && (
                   <div className="mb-3 p-3 bg-stone-50 rounded-lg">
