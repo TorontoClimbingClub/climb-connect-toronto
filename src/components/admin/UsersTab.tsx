@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Trash2 } from "lucide-react";
 import { EditUserDialog } from "./EditUserDialog";
+import { ResetPasswordDialog } from "./ResetPasswordDialog";
 
 interface User {
   id: string;
@@ -18,13 +19,15 @@ interface User {
   created_at: string;
   updated_at?: string;
   user_role?: 'member' | 'organizer' | 'admin';
+  climbing_level?: string;
+  climbing_experience?: string[];
 }
 
 interface UsersTabProps {
   users: User[];
   onUpdateUserRole: (userId: string, newRole: 'member' | 'organizer' | 'admin') => void;
   onDeleteUser: (userId: string) => void;
-  onResetPassword: (userId: string) => void;
+  onResetPassword: (userId: string, newPassword: string) => void;
   onUpdateUser: (user: User) => void;
 }
 
@@ -97,13 +100,10 @@ export function UsersTab({
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onResetPassword(user.id)}
-                      >
-                        Reset Password
-                      </Button>
+                      <ResetPasswordDialog 
+                        userId={user.id}
+                        userName={user.full_name}
+                      />
                       <Button
                         variant="outline"
                         size="sm"

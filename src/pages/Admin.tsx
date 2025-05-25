@@ -95,7 +95,7 @@ export default function Admin() {
       if (authError) throw authError;
 
       const usersWithRoles = await Promise.all(
-        (profiles || []).map(async (profile) => {
+        (profiles || []).map(async (profile: any) => {
           const authUser = authUsers.users.find(u => u.id === profile.id);
           const { data: role } = await supabase.rpc('get_user_role', { _user_id: profile.id });
           

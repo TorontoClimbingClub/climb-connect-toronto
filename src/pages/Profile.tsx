@@ -43,6 +43,7 @@ export default function Profile() {
   const [categories, setCategories] = useState<EquipmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<UserEquipment | null>(null);
   const [formData, setFormData] = useState<UserProfile>({
     id: '',
     full_name: '',
@@ -380,11 +381,13 @@ export default function Profile() {
                         {item.notes && <span className="ml-2">• {item.notes}</span>}
                       </div>
                     </div>
-                    <EditEquipmentDialog
-                      equipment={item}
-                      onEquipmentUpdated={fetchEquipment}
-                      onEquipmentDeleted={() => deleteEquipment(item.id)}
-                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingEquipment(item)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -398,6 +401,20 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      {editingEquipment && (
+        <EditEquipmentDialog
+          equipment={editingEquipment}
+          categories={categories}
+          isOpen={!!editingEquipment}
+          onClose={() => setEditingEquipment(null)}
+          onSuccess={() => {
+            fetchEquipment();
+            setEditingEquipment(null);
+          }}
+        />
+      )}
+
       <Navigation />
     </div>
   );

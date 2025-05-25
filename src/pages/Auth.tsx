@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -59,8 +60,10 @@ export default function Auth() {
       });
       setLoading(false);
     } else {
-      if (result.user) {
-        setNewUserId(result.user.id);
+      // Get the user from the session or auth state
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setNewUserId(session.user.id);
         setShowClimbingInfo(true);
         toast({
           title: "Account created!",
