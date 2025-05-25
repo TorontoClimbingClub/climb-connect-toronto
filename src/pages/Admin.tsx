@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
@@ -191,10 +190,9 @@ export default function Admin() {
 
       if (profileError) throw profileError;
 
-      // Then delete the user from Supabase Auth using the admin API
-      // Note: This requires service role access, which we don't have with anon key
-      // We'll use a workaround by calling a database function that handles this
-      const { error: authError } = await supabase.rpc('delete_user_account', {
+      // Then delete the user from Supabase Auth using the database function
+      // Use the raw RPC call since TypeScript types might not be updated yet
+      const { error: authError } = await supabase.rpc('delete_user_account' as any, {
         user_id: userId
       });
 
