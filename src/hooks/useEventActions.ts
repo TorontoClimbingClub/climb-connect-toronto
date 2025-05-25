@@ -1,20 +1,90 @@
 
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useEquipmentManagement } from "./useEquipmentManagement";
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-export function useEventActions() {
+export const useEventActions = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { removeUserEquipmentFromEvent, addEquipmentToEvent } = useEquipmentManagement();
 
   const joinEvent = async (eventId: string, userId: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
+      // Check if user can join based on climbing level
+      const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('required_climbing_level, capacity_limit')
+        .eq('id', eventId)
+        .single();
+
+      if (eventError) throw eventError;
+
+      // Check current participant count if there's a capacity limit
+      if (event.capacity_limit) {
+        const { count, error: countError } = await supabase
+          .from('event_participants')
+          .select('*', { count: 'exact' })
+          .eq('event_id', eventId);
+
+        if (countError) throw countError;
+
+        if (count >= event.capacity_limit) {
+          toast({
+            title: "Event Full",
+            description: "This event has reached its capacity limit",
+            variant: "destructive",
+          });
+          return { success: false };
+        }
+      }
+
+      // Check climbing level requirement
+      if (event.required_climbing_level) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('climbing_level')
+          .eq('id', userId)
+          .single();
+
+        if (profileError) throw profileError;
+
+        const levelOrder = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
+        const requiredLevelIndex = levelOrder.indexOf(event.required_climbing_level);
+        const userLevelIndex = levelOrder.indexOf(userProfile.climbing_level || 'Never Climbed');
+
+        if (userLevelIndex < requiredLevelIndex) {
+          toast({
+            title: "Climbing Level Requirement",
+            description: `This event requires ${event.required_climbing_level} level or higher. We appreciate your interest and encourage you to join events that match your current experience level!`,
+            variant: "destructive",
+          });
+          return { success: false };
+        }
+      }
+
+      // Check if already joined
+      const { data: existingParticipation } = await supabase
+        .from('event_participants')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingParticipation) {
+        toast({
+          title: "Already joined",
+          description: "You're already participating in this event",
+          variant: "destructive",
+        });
+        return { success: false };
+      }
+
       const { error } = await supabase
         .from('event_participants')
-        .insert({ event_id: eventId, user_id: userId });
+        .insert({
+          event_id: eventId,
+          user_id: userId,
+        });
 
       if (error) throw error;
 
@@ -37,13 +107,8 @@ export function useEventActions() {
   };
 
   const leaveEvent = async (eventId: string, userId: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // First remove user's equipment from the event
-      await removeUserEquipmentFromEvent(userId, eventId);
-
-      // Then remove user from participants
       const { error } = await supabase
         .from('event_participants')
         .delete()
@@ -53,8 +118,8 @@ export function useEventActions() {
       if (error) throw error;
 
       toast({
-        title: "Success!",
-        description: "You've left the event and your equipment has been removed",
+        title: "Left event",
+        description: "You've left the event",
       });
 
       return { success: true };
@@ -71,21 +136,21 @@ export function useEventActions() {
   };
 
   const updateCarpoolStatus = async (participationId: string, isDriver: boolean, seats: number) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const { error } = await supabase
         .from('event_participants')
         .update({
           is_carpool_driver: isDriver,
-          available_seats: isDriver ? seats : null
+          available_seats: isDriver ? seats : null,
         })
         .eq('id', participationId);
 
       if (error) throw error;
 
       toast({
-        title: "Success!",
-        description: "Carpool status updated",
+        title: "Carpool updated",
+        description: isDriver ? `Offering ${seats} seats` : "No longer offering carpool",
       });
 
       return { success: true };
@@ -101,8 +166,35 @@ export function useEventActions() {
     }
   };
 
-  const addEquipment = async (equipmentIds: string[], eventId: string, userId: string) => {
-    return await addEquipmentToEvent(equipmentIds, eventId, userId);
+  const addEquipment = async (eventId: string, userId: string, userEquipmentId: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('event_equipment')
+        .insert({
+          event_id: eventId,
+          user_id: userId,
+          user_equipment_id: userEquipmentId,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Equipment added",
+        description: "Equipment added to event",
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add equipment",
+        variant: "destructive",
+      });
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
@@ -110,6 +202,6 @@ export function useEventActions() {
     leaveEvent,
     updateCarpoolStatus,
     addEquipment,
-    loading
+    loading,
   };
-}
+};

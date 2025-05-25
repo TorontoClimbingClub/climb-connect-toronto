@@ -127,6 +127,7 @@ export type Database = {
       }
       events: {
         Row: {
+          capacity_limit: number | null
           created_at: string | null
           date: string
           description: string | null
@@ -135,11 +136,13 @@ export type Database = {
           location: string
           max_participants: number | null
           organizer_id: string
+          required_climbing_level: string | null
           time: string
           title: string
           updated_at: string | null
         }
         Insert: {
+          capacity_limit?: number | null
           created_at?: string | null
           date: string
           description?: string | null
@@ -148,11 +151,13 @@ export type Database = {
           location: string
           max_participants?: number | null
           organizer_id: string
+          required_climbing_level?: string | null
           time: string
           title: string
           updated_at?: string | null
         }
         Update: {
+          capacity_limit?: number | null
           created_at?: string | null
           date?: string
           description?: string | null
@@ -161,6 +166,7 @@ export type Database = {
           location?: string
           max_participants?: number | null
           organizer_id?: string
+          required_climbing_level?: string | null
           time?: string
           title?: string
           updated_at?: string | null
@@ -170,6 +176,8 @@ export type Database = {
       profiles: {
         Row: {
           climbing_description: string | null
+          climbing_experience: string[] | null
+          climbing_level: string | null
           created_at: string | null
           full_name: string
           id: string
@@ -181,6 +189,8 @@ export type Database = {
         }
         Insert: {
           climbing_description?: string | null
+          climbing_experience?: string[] | null
+          climbing_level?: string | null
           created_at?: string | null
           full_name: string
           id: string
@@ -192,6 +202,8 @@ export type Database = {
         }
         Update: {
           climbing_description?: string | null
+          climbing_experience?: string[] | null
+          climbing_level?: string | null
           created_at?: string | null
           full_name?: string
           id?: string
