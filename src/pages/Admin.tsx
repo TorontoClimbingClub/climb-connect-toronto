@@ -178,23 +178,41 @@ export default function Admin() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this user? This will permanently remove their account and they will not be able to log in. This action cannot be undone.')) {
       return;
     }
 
     try {
-      // Delete from profiles table (this will cascade to other related tables)
-      const { error } = await supabase
+      // First delete from profiles table (this will cascade to other related tables)
+      const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', userId);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      toast({
-        title: "Success!",
-        description: "User deleted successfully",
+      // Then delete the user from Supabase Auth using the admin API
+      // Note: This requires service role access, which we don't have with anon key
+      // We'll use a workaround by calling a database function that handles this
+      const { error: authError } = await supabase.rpc('delete_user_account', {
+        user_id: userId
       });
+
+      if (authError) {
+        // If the auth deletion fails, we should still show success for the profile deletion
+        // but inform the admin that the auth account may still be active
+        console.error('Auth deletion error:', authError);
+        toast({
+          title: "Partial Success",
+          description: "User profile deleted, but authentication account may still be active. Contact support if needed.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "User account and authentication access permanently deleted",
+        });
+      }
 
       fetchUsers();
     } catch (error: any) {
