@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -50,18 +49,18 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     
-    const { error, data } = await signUp(email, password, fullName);
+    const result = await signUp(email, password, fullName);
     
-    if (error) {
+    if (result.error) {
       toast({
         title: "Sign up failed",
-        description: error.message,
+        description: result.error.message,
         variant: "destructive",
       });
       setLoading(false);
     } else {
-      if (data.user) {
-        setNewUserId(data.user.id);
+      if (result.user) {
+        setNewUserId(result.user.id);
         setShowClimbingInfo(true);
         toast({
           title: "Account created!",

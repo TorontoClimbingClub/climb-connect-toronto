@@ -102,7 +102,7 @@ export function AddEquipmentDialog({ categories, onAdd }: AddEquipmentDialogProp
               id="quantity"
               type="number"
               min="1"
-              placeholder="1"
+              placeholder="Enter quantity"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />

@@ -22,9 +22,27 @@ interface User {
   climbing_experience?: string[];
 }
 
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  date: string;
+  time: string;
+  location: string;
+  max_participants: number | null;
+  difficulty_level: string | null;
+  organizer_id: string;
+  participants_count?: number;
+  required_climbing_level?: string | null;
+  capacity_limit?: number | null;
+}
+
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [canCreateEvents, setCanCreateEvents] = useState(false);
+  const [canManageUsers, setCanManageUsers] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -49,7 +67,9 @@ export default function Admin() {
         return;
       }
       
-      fetchUsers();
+      setCanCreateEvents(true);
+      setCanManageUsers(true);
+      await Promise.all([fetchUsers(), fetchEvents()]);
     } catch (error) {
       console.error('Error checking admin access:', error);
       toast({
@@ -101,6 +121,25 @@ export default function Admin() {
       toast({
         title: "Error",
         description: "Failed to load users",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events_with_participants')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load events",
         variant: "destructive",
       });
     }
@@ -205,6 +244,34 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Event deleted successfully",
+      });
+
+      fetchEvents();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete event",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -238,7 +305,13 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="events">
-            <EventsTab />
+            <EventsTab
+              events={events}
+              canCreateEvents={canCreateEvents}
+              canManageUsers={canManageUsers}
+              onDeleteEvent={handleDeleteEvent}
+              onRefreshEvents={fetchEvents}
+            />
           </TabsContent>
         </Tabs>
       </div>

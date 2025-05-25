@@ -28,12 +28,19 @@ interface UserEquipment {
   item_name: string;
   quantity: number;
   notes: string | null;
-  category_name: string;
+  category_id: string;
+  equipment_categories: { name: string } | null;
+}
+
+interface EquipmentCategory {
+  id: string;
+  name: string;
 }
 
 export default function Profile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [equipment, setEquipment] = useState<UserEquipment[]>([]);
+  const [categories, setCategories] = useState<EquipmentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<UserProfile>({
@@ -51,6 +58,7 @@ export default function Profile() {
     if (user) {
       fetchProfile();
       fetchEquipment();
+      fetchCategories();
     }
   }, [user]);
 
@@ -82,6 +90,20 @@ export default function Profile() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('equipment_categories')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   const fetchEquipment = async () => {
     if (!user) return;
 
@@ -93,19 +115,14 @@ export default function Profile() {
           item_name,
           quantity,
           notes,
+          category_id,
           equipment_categories(name)
         `)
         .eq('user_id', user.id)
         .order('item_name');
 
       if (error) throw error;
-
-      const equipmentWithCategories = data?.map(item => ({
-        ...item,
-        category_name: item.equipment_categories?.name || 'Unknown'
-      })) || [];
-
-      setEquipment(equipmentWithCategories);
+      setEquipment(data || []);
     } catch (error) {
       console.error('Error fetching equipment:', error);
     }
@@ -149,6 +166,39 @@ export default function Profile() {
       setFormData(profile);
     }
     setEditing(false);
+  };
+
+  const addEquipment = async (equipment: {
+    item_name: string;
+    category_id: string;
+    quantity: number;
+    notes?: string;
+  }) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_equipment')
+        .insert({
+          ...equipment,
+          user_id: user.id,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Equipment added successfully",
+      });
+
+      fetchEquipment();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add equipment",
+        variant: "destructive",
+      });
+    }
   };
 
   const deleteEquipment = async (equipmentId: string) => {
@@ -307,7 +357,10 @@ export default function Profile() {
                 </CardTitle>
                 <CardDescription>Manage your climbing gear collection</CardDescription>
               </div>
-              <AddEquipmentDialog onEquipmentAdded={fetchEquipment} />
+              <AddEquipmentDialog 
+                categories={categories}
+                onAdd={addEquipment}
+              />
             </div>
           </CardHeader>
           <CardContent>
@@ -319,7 +372,7 @@ export default function Profile() {
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium">{item.item_name}</h4>
                         <span className="text-sm bg-stone-200 px-2 py-1 rounded">
-                          {item.category_name}
+                          {item.equipment_categories?.name || 'Unknown'}
                         </span>
                       </div>
                       <div className="text-sm text-stone-600">
