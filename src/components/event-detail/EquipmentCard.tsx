@@ -8,6 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Package, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useEquipmentManagement } from "@/hooks/useEquipmentManagement";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Equipment {
   id: string;
@@ -46,7 +49,29 @@ export function EquipmentCard({
 }: EquipmentCardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
-  const { addEquipmentToEvent, removeUserEquipmentFromEvent, loading } = useEquipmentManagement();
+  const [loading, setLoading] = useState(false);
+  const { addEquipmentToEvent } = useEquipmentManagement();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Check if current user is admin
+  const [userRole, setUserRole] = useState<'member' | 'organizer' | 'admin'>('member');
+
+  // Fetch user role
+  React.useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .rpc('get_user_role', { _user_id: user.id });
+        if (error) throw error;
+        setUserRole(data || 'member');
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
+    };
+    fetchUserRole();
+  }, [user]);
 
   const availableEquipment = userEquipment.filter(item => !item.is_assigned);
 
@@ -60,21 +85,53 @@ export function EquipmentCard({
 
   const handleAddSelected = async () => {
     if (selectedEquipment.length > 0 && currentUserId) {
+      setLoading(true);
       const result = await addEquipmentToEvent(selectedEquipment, eventId, currentUserId);
       if (result.success) {
         setSelectedEquipment([]);
         setIsDialogOpen(false);
         onRefresh();
       }
+      setLoading(false);
     }
   };
 
-  const handleRemoveEquipment = async (equipmentId: string) => {
-    if (!currentUserId) return;
-    
-    const result = await removeUserEquipmentFromEvent(currentUserId, eventId);
-    if (result.success) {
+  const handleRemoveEquipment = async (eventEquipmentId: string, equipmentOwnerId: string) => {
+    // Check if user can remove this equipment (own equipment or admin)
+    if (currentUserId !== equipmentOwnerId && userRole !== 'admin') {
+      toast({
+        title: "Error",
+        description: "You can only remove your own equipment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Remove specific equipment item from event
+      const { error } = await supabase
+        .from('event_equipment')
+        .delete()
+        .eq('id', eventEquipmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Equipment removed from event",
+      });
+
       onRefresh();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove equipment",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -190,9 +247,9 @@ export function EquipmentCard({
                   </TableCell>
                   {currentUserId && (
                     <TableCell>
-                      {item.user_id === currentUserId && (
+                      {(item.user_id === currentUserId || userRole === 'admin') && (
                         <Button
-                          onClick={() => handleRemoveEquipment(item.id)}
+                          onClick={() => handleRemoveEquipment(item.id, item.user_id)}
                           variant="ghost"
                           size="sm"
                           disabled={loading}

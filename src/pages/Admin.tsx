@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -257,18 +256,34 @@ export default function Admin() {
     }
   };
 
-  const resetUserPassword = async (userId: string, email: string) => {
-    if (!email) {
+  const resetUserPassword = async (userId: string) => {
+    if (userRole !== 'admin') {
       toast({
         title: "Error",
-        description: "User email not available",
+        description: "Only admins can reset passwords",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Get user email from auth.users table
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) throw authError;
+
+      const targetUser = authUsers.users.find(u => u.id === userId);
+      
+      if (!targetUser || !targetUser.email) {
+        toast({
+          title: "Error",
+          description: "User email not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(targetUser.email, {
         redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
 
@@ -276,7 +291,7 @@ export default function Admin() {
 
       toast({
         title: "Success!",
-        description: "Password reset email sent to user",
+        description: `Password reset email sent to ${targetUser.email}`,
       });
     } catch (error: any) {
       toast({

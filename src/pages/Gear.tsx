@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -294,6 +293,7 @@ export default function Gear() {
                     value={newItem.quantity}
                     onChange={(e) => setNewItem({...newItem, quantity: parseInt(e.target.value) || 1})}
                     required
+                    className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
                 

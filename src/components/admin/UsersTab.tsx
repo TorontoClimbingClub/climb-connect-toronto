@@ -24,7 +24,7 @@ interface UsersTabProps {
   users: User[];
   onUpdateUserRole: (userId: string, newRole: 'member' | 'organizer' | 'admin') => void;
   onDeleteUser: (userId: string) => void;
-  onResetPassword: (userId: string, email: string) => void;
+  onResetPassword: (userId: string) => void;
   onUpdateUser: (user: User) => void;
 }
 
@@ -100,7 +100,7 @@ export function UsersTab({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onResetPassword(user.id, user.email || '')}
+                        onClick={() => onResetPassword(user.id)}
                       >
                         Reset Password
                       </Button>

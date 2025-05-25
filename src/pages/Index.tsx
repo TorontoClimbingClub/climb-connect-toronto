@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -138,8 +137,8 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Welcome Message or Auth CTA */}
-        {!user ? (
+        {/* Welcome Message or Auth CTA - Only show for non-logged in users */}
+        {!user && (
           <Card className="mb-6">
             <CardContent className="p-6 text-center">
               <h2 className="text-xl font-semibold text-[#E55A2B] mb-2">Welcome!</h2>
@@ -152,17 +151,6 @@ export default function Index() {
               >
                 Get Started
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="mb-6">
-            <CardContent className="p-6 text-center">
-              <h2 className="text-xl font-semibold text-[#E55A2B] mb-2">
-                Welcome back, {user.email?.split('@')[0]}!
-              </h2>
-              <p className="text-stone-600">
-                Ready for your next climbing adventure?
-              </p>
             </CardContent>
           </Card>
         )}
