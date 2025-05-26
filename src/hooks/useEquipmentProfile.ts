@@ -11,6 +11,11 @@ interface UserEquipment {
   notes: string | null;
   category_id: string;
   equipment_categories: { name: string } | null;
+  assignment_info?: {
+    event_id: string;
+    event_title: string;
+    event_date: string;
+  };
 }
 
 interface EquipmentCategory {
@@ -62,10 +67,37 @@ export function useEquipmentProfile() {
           equipment_categories(name)
         `)
         .eq('user_id', user.id)
-        .order('item_name');
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setEquipment(data || []);
+
+      // Fetch assignment information for each equipment
+      const equipmentIds = data?.map(e => e.id) || [];
+      const { data: assignmentData } = await supabase
+        .from('event_equipment')
+        .select(`
+          user_equipment_id,
+          events(id, title, date)
+        `)
+        .in('user_equipment_id', equipmentIds);
+
+      const assignmentMap = new Map();
+      assignmentData?.forEach(assignment => {
+        if (assignment.events) {
+          assignmentMap.set(assignment.user_equipment_id, {
+            event_id: assignment.events.id,
+            event_title: assignment.events.title,
+            event_date: assignment.events.date
+          });
+        }
+      });
+
+      const equipmentWithAssignments = data?.map(item => ({
+        ...item,
+        assignment_info: assignmentMap.get(item.id)
+      })) || [];
+
+      setEquipment(equipmentWithAssignments);
     } catch (error) {
       console.error('Error fetching equipment:', error);
     }
