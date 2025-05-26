@@ -7,7 +7,7 @@ import { useProfileManagement } from "@/hooks/useProfileManagement";
 import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
 import { ProfileInformation } from "@/components/profile/ProfileInformation";
 import { EquipmentInventory } from "@/components/profile/EquipmentInventory";
-import { forceLogoutAndRedirect } from "@/utils/authCleanup";
+import { forceLogoutAndRedirect } from "@/utils/auth";
 
 export default function Profile() {
   const {

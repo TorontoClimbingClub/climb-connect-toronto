@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 export function useUserHandlers(fetchUsers: () => Promise<void>) {
   const { toast } = useToast();
 
-  const handleUpdateUserRole = async (userId: string, newRole: string) => {
+  const handleUpdateUserRole = async (userId: string, newRole: 'member' | 'organizer' | 'admin') => {
     try {
       // First, remove any existing role for this user
       await supabase
@@ -16,7 +16,10 @@ export function useUserHandlers(fetchUsers: () => Promise<void>) {
       // Then add the new role
       const { error } = await supabase
         .from('user_roles')
-        .insert({ user_id: userId, role: newRole });
+        .insert({ 
+          user_id: userId, 
+          role: newRole 
+        });
 
       if (error) throw error;
 

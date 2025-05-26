@@ -26,6 +26,12 @@ export default function Admin() {
 
   const { handleDeleteEvent } = useEventHandlers(fetchEvents);
 
+  // Wrapper function to match expected signature
+  const handleUserUpdate = (user: any) => {
+    const { id, ...updates } = user;
+    handleUpdateUser(id, updates);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -54,7 +60,7 @@ export default function Admin() {
               onUpdateUserRole={handleUpdateUserRole}
               onDeleteUser={handleDeleteUser}
               onResetPassword={handleResetPassword}
-              onUpdateUser={handleUpdateUser}
+              onUpdateUser={handleUserUpdate}
             />
           </TabsContent>
 
