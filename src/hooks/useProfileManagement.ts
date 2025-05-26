@@ -1,18 +1,11 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { forceLogoutAndRedirect } from "@/utils/auth";
-
-interface UserProfile {
-  id: string;
-  full_name: string;
-  phone?: string;
-  is_carpool_driver: boolean;
-  passenger_capacity?: number;
-  climbing_description?: string;
-}
+import { UserProfile } from "@/types";
+import { handleSupabaseError, logError } from "@/utils/error";
 
 export function useProfileManagement() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -25,9 +18,18 @@ export function useProfileManagement() {
     is_carpool_driver: false,
     passenger_capacity: 0,
     climbing_description: '',
+    created_at: '',
   });
   const { user } = useAuth();
   const { toast } = useToast();
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -39,8 +41,8 @@ export function useProfileManagement() {
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) {
-      console.log('No user available for profile fetch');
+    if (!user || !mountedRef.current) {
+      console.log('No user available for profile fetch or component unmounted');
       return;
     }
 
@@ -64,11 +66,14 @@ export function useProfileManagement() {
             error.message?.includes('session') ||
             error.message?.includes('auth')) {
           console.log('Session broken or profile access denied, forcing logout...');
-          toast({
-            title: "Session Error",
-            description: "Your session has expired. Please log in again.",
-            variant: "destructive",
-          });
+          
+          if (mountedRef.current) {
+            toast({
+              title: "Session Error",
+              description: "Your session has expired. Please log in again.",
+              variant: "destructive",
+            });
+          }
           
           // Force logout and redirect to login
           await forceLogoutAndRedirect();
@@ -78,28 +83,34 @@ export function useProfileManagement() {
         throw error;
       }
       
-      if (data) {
+      if (data && mountedRef.current) {
         console.log('Profile data loaded successfully:', data);
         setProfile(data);
         setFormData(data);
       }
-    } catch (error) {
-      console.error('Error in fetchProfile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile. Redirecting to login...",
-        variant: "destructive",
-      });
-      
-      // Force logout on any error
-      await forceLogoutAndRedirect();
+    } catch (error: any) {
+      if (mountedRef.current) {
+        const apiError = handleSupabaseError(error);
+        logError('fetchProfile', error);
+        
+        toast({
+          title: "Error",
+          description: apiError.message || "Failed to load profile. Redirecting to login...",
+          variant: "destructive",
+        });
+        
+        // Force logout on any error
+        await forceLogoutAndRedirect();
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !mountedRef.current) return;
 
     try {
       const { error } = await supabase
@@ -115,24 +126,31 @@ export function useProfileManagement() {
 
       if (error) throw error;
 
-      setProfile(formData);
-      setEditing(false);
-      
-      toast({
-        title: "Success!",
-        description: "Profile updated successfully",
-      });
+      if (mountedRef.current) {
+        setProfile(formData);
+        setEditing(false);
+        
+        toast({
+          title: "Success!",
+          description: "Profile updated successfully",
+        });
+      }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        const apiError = handleSupabaseError(error);
+        logError('handleSave', error);
+        
+        toast({
+          title: "Error",
+          description: apiError.message || "Failed to update profile",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const handleCancel = () => {
-    if (profile) {
+    if (profile && mountedRef.current) {
       setFormData(profile);
     }
     setEditing(false);
