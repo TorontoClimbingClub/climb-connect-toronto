@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import type { User, Event, ProfileData } from "@/types/admin";
+import type { User, ProfileData } from "@/types/admin";
+import type { Event } from "@/types/events";
 
 export function useAdminData() {
   const [users, setUsers] = useState<User[]>([]);

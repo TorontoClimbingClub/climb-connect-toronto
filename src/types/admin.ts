@@ -1,5 +1,5 @@
-
-import { UserProfile, Event } from './index';
+import { UserProfile } from './auth';
+import { Event } from './events';
 
 export interface User extends UserProfile {
   email?: string;
@@ -12,6 +12,3 @@ export interface AdminEvent extends Event {
 
 // Keep existing ProfileData interface for backward compatibility
 export interface ProfileData extends UserProfile {}
-
-// Re-export Event type for admin use
-export type { Event };
