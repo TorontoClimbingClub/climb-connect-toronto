@@ -133,8 +133,9 @@ export function EditEquipmentDialog({
               id="quantity"
               type="number"
               min="1"
-              value={editItem.quantity}
-              onChange={(e) => setEditItem({...editItem, quantity: parseInt(e.target.value) || 1})}
+              value={editItem.quantity || ""}
+              onChange={(e) => setEditItem({...editItem, quantity: parseInt(e.target.value) || 0})}
+              placeholder="Enter quantity"
               required
             />
           </div>
