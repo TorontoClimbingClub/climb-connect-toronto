@@ -4,8 +4,7 @@ import { Navigation } from "@/components/Navigation";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { useAdminData } from "@/hooks/useAdminData";
-import { useUserHandlers } from "@/utils/adminUserHandlers";
-import { useEventHandlers } from "@/utils/adminEventHandlers";
+import { useUserHandlers, useEventHandlers } from "@/utils/admin";
 
 export default function Admin() {
   const {

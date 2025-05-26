@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { cleanupAuthState } from '@/utils/authCleanup';
+import { cleanupAuthState } from '@/utils/auth';
 
 export function useAuthActions() {
   const signIn = async (email: string, password: string) => {
@@ -8,7 +8,7 @@ export function useAuthActions() {
       // Clean up any existing state first
       cleanupAuthState();
       
-      // Attempt global sign out before signing in
+      // Attempt global sign out before signing in to prevent conflicts
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
