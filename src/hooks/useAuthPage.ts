@@ -58,17 +58,32 @@ export function useAuthPage() {
       });
       setLoading(false);
     } else {
-      // Get the user from the session or auth state
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setNewUserId(session.user.id);
-        setShowClimbingInfo(true);
-        toast({
-          title: "Account created!",
-          description: "Please complete your climbing profile.",
-        });
-      }
-      setLoading(false);
+      // Wait a moment for the user to be created and trigger to run
+      setTimeout(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          // Check if profile needs completion
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('climbing_level, phone')
+            .eq('id', session.user.id)
+            .single();
+          
+          // If climbing_level is empty or phone is missing, show the form
+          if (!profile?.climbing_level || !profile?.phone) {
+            setNewUserId(session.user.id);
+            setShowClimbingInfo(true);
+            toast({
+              title: "Account created!",
+              description: "Please complete your climbing profile.",
+            });
+          } else {
+            // Profile is complete, redirect to home
+            navigate("/");
+          }
+        }
+        setLoading(false);
+      }, 500);
     }
   };
 

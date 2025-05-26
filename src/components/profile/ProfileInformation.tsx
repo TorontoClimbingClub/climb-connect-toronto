@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Phone, Car, Edit, Check, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { User, Phone, Car, Edit, Check, X, Mountain } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -14,6 +16,8 @@ interface UserProfile {
   is_carpool_driver: boolean;
   passenger_capacity?: number;
   climbing_description?: string;
+  climbing_level?: string;
+  climbing_experience?: string[];
 }
 
 interface ProfileInformationProps {
@@ -26,6 +30,17 @@ interface ProfileInformationProps {
   onFormDataChange: (data: UserProfile) => void;
 }
 
+const CLIMBING_LEVELS = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
+const CLIMBING_EXPERIENCES = [
+  'Top Rope',
+  'Top Rope Belay', 
+  'Lead',
+  'Lead Belay',
+  'Cleaning',
+  'Anchor Building',
+  'Rappelling'
+];
+
 export function ProfileInformation({
   profile,
   editing,
@@ -35,6 +50,21 @@ export function ProfileInformation({
   onCancel,
   onFormDataChange,
 }: ProfileInformationProps) {
+  const handleExperienceChange = (experience: string, checked: boolean) => {
+    const currentExperience = formData.climbing_experience || [];
+    if (checked) {
+      onFormDataChange({ 
+        ...formData, 
+        climbing_experience: [...currentExperience, experience] 
+      });
+    } else {
+      onFormDataChange({ 
+        ...formData, 
+        climbing_experience: currentExperience.filter(exp => exp !== experience) 
+      });
+    }
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -89,6 +119,58 @@ export function ProfileInformation({
               disabled={!editing}
               className="pl-10"
             />
+          </div>
+        </div>
+
+        {/* Climbing Level Section */}
+        <div className="space-y-3 pt-4 border-t">
+          <div className="flex items-center gap-2 mb-3">
+            <Mountain className="h-5 w-5 text-[#E55A2B]" />
+            <Label className="text-base font-semibold">Climbing Information</Label>
+          </div>
+          
+          <div>
+            <Label htmlFor="climbing_level">Climbing Level</Label>
+            <Select 
+              value={formData.climbing_level || ''} 
+              onValueChange={(value) => onFormDataChange({ ...formData, climbing_level: value })}
+              disabled={!editing}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select your climbing level" />
+              </SelectTrigger>
+              <SelectContent>
+                {CLIMBING_LEVELS.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Climbing Experience</Label>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              {CLIMBING_EXPERIENCES.map((experience) => (
+                <div key={experience} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={experience}
+                    checked={(formData.climbing_experience || []).includes(experience)}
+                    onCheckedChange={(checked) => 
+                      handleExperienceChange(experience, checked as boolean)
+                    }
+                    disabled={!editing}
+                  />
+                  <Label 
+                    htmlFor={experience}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {experience}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

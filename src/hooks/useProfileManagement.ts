@@ -18,6 +18,8 @@ export function useProfileManagement() {
     is_carpool_driver: false,
     passenger_capacity: 0,
     climbing_description: '',
+    climbing_level: '',
+    climbing_experience: [],
     created_at: '',
   });
   const { user } = useAuth();
@@ -121,6 +123,8 @@ export function useProfileManagement() {
           is_carpool_driver: formData.is_carpool_driver,
           passenger_capacity: formData.is_carpool_driver ? formData.passenger_capacity : null,
           climbing_description: formData.climbing_description,
+          climbing_level: formData.climbing_level,
+          climbing_experience: formData.climbing_experience,
         })
         .eq('id', user.id);
 

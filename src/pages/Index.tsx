@@ -61,28 +61,6 @@ export default function Index() {
           </Card>
         </div>
 
-        {/* Featured Content */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">About TCC</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-stone-600 mb-4">
-              We're a community of outdoor climbing enthusiasts exploring Ontario's incredible rock formations. From the Escarpment to Muskoka, we organize regular trips for climbers of all levels.
-            </p>
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="bg-orange-50 p-3 rounded-lg">
-                <div className="text-2xl font-bold text-[#E55A2B]">50+</div>
-                <div className="text-sm text-stone-600">Active Members</div>
-              </div>
-              <div className="bg-orange-50 p-3 rounded-lg">
-                <div className="text-2xl font-bold text-[#E55A2B]">12</div>
-                <div className="text-sm text-stone-600">Events This Month</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Call to Action */}
         <Card>
           <CardContent className="p-6 text-center">
