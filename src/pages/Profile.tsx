@@ -8,6 +8,7 @@ import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
 import { ProfileInformation } from "@/components/profile/ProfileInformation";
 import { EquipmentInventory } from "@/components/profile/EquipmentInventory";
 import { forceLogoutAndRedirect } from "@/utils/auth";
+import { UserProfile } from "@/types";
 
 export default function Profile() {
   const {
@@ -53,6 +54,11 @@ export default function Profile() {
     }
   };
 
+  // Create a wrapper function to handle the form data change
+  const handleFormDataChange = (data: UserProfile) => {
+    setFormData(data);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -86,7 +92,7 @@ export default function Profile() {
           onEdit={() => setEditing(true)}
           onSave={handleSave}
           onCancel={handleCancel}
-          onFormDataChange={setFormData}
+          onFormDataChange={handleFormDataChange}
         />
 
         <EquipmentInventory

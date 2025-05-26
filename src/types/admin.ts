@@ -1,3 +1,4 @@
+
 import { UserProfile, Event } from './index';
 
 export interface User extends UserProfile {
@@ -11,3 +12,6 @@ export interface AdminEvent extends Event {
 
 // Keep existing ProfileData interface for backward compatibility
 export interface ProfileData extends UserProfile {}
+
+// Re-export Event type for admin use
+export type { Event };
