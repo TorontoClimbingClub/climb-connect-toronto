@@ -20,9 +20,8 @@ const eventSchema = z.object({
   time: z.string().min(1, "Time is required"),
   location: z.string().min(1, "Location is required"),
   max_participants: z.number().min(1).optional(),
-  difficulty_level: z.string().optional(),
+  climbing_level: z.string().optional(),
   required_climbing_level: z.string().optional(),
-  capacity_limit: z.number().min(1).optional(),
 });
 
 interface CreateEventDialogProps {
@@ -47,9 +46,8 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
       time: "",
       location: "",
       max_participants: undefined,
-      difficulty_level: "",
+      climbing_level: "",
       required_climbing_level: "",
-      capacity_limit: undefined,
     },
   });
 
@@ -66,9 +64,9 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
           time: values.time,
           location: values.location,
           max_participants: values.max_participants || null,
-          difficulty_level: values.difficulty_level || null,
+          difficulty_level: values.climbing_level || null,
           required_climbing_level: values.required_climbing_level || null,
-          capacity_limit: values.capacity_limit || null,
+          capacity_limit: values.max_participants || null,
           organizer_id: user.id,
         });
 
@@ -171,20 +169,22 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
 
         <FormField
           control={form.control}
-          name="difficulty_level"
+          name="climbing_level"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Difficulty Level</FormLabel>
+              <FormLabel>Climbing Level</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select difficulty" />
+                    <SelectValue placeholder="Select climbing level" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  {CLIMBING_LEVELS.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
                   <SelectItem value="All Levels">All Levels</SelectItem>
                 </SelectContent>
               </Select>
@@ -218,45 +218,24 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="max_participants"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Max Participants (Legacy)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Leave empty for unlimited"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="capacity_limit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Event Capacity</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Maximum attendees"
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="max_participants"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Max Participants</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="Leave empty for unlimited"
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
           Create Event
