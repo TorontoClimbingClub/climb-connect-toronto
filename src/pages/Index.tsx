@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Mountain, ArrowRight } from "lucide-react";
+import { Calendar, Users, ArrowRight, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 
@@ -13,8 +13,12 @@ export default function Index() {
       <div className="max-w-md mx-auto p-4">
         {/* Hero Section */}
         <div className="text-center mb-8">
-          <div className="bg-gradient-to-br from-orange-600 to-red-700 p-4 rounded-2xl w-20 h-20 mx-auto mb-6">
-            <Mountain className="h-12 w-12 text-white" />
+          <div className="bg-white p-4 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/bc35c5e5-f3f5-4bf6-b13a-74f1b7990628.png" 
+              alt="Toronto Climbing Club" 
+              className="w-12 h-12 object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-[#E55A2B] mb-2">
             Toronto Climbing Club
@@ -22,6 +26,18 @@ export default function Index() {
           <p className="text-stone-600 text-lg">
             Connect with fellow climbers and explore Ontario's amazing crags
           </p>
+        </div>
+
+        {/* Website Navigation Button */}
+        <div className="mb-6">
+          <Button 
+            onClick={() => window.open('https://www.torontoclimbingclub.ca', '_blank')}
+            variant="outline"
+            className="w-full border-[#E55A2B] text-[#E55A2B] hover:bg-orange-50"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Visit Main Website
+          </Button>
         </div>
 
         {/* Quick Actions Grid */}

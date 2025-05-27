@@ -120,8 +120,6 @@ export function useProfileManagement() {
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
-          is_carpool_driver: formData.is_carpool_driver,
-          passenger_capacity: formData.is_carpool_driver ? formData.passenger_capacity : null,
           climbing_description: formData.climbing_description,
           climbing_level: formData.climbing_level,
           climbing_experience: formData.climbing_experience,

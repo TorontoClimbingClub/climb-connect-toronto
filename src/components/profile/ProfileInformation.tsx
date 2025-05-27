@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, Phone, Car, Edit, Check, X, Mountain } from "lucide-react";
+import { User, Phone, Edit, Check, X, Mountain } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -184,40 +183,6 @@ export function ProfileInformation({
             disabled={!editing}
             rows={4}
           />
-        </div>
-
-        {/* Carpool Settings */}
-        <div className="space-y-3 pt-4 border-t">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Car className="h-5 w-5 text-[#E55A2B]" />
-              <div>
-                <Label htmlFor="is_carpool_driver">I can drive to events</Label>
-                <p className="text-sm text-stone-600">Offer rides to fellow climbers</p>
-              </div>
-            </div>
-            <Switch
-              id="is_carpool_driver"
-              checked={formData.is_carpool_driver}
-              onCheckedChange={(checked) => onFormDataChange({ ...formData, is_carpool_driver: checked })}
-              disabled={!editing}
-            />
-          </div>
-
-          {formData.is_carpool_driver && (
-            <div>
-              <Label htmlFor="passenger_capacity">Available Seats</Label>
-              <Input
-                id="passenger_capacity"
-                type="number"
-                min="1"
-                max="8"
-                value={formData.passenger_capacity || ''}
-                onChange={(e) => onFormDataChange({ ...formData, passenger_capacity: parseInt(e.target.value) || 0 })}
-                disabled={!editing}
-              />
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
