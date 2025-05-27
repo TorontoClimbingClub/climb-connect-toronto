@@ -10,10 +10,10 @@ export const useEventActions = () => {
   const joinEvent = async (eventId: string, userId: string) => {
     setLoading(true);
     try {
-      // Check if user can join based on climbing level
+      // Check if user can join based on climbing level and experience
       const { data: event, error: eventError } = await supabase
         .from('events')
-        .select('required_climbing_level, capacity_limit')
+        .select('required_climbing_level, required_climbing_experience, capacity_limit')
         .eq('id', eventId)
         .single();
 
@@ -38,8 +38,8 @@ export const useEventActions = () => {
         }
       }
 
-      // Check climbing level requirement
-      if (event.required_climbing_level) {
+      // Check climbing level and experience requirements
+      if (event.required_climbing_level || (event.required_climbing_experience && event.required_climbing_experience.length > 0)) {
         const { data: userProfile, error: profileError } = await supabase
           .from('profiles')
           .select('climbing_level, climbing_experience')
@@ -49,42 +49,35 @@ export const useEventActions = () => {
         if (profileError) throw profileError;
 
         // Check climbing level requirement
-        const levelOrder = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
-        const requiredLevelIndex = levelOrder.indexOf(event.required_climbing_level);
-        const userLevelIndex = levelOrder.indexOf(userProfile.climbing_level || 'Never Climbed');
+        if (event.required_climbing_level) {
+          const levelOrder = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
+          const requiredLevelIndex = levelOrder.indexOf(event.required_climbing_level);
+          const userLevelIndex = levelOrder.indexOf(userProfile.climbing_level || 'Never Climbed');
 
-        if (userLevelIndex < requiredLevelIndex) {
-          toast({
-            title: "Climbing Level Requirement",
-            description: `This event requires ${event.required_climbing_level} level or higher. We appreciate your interest and encourage you to join events that match your current experience level!`,
-            variant: "destructive",
-          });
-          return { success: false };
+          if (userLevelIndex < requiredLevelIndex) {
+            toast({
+              title: "Climbing Level Requirement",
+              description: `This event requires ${event.required_climbing_level} level or higher. We appreciate your interest and encourage you to join events that match your current experience level!`,
+              variant: "destructive",
+            });
+            return { success: false };
+          }
         }
         
         // Check for required climbing experience
-        const { data: eventData, error: eventDataError } = await supabase
-          .from('events')
-          .select('required_climbing_experience')
-          .eq('id', eventId)
-          .single();
-            
-        if (eventDataError) {
-          console.error("Error fetching event experience requirements:", eventDataError);
-        } else if (eventData.required_climbing_experience && 
-                  eventData.required_climbing_experience.length > 0) {
+        if (event.required_climbing_experience && event.required_climbing_experience.length > 0) {
           // Convert user experience to a Set for faster lookups
           const userExperienceSet = new Set(userProfile.climbing_experience || []);
           
           // Check if the user has at least one of the required experiences
-          const hasRequiredExperience = eventData.required_climbing_experience.some(
+          const hasRequiredExperience = event.required_climbing_experience.some(
             exp => userExperienceSet.has(exp)
           );
           
           if (!hasRequiredExperience) {
             toast({
               title: "Climbing Experience Required",
-              description: `This event requires one of the following experiences: ${eventData.required_climbing_experience.join(', ')}. Please update your profile with relevant climbing experience.`,
+              description: `This event requires one of the following experiences: ${event.required_climbing_experience.join(', ')}. Please update your profile with relevant climbing experience.`,
               variant: "destructive",
             });
             return { success: false };

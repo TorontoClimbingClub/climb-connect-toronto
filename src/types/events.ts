@@ -13,6 +13,7 @@ export interface Event {
   carpool_seats?: number;
   equipment_count?: number;
   required_climbing_level?: string | null;
+  required_climbing_experience?: string[] | null;
   capacity_limit?: number | null;
   created_at: string;
   updated_at?: string;

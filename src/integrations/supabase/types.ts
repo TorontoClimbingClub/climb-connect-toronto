@@ -136,6 +136,7 @@ export type Database = {
           location: string
           max_participants: number | null
           organizer_id: string
+          required_climbing_experience: string[] | null
           required_climbing_level: string | null
           time: string
           title: string
@@ -151,6 +152,7 @@ export type Database = {
           location: string
           max_participants?: number | null
           organizer_id: string
+          required_climbing_experience?: string[] | null
           required_climbing_level?: string | null
           time: string
           title: string
@@ -166,6 +168,7 @@ export type Database = {
           location?: string
           max_participants?: number | null
           organizer_id?: string
+          required_climbing_experience?: string[] | null
           required_climbing_level?: string | null
           time?: string
           title?: string
