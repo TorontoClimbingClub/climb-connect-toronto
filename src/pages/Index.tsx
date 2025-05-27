@@ -28,18 +28,6 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Website Navigation Button */}
-        <div className="mb-6">
-          <Button 
-            onClick={() => window.open('https://www.torontoclimbingclub.ca', '_blank')}
-            variant="outline"
-            className="w-full border-[#E55A2B] text-[#E55A2B] hover:bg-orange-50"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Visit Main Website
-          </Button>
-        </div>
-
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 gap-4 mb-8">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/events')}>
@@ -92,6 +80,18 @@ export default function Index() {
             </Button>
           </CardContent>
         </Card>
+        
+        {/* Website Return Button - Moved here */}
+        <div className="mt-6">
+          <Button 
+            onClick={() => window.open('https://www.torontoclimbingclub.ca', '_blank')}
+            variant="outline"
+            className="w-full border-[#E55A2B] text-[#E55A2B] hover:bg-orange-50"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Return to Website
+          </Button>
+        </div>
       </div>
       <Navigation />
     </div>

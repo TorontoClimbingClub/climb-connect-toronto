@@ -42,12 +42,13 @@ export const useEventActions = () => {
       if (event.required_climbing_level) {
         const { data: userProfile, error: profileError } = await supabase
           .from('profiles')
-          .select('climbing_level')
+          .select('climbing_level, climbing_experience')
           .eq('id', userId)
           .single();
 
         if (profileError) throw profileError;
 
+        // Check climbing level requirement
         const levelOrder = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
         const requiredLevelIndex = levelOrder.indexOf(event.required_climbing_level);
         const userLevelIndex = levelOrder.indexOf(userProfile.climbing_level || 'Never Climbed');
@@ -59,6 +60,35 @@ export const useEventActions = () => {
             variant: "destructive",
           });
           return { success: false };
+        }
+        
+        // Check for required climbing experience
+        const { data: eventData, error: eventDataError } = await supabase
+          .from('events')
+          .select('required_climbing_experience')
+          .eq('id', eventId)
+          .single();
+            
+        if (eventDataError) {
+          console.error("Error fetching event experience requirements:", eventDataError);
+        } else if (eventData.required_climbing_experience && 
+                  eventData.required_climbing_experience.length > 0) {
+          // Convert user experience to a Set for faster lookups
+          const userExperienceSet = new Set(userProfile.climbing_experience || []);
+          
+          // Check if the user has at least one of the required experiences
+          const hasRequiredExperience = eventData.required_climbing_experience.some(
+            exp => userExperienceSet.has(exp)
+          );
+          
+          if (!hasRequiredExperience) {
+            toast({
+              title: "Climbing Experience Required",
+              description: `This event requires one of the following experiences: ${eventData.required_climbing_experience.join(', ')}. Please update your profile with relevant climbing experience.`,
+              variant: "destructive",
+            });
+            return { success: false };
+          }
         }
       }
 

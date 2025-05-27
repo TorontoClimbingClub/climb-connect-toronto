@@ -66,14 +66,31 @@ export default function Community() {
                   </div>
                 </div>
 
-                {member.climbing_description && (
-                  <div className="mb-3 p-3 bg-stone-50 rounded-lg">
+                {/* Climbing Level and Experience */}
+                <div className="mb-3 p-3 bg-stone-50 rounded-lg">
+                  <div className="flex flex-col gap-2">
                     <div className="flex items-start gap-2">
                       <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
-                      <p className="text-sm text-stone-700">{member.climbing_description}</p>
+                      <div>
+                        <p className="text-sm font-medium text-stone-700">
+                          {member.climbing_level || "No level specified"}
+                        </p>
+                        {member.climbing_experience && member.climbing_experience.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {member.climbing_experience.map((exp) => (
+                              <Badge key={exp} variant="outline" className="text-xs bg-white">
+                                {exp}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    {member.climbing_description && (
+                      <p className="text-sm text-stone-700 mt-1">{member.climbing_description}</p>
+                    )}
                   </div>
-                )}
+                </div>
 
                 <div className="flex justify-between text-sm text-stone-600">
                   <div className="flex items-center">

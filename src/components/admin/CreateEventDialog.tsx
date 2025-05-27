@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useState } from "react";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Event title is required"),
@@ -32,10 +34,20 @@ interface CreateEventDialogProps {
 }
 
 const CLIMBING_LEVELS = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
+const CLIMBING_EXPERIENCES = [
+  'Top Rope',
+  'Top Rope Belay', 
+  'Lead',
+  'Lead Belay',
+  'Cleaning',
+  'Anchor Building',
+  'Rappelling'
+];
 
 export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hideButton = false }: CreateEventDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [requiredExperience, setRequiredExperience] = useState<string[]>([]);
 
   const form = useForm<z.infer<typeof eventSchema>>({
     resolver: zodResolver(eventSchema),
@@ -67,6 +79,7 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
           difficulty_level: values.climbing_level || null,
           required_climbing_level: values.required_climbing_level || null,
           capacity_limit: values.max_participants || null,
+          required_climbing_experience: requiredExperience.length > 0 ? requiredExperience : null,
           organizer_id: user.id,
         });
 
@@ -78,6 +91,7 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
       });
 
       form.reset();
+      setRequiredExperience([]);
       onToggleForm(false);
       onEventCreated();
     } catch (error: any) {
@@ -86,6 +100,14 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
         description: error.message || "Failed to create event",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleExperienceChange = (experience: string, checked: boolean) => {
+    if (checked) {
+      setRequiredExperience(prev => [...prev, experience]);
+    } else {
+      setRequiredExperience(prev => prev.filter(exp => exp !== experience));
     }
   };
 
@@ -217,6 +239,32 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
             </FormItem>
           )}
         />
+
+        <div>
+          <FormLabel>Required Climbing Experience (Optional)</FormLabel>
+          <div className="grid grid-cols-2 gap-3 mt-2 border rounded-md p-3">
+            {CLIMBING_EXPERIENCES.map((experience) => (
+              <div key={experience} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`exp-${experience}`}
+                  checked={requiredExperience.includes(experience)}
+                  onCheckedChange={(checked) => 
+                    handleExperienceChange(experience, checked as boolean)
+                  }
+                />
+                <label 
+                  htmlFor={`exp-${experience}`}
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  {experience}
+                </label>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-stone-500 mt-1">
+            Participants must have at least one of these experiences
+          </p>
+        </div>
 
         <FormField
           control={form.control}
