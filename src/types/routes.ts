@@ -30,3 +30,12 @@ export interface RoutePhoto {
   created_at: string;
   user_name: string;
 }
+
+export interface AreaDescription {
+  id: string;
+  name: string;
+  type: 'area' | 'sector';
+  description: string;
+  created_at: string;
+  updated_at: string;
+}

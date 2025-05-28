@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/routes/PageHeader";
 import { CragCard } from "@/components/routes/CragCard";
 import { SectorCard } from "@/components/routes/SectorCard";
 import { AreaCard } from "@/components/routes/AreaCard";
+import { MapWidget } from "@/components/routes/MapWidget";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbingRoute } from "@/types/routes";
 
@@ -101,6 +102,9 @@ export default function Routes() {
           subtitle={getPageSubtitle()}
           onBack={handleBack}
         />
+
+        {/* Show map widget when no crag is selected */}
+        {!selectedCrag && <MapWidget />}
 
         {/* Show filters when a crag is selected */}
         {selectedCrag && (

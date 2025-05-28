@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Dialog,
@@ -11,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClimbingRoute } from "@/types/routes";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface EditRouteDialogProps {
   route: ClimbingRoute | null;
@@ -22,22 +24,22 @@ interface EditRouteDialogProps {
 const generateGradeOptions = () => {
   const grades = [];
   
-  // Generate 5.0 through 5.14 with a, b, c variations
-  for (let i = 0; i <= 14; i++) {
-    if (i === 0) {
-      grades.push('5.0');
-    } else {
-      grades.push(`5.${i}`);
-      if (i >= 10) {
-        grades.push(`5.${i}a`, `5.${i}b`, `5.${i}c`, `5.${i}d`);
-      }
-    }
+  // Generate 5.0 through 5.9 without variations
+  for (let i = 0; i <= 9; i++) {
+    grades.push(`5.${i}`);
   }
   
-  // Add aid climbing grades
-  grades.push('A0', 'A1', 'A2', 'A3', 'A4', 'A5');
+  // Generate 5.10 through 5.14 with a, b, c, d variations
+  for (let i = 10; i <= 14; i++) {
+    grades.push(`5.${i}`);
+    grades.push(`5.${i}a`, `5.${i}b`, `5.${i}c`, `5.${i}d`);
+  }
   
   return grades;
+};
+
+const generateAidGradeOptions = () => {
+  return ['A0', 'A1', 'A2', 'A3', 'A4', 'A5'];
 };
 
 export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRouteDialogProps) {
@@ -49,6 +51,7 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
     sector: route?.sector || '',
   });
   const [riskRating, setRiskRating] = useState('none');
+  const [aidGrade, setAidGrade] = useState('none');
   const { toast } = useToast();
 
   const handleSave = () => {
@@ -62,8 +65,15 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
     }
 
     let finalGrade = formData.grade;
+    
+    // Add risk rating for Trad routes
     if (riskRating && riskRating !== 'none' && formData.style === 'Trad') {
       finalGrade = `${formData.grade}${riskRating}`;
+    }
+    
+    // Add aid grade if selected
+    if (aidGrade && aidGrade !== 'none') {
+      finalGrade = `${finalGrade} ${aidGrade}`;
     }
 
     onSave({
@@ -76,15 +86,39 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
   };
 
   const gradeOptions = generateGradeOptions();
+  const aidGradeOptions = generateAidGradeOptions();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {route ? 'Edit Route' : 'Add New Route'}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Route Details Reference Card */}
+        {route && (
+          <Card className="bg-stone-50 border-[#E55A2B]/20">
+            <CardContent className="pt-4">
+              <div className="text-sm">
+                <div className="font-semibold text-[#E55A2B] mb-2">Current Route Details:</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <span className="text-stone-600">Name:</span>
+                  <span className="font-medium">{route.name}</span>
+                  <span className="text-stone-600">Grade:</span>
+                  <span className="font-medium">{route.grade}</span>
+                  <span className="text-stone-600">Style:</span>
+                  <span className="font-medium">{route.style}</span>
+                  <span className="text-stone-600">Area:</span>
+                  <span className="font-medium">{route.area}</span>
+                  <span className="text-stone-600">Sector:</span>
+                  <span className="font-medium">{route.sector}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -148,6 +182,23 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
               </Select>
             </div>
           )}
+
+          <div className="grid gap-2">
+            <Label htmlFor="aid">Aid Grade (Optional)</Label>
+            <Select value={aidGrade} onValueChange={setAidGrade}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select aid grade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {aidGradeOptions.map((grade) => (
+                  <SelectItem key={grade} value={grade}>
+                    {grade}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           
           <div className="grid gap-2">
             <Label htmlFor="area">Area *</Label>
