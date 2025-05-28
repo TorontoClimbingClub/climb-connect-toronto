@@ -42,6 +42,34 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
   const canShowClimbingProgress = user.show_climbing_progress !== false || isOwnProfile;
   const canShowCompletionStats = user.show_completion_stats !== false || isOwnProfile;
 
+  // Check if user allows profile viewing
+  if (!user.allow_profile_viewing && !isOwnProfile) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Avatar className="h-12 w-12">
+                <AvatarFallback className="bg-[#E55A2B] text-white font-semibold">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-xl font-bold text-[#E55A2B]">{user.full_name}</h2>
+                <p className="text-stone-600 text-sm">Community Member</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="bg-stone-50 p-6 rounded-lg text-center">
+            <EyeOff className="h-8 w-8 text-stone-400 mx-auto mb-2" />
+            <p className="text-stone-600">This member's profile is private</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   // Get hidden styles based on privacy settings
   const getHiddenStyles = () => {
     const hidden: string[] = [];
@@ -78,6 +106,16 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               </div>
             )}
           </div>
+
+          {/* Bio */}
+          {user.bio && (
+            <div>
+              <h3 className="font-semibold mb-2">About</h3>
+              <p className="text-stone-700 text-sm bg-stone-50 p-3 rounded-lg">
+                {user.bio}
+              </p>
+            </div>
+          )}
 
           {/* Climbing Info */}
           {canShowClimbingLevel && (user.climbing_level || user.climbing_experience) && (

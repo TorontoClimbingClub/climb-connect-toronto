@@ -17,6 +17,8 @@ interface UserProfile {
   climbing_description?: string;
   climbing_level?: string;
   climbing_experience?: string[];
+  bio?: string;
+  allow_profile_viewing?: boolean;
   show_climbing_progress?: boolean;
   show_completion_stats?: boolean;
   show_climbing_level?: boolean;
@@ -128,6 +130,18 @@ export function ProfileInformation({
             </div>
           </div>
 
+          <div>
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              placeholder="Tell other members about yourself, your interests, availability, etc."
+              value={formData.bio || ''}
+              onChange={(e) => onFormDataChange({ ...formData, bio: e.target.value })}
+              disabled={!editing}
+              rows={3}
+            />
+          </div>
+
           {/* Climbing Level Section */}
           <div className="space-y-3 pt-4 border-t">
             <div className="flex items-center gap-2 mb-3">
@@ -201,9 +215,25 @@ export function ProfileInformation({
             <Eye className="h-5 w-5" />
             Privacy Settings
           </CardTitle>
-          <CardDescription>Control what other members can see about your climbing progress</CardDescription>
+          <CardDescription>Control what other members see on your community member card and profile</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Allow Profile Viewing</Label>
+              <p className="text-sm text-muted-foreground">
+                Let other members view your detailed profile by clicking your member card
+              </p>
+            </div>
+            <Checkbox
+              checked={formData.allow_profile_viewing ?? true}
+              onCheckedChange={(checked) => 
+                onFormDataChange({ ...formData, allow_profile_viewing: checked as boolean })
+              }
+              disabled={!editing}
+            />
+          </div>
+
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base">Show Climbing Level</Label>
@@ -222,9 +252,9 @@ export function ProfileInformation({
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base">Show Climbing Progress</Label>
+              <Label className="text-base">Show Progress Bars</Label>
               <p className="text-sm text-muted-foreground">
-                Display progress bars showing your completed routes
+                Display climbing progress bars on your member card
               </p>
             </div>
             <Checkbox
@@ -289,7 +319,7 @@ export function ProfileInformation({
             <div className="space-y-0.5">
               <Label className="text-base">Show Completion Stats</Label>
               <p className="text-sm text-muted-foreground">
-                Display the number of routes you've completed
+                Display the number of routes completed on your member card
               </p>
             </div>
             <Checkbox

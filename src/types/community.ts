@@ -10,6 +10,8 @@ export interface CommunityMember {
   events_count?: number;
   climbing_level?: string;
   climbing_experience?: string[];
+  bio?: string;
+  allow_profile_viewing?: boolean;
   show_climbing_progress?: boolean;
   show_completion_stats?: boolean;
   show_climbing_level?: boolean;

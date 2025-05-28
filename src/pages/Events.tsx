@@ -49,7 +49,8 @@ export default function Events() {
   };
 
   const handleMemberClick = (member: CommunityMember) => {
-    if (member.id !== user?.id) {
+    // Only allow viewing profile if it's the user's own profile OR the member allows profile viewing
+    if (member.id === user?.id || member.allow_profile_viewing !== false) {
       setSelectedMember(member);
       setProfileOverlayOpen(true);
     }
@@ -124,11 +125,12 @@ export default function Events() {
               const userStats = getUserCompletionStats(member.id);
               const hiddenStyles = getHiddenStyles(member);
               const isOwnProfile = member.id === user?.id;
+              const canViewProfile = isOwnProfile || member.allow_profile_viewing !== false;
               
               return (
                 <Card 
                   key={member.id} 
-                  className={`${member.id === user?.id ? "border-orange-200 bg-orange-50" : ""} ${!isOwnProfile ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
+                  className={`${member.id === user?.id ? "border-orange-200 bg-orange-50" : ""} ${canViewProfile ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
                   onClick={() => handleMemberClick(member)}
                 >
                   <CardContent className="p-4">

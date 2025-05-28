@@ -202,6 +202,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allow_profile_viewing: boolean | null
+          bio: string | null
           climbing_description: string | null
           climbing_experience: string[] | null
           climbing_level: string | null
@@ -215,9 +217,14 @@ export type Database = {
           show_climbing_level: boolean | null
           show_climbing_progress: boolean | null
           show_completion_stats: boolean | null
+          show_sport_progress: boolean | null
+          show_top_rope_progress: boolean | null
+          show_trad_progress: boolean | null
           updated_at: string | null
         }
         Insert: {
+          allow_profile_viewing?: boolean | null
+          bio?: string | null
           climbing_description?: string | null
           climbing_experience?: string[] | null
           climbing_level?: string | null
@@ -231,9 +238,14 @@ export type Database = {
           show_climbing_level?: boolean | null
           show_climbing_progress?: boolean | null
           show_completion_stats?: boolean | null
+          show_sport_progress?: boolean | null
+          show_top_rope_progress?: boolean | null
+          show_trad_progress?: boolean | null
           updated_at?: string | null
         }
         Update: {
+          allow_profile_viewing?: boolean | null
+          bio?: string | null
           climbing_description?: string | null
           climbing_experience?: string[] | null
           climbing_level?: string | null
@@ -247,6 +259,9 @@ export type Database = {
           show_climbing_level?: boolean | null
           show_climbing_progress?: boolean | null
           show_completion_stats?: boolean | null
+          show_sport_progress?: boolean | null
+          show_top_rope_progress?: boolean | null
+          show_trad_progress?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
