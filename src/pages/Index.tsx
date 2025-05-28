@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, ArrowRight, ExternalLink } from "lucide-react";
+import { Calendar, Users, ArrowRight, ExternalLink, Mountain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 
@@ -40,6 +40,23 @@ export default function Index() {
                   <div>
                     <CardTitle className="text-lg">Community & Events</CardTitle>
                     <CardDescription>Join adventures and meet climbers</CardDescription>
+                  </div>
+                </div>
+                <ArrowRight className="h-5 w-5 text-stone-400" />
+              </div>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/routes')}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-orange-100 p-2 rounded-lg">
+                    <Mountain className="h-5 w-5 text-[#E55A2B]" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Climbing Routes</CardTitle>
+                    <CardDescription>Explore routes at Rattlesnake Point</CardDescription>
                   </div>
                 </div>
                 <ArrowRight className="h-5 w-5 text-stone-400" />
