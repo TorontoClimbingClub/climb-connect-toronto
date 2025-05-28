@@ -22,6 +22,7 @@ export const PhotoGallery = ({
   const { user } = useAuth();
   const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState("");
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const handleEditStart = (photo: RoutePhoto) => {
     setEditingPhoto(photo.id);
@@ -39,9 +40,12 @@ export const PhotoGallery = ({
     setEditCaption("");
   };
 
+  const handleImageError = (photoId: string) => {
+    setFailedImages(prev => new Set(prev).add(photoId));
+  };
+
   const canManagePhoto = (photo: RoutePhoto) => {
     if (!user) return false;
-    // User can manage their own photos, or if they're an admin
     return photo.user_id === user.id;
   };
 
@@ -59,34 +63,21 @@ export const PhotoGallery = ({
       {photos.map((photo) => (
         <div key={photo.id} className="bg-white rounded-lg overflow-hidden shadow-sm border">
           <div className="relative">
-            <img 
-              src={photo.photo_url} 
-              alt={photo.caption || "Route photo"}
-              className="w-full h-64 object-cover"
-              onError={(e) => {
-                console.error('Image load error for:', photo.photo_url);
-                // Try to construct a different URL format
-                const target = e.target as HTMLImageElement;
-                if (!target.src.includes('?')) {
-                  const newUrl = photo.photo_url + '?t=' + Date.now();
-                  target.src = newUrl;
-                } else {
-                  target.style.display = 'none';
-                  // Show error placeholder
-                  const parent = target.parentElement;
-                  if (parent) {
-                    parent.innerHTML = `
-                      <div class="w-full h-64 bg-stone-100 flex items-center justify-center">
-                        <div class="text-center text-stone-500">
-                          <Camera class="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p class="text-sm">Image failed to load</p>
-                        </div>
-                      </div>
-                    `;
-                  }
-                }
-              }}
-            />
+            {failedImages.has(photo.id) ? (
+              <div className="w-full h-64 bg-stone-100 flex items-center justify-center">
+                <div className="text-center text-stone-500">
+                  <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Image failed to load</p>
+                </div>
+              </div>
+            ) : (
+              <img 
+                src={photo.photo_url} 
+                alt={photo.caption || "Route photo"}
+                className="w-full h-64 object-cover"
+                onError={() => handleImageError(photo.id)}
+              />
+            )}
             
             {canManagePhoto(photo) && (
               <div className="absolute top-2 right-2 flex gap-1">
