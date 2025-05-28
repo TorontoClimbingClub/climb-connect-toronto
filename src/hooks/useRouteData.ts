@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,7 +17,7 @@ export const useRouteData = (routeId: string) => {
         .from('route_comments')
         .select(`
           *,
-          profiles!route_comments_user_id_fkey(full_name)
+          profiles(full_name)
         `)
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
@@ -42,7 +41,7 @@ export const useRouteData = (routeId: string) => {
         .from('route_photos')
         .select(`
           *,
-          profiles!route_photos_user_id_fkey(full_name)
+          profiles(full_name)
         `)
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
@@ -113,19 +112,17 @@ export const useRouteData = (routeId: string) => {
         throw uploadError;
       }
 
-      // Get the correct public URL
-      const { data: urlData } = supabase.storage
-        .from('tccapp')
-        .getPublicUrl(fileName);
+      // Get the public URL - using the direct Supabase storage URL format
+      const publicUrl = `https://munpnfjhjgewqqfzzbga.supabase.co/storage/v1/object/public/tccapp/${fileName}`;
 
-      console.log('Generated public URL:', urlData.publicUrl);
+      console.log('Generated public URL:', publicUrl);
 
       const { error: dbError } = await supabase
         .from('route_photos')
         .insert({
           route_id: routeId,
           user_id: user.id,
-          photo_url: urlData.publicUrl,
+          photo_url: publicUrl,
           caption: caption || null,
           user_name: user.email || "Anonymous"
         });
