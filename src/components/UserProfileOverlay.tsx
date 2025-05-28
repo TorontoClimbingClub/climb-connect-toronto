@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mountain, Phone, Eye, EyeOff } from "lucide-react";
 import { CompletionProgressBars } from "./CompletionProgressBars";
+import { CompletedRoutesList } from "./profile/CompletedRoutesList";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { useAuth } from "@/contexts/AuthContext";
 import { CommunityMember } from "@/types/community";
@@ -190,6 +191,11 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               <EyeOff className="h-8 w-8 text-stone-400 mx-auto mb-2" />
               <p className="text-stone-600">Climbing progress is private</p>
             </div>
+          )}
+
+          {/* Completed Routes */}
+          {canShowCompletionStats && userCompletions.length > 0 && (
+            <CompletedRoutesList completions={userCompletions} />
           )}
         </div>
       </DialogContent>

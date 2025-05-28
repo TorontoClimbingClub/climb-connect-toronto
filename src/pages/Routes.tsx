@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -101,9 +102,6 @@ export default function Routes() {
           onBack={handleBack}
         />
 
-        {/* Show map widget when no crag is selected */}
-        {!selectedCrag && <MapWidget />}
-
         {/* Show filters when a crag is selected */}
         {selectedCrag && (
           <RouteFilters 
@@ -111,6 +109,9 @@ export default function Routes() {
             onFiltersChange={handleFiltersChange}
           />
         )}
+
+        {/* Show map widget when crag is selected but no sector is selected */}
+        {selectedCrag && !selectedSector && <MapWidget />}
 
         <div className="space-y-4">
           {!selectedCrag && (
