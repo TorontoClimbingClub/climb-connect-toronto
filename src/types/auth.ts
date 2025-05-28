@@ -10,6 +10,9 @@ export interface UserProfile {
   climbing_description?: string;
   climbing_level?: string;
   climbing_experience?: string[];
+  show_climbing_progress?: boolean;
+  show_completion_stats?: boolean;
+  show_climbing_level?: boolean;
   created_at: string;
   updated_at?: string;
 }

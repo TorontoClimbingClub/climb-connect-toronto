@@ -212,6 +212,9 @@ export type Database = {
           passenger_capacity: number | null
           personal_message: string | null
           phone: string | null
+          show_climbing_level: boolean | null
+          show_climbing_progress: boolean | null
+          show_completion_stats: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -225,6 +228,9 @@ export type Database = {
           passenger_capacity?: number | null
           personal_message?: string | null
           phone?: string | null
+          show_climbing_level?: boolean | null
+          show_climbing_progress?: boolean | null
+          show_completion_stats?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -238,6 +244,9 @@ export type Database = {
           passenger_capacity?: number | null
           personal_message?: string | null
           phone?: string | null
+          show_climbing_level?: boolean | null
+          show_climbing_progress?: boolean | null
+          show_completion_stats?: boolean | null
           updated_at?: string | null
         }
         Relationships: []

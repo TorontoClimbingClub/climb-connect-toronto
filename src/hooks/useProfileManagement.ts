@@ -20,6 +20,9 @@ export function useProfileManagement() {
     climbing_description: '',
     climbing_level: '',
     climbing_experience: [],
+    show_climbing_progress: true,
+    show_completion_stats: true,
+    show_climbing_level: true,
     created_at: '',
   });
   const { user } = useAuth();
@@ -123,6 +126,9 @@ export function useProfileManagement() {
           climbing_description: formData.climbing_description,
           climbing_level: formData.climbing_level,
           climbing_experience: formData.climbing_experience,
+          show_climbing_progress: formData.show_climbing_progress,
+          show_completion_stats: formData.show_completion_stats,
+          show_climbing_level: formData.show_climbing_level,
         })
         .eq('id', user.id);
 

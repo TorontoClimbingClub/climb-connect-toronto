@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mountain, Phone } from "lucide-react";
+import { Mountain, Phone, Eye, EyeOff } from "lucide-react";
 import { CompletionProgressBars } from "./CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { useAuth } from "@/contexts/AuthContext";
 import { CommunityMember } from "@/types/community";
 
 interface UserProfileOverlayProps {
@@ -16,6 +17,7 @@ interface UserProfileOverlayProps {
 
 export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOverlayProps) {
   const { getUserCompletionStats, completions } = useClimbCompletions();
+  const { user: currentUser } = useAuth();
   const [userCompletions, setUserCompletions] = useState<any[]>([]);
 
   useEffect(() => {
@@ -34,6 +36,11 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const isOwnProfile = currentUser?.id === user.id;
+  const canShowClimbingLevel = user.show_climbing_level !== false || isOwnProfile;
+  const canShowClimbingProgress = user.show_climbing_progress !== false || isOwnProfile;
+  const canShowCompletionStats = user.show_completion_stats !== false || isOwnProfile;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,7 +71,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           </div>
 
           {/* Climbing Info */}
-          {(user.climbing_level || user.climbing_experience) && (
+          {canShowClimbingLevel && (user.climbing_level || user.climbing_experience) && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Mountain className="h-5 w-5 text-[#E55A2B]" />
@@ -106,7 +113,9 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="bg-stone-50 p-3 rounded-lg">
-              <div className="text-2xl font-bold text-[#E55A2B]">{userCompletions.length}</div>
+              <div className="text-2xl font-bold text-[#E55A2B]">
+                {canShowCompletionStats ? userCompletions.length : '•••'}
+              </div>
               <div className="text-xs text-stone-600">Routes Completed</div>
             </div>
             <div className="bg-stone-50 p-3 rounded-lg">
@@ -120,11 +129,18 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           </div>
 
           {/* Completion Progress */}
-          <CompletionProgressBars 
-            completions={userCompletions} 
-            title={`${user.full_name}'s Progress`}
-            areaName="Rattlesnake Point"
-          />
+          {canShowClimbingProgress ? (
+            <CompletionProgressBars 
+              completions={userCompletions} 
+              title={`${user.full_name}'s Progress`}
+              areaName="Rattlesnake Point"
+            />
+          ) : (
+            <div className="bg-stone-50 p-6 rounded-lg text-center">
+              <EyeOff className="h-8 w-8 text-stone-400 mx-auto mb-2" />
+              <p className="text-stone-600">Climbing progress is private</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

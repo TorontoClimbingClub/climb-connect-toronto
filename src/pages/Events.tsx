@@ -133,40 +133,46 @@ export default function Events() {
                       </div>
                     </div>
 
-                    {/* Climbing Level and Experience */}
-                    <div className="mb-3 p-3 bg-stone-50 rounded-lg">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-start gap-2">
-                          <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-stone-700">
-                              {member.climbing_level || "No level specified"}
-                            </p>
-                            {member.climbing_experience && member.climbing_experience.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {member.climbing_experience.map((exp) => (
-                                  <Badge key={exp} variant="outline" className="text-xs bg-white">
-                                    {exp}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
+                    {/* Climbing Level and Experience - respect privacy setting */}
+                    {(member.show_climbing_level !== false || member.id === user?.id) && (member.climbing_level || member.climbing_experience) && (
+                      <div className="mb-3 p-3 bg-stone-50 rounded-lg">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-start gap-2">
+                            <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
+                            <div>
+                              {member.climbing_level && (
+                                <p className="text-sm font-medium text-stone-700">
+                                  {member.climbing_level}
+                                </p>
+                              )}
+                              {member.climbing_experience && member.climbing_experience.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {member.climbing_experience.map((exp) => (
+                                    <Badge key={exp} variant="outline" className="text-xs bg-white">
+                                      {exp}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
+                          {member.climbing_description && (
+                            <p className="text-sm text-stone-700 mt-1">{member.climbing_description}</p>
+                          )}
                         </div>
-                        {member.climbing_description && (
-                          <p className="text-sm text-stone-700 mt-1">{member.climbing_description}</p>
-                        )}
                       </div>
-                    </div>
+                    )}
 
-                    {/* Climbing Progress */}
-                    <div className="mb-3">
-                      <CompletionProgressBars 
-                        completions={userStats.completions} 
-                        compact={true}
-                        areaName="Rattlesnake Point"
-                      />
-                    </div>
+                    {/* Climbing Progress - respect privacy setting */}
+                    {(member.show_climbing_progress !== false || member.id === user?.id) && (
+                      <div className="mb-3">
+                        <CompletionProgressBars 
+                          completions={userStats.completions} 
+                          compact={true}
+                          areaName="Rattlesnake Point"
+                        />
+                      </div>
+                    )}
 
                     <div className="flex justify-between text-sm text-stone-600">
                       <div className="flex items-center">
@@ -176,6 +182,12 @@ export default function Events() {
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-1" />
                         {member.events_count} events joined
+                        {(member.show_completion_stats !== false || member.id === user?.id) && (
+                          <>
+                            <span className="mx-2">•</span>
+                            {userStats.completions.length} routes
+                          </>
+                        )}
                       </div>
                     </div>
                   </CardContent>
