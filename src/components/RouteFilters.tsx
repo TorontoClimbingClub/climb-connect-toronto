@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Filter, X } from "lucide-react";
 import { ClimbingRoute } from "@/types/routes";
 import { FilterSelect } from "./filters/FilterSelect";
-import { FilterActions } from "./filters/FilterActions";
 import { sortGrades } from "./filters/GradeSorter";
 import { Badge } from "@/components/ui/badge";
 
@@ -85,6 +84,27 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
     }, 0);
   };
 
+  // Apply filters automatically when any filter changes
+  const handleGradeChange = (value: string) => {
+    setSelectedGrade(value);
+    setTimeout(() => applyFilters(), 0);
+  };
+
+  const handleStyleChange = (value: string) => {
+    setSelectedStyle(value);
+    setTimeout(() => applyFilters(), 0);
+  };
+
+  const handleAreaChange = (value: string) => {
+    setSelectedArea(value);
+    setTimeout(() => applyFilters(), 0);
+  };
+
+  const handleSectorChange = (value: string) => {
+    setSelectedSector(value);
+    setTimeout(() => applyFilters(), 0);
+  };
+
   const hasActiveFilters = Boolean(selectedGrade || selectedStyle || selectedArea || selectedSector);
   const activeFilters = [
     selectedGrade && { type: 'grade', label: 'Grade', value: selectedGrade },
@@ -141,7 +161,7 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
           <div className="grid grid-cols-2 gap-3">
             <FilterSelect
               value={selectedGrade}
-              onValueChange={setSelectedGrade}
+              onValueChange={handleGradeChange}
               placeholder="Any grade"
               label="Grade"
               options={grades}
@@ -149,7 +169,7 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
 
             <FilterSelect
               value={selectedStyle}
-              onValueChange={setSelectedStyle}
+              onValueChange={handleStyleChange}
               placeholder="Any style"
               label="Style"
               options={styles}
@@ -157,7 +177,7 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
 
             <FilterSelect
               value={selectedArea}
-              onValueChange={setSelectedArea}
+              onValueChange={handleAreaChange}
               placeholder="Any area"
               label="Area"
               options={areas}
@@ -165,18 +185,24 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
 
             <FilterSelect
               value={selectedSector}
-              onValueChange={setSelectedSector}
+              onValueChange={handleSectorChange}
               placeholder="Any sector"
               label="Sector"
               options={sectors}
             />
           </div>
 
-          <FilterActions
-            onApplyFilters={applyFilters}
-            onClearFilters={clearFilters}
-            hasActiveFilters={hasActiveFilters}
-          />
+          {hasActiveFilters && (
+            <div className="flex justify-center pt-2">
+              <button 
+                onClick={clearFilters}
+                className="flex items-center gap-2 px-4 py-2 border border-stone-300 rounded-md hover:bg-stone-50 text-sm"
+              >
+                <X className="h-4 w-4" />
+                Clear All Filters
+              </button>
+            </div>
+          )}
         </CardContent>
       )}
     </Card>

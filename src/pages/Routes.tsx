@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -87,10 +86,7 @@ export default function Routes() {
 
   const handleFiltersChange = (newFilteredRoutes: ClimbingRoute[]) => {
     setFilteredRoutes(newFilteredRoutes);
-    // Reset selections when filters change
-    setSelectedSector(null);
-    setSelectedCrag(null);
-    setExpandedAreas(new Set());
+    // Don't reset selections when filters change - keep user on same page
   };
 
   return (
@@ -102,16 +98,16 @@ export default function Routes() {
           onBack={handleBack}
         />
 
-        {/* Show filters when a crag is selected */}
-        {selectedCrag && (
-          <RouteFilters 
-            routes={rattlesnakeRoutes} 
-            onFiltersChange={handleFiltersChange}
-          />
+        {/* Show location box and filters when a crag is selected but no sector is selected */}
+        {selectedCrag && !selectedSector && (
+          <>
+            <MapWidget />
+            <RouteFilters 
+              routes={rattlesnakeRoutes} 
+              onFiltersChange={handleFiltersChange}
+            />
+          </>
         )}
-
-        {/* Show map widget when crag is selected but no sector is selected */}
-        {selectedCrag && !selectedSector && <MapWidget />}
 
         <div className="space-y-4">
           {!selectedCrag && (

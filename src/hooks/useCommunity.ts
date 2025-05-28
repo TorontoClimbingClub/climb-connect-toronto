@@ -12,6 +12,7 @@ export function useCommunity() {
   const mountedRef = useRef(true);
 
   const fetchCommunityMembers = async () => {
+    console.log('Fetching community members...');
     const abortController = new AbortController();
     
     try {
@@ -22,6 +23,8 @@ export function useCommunity() {
         .abortSignal(abortController.signal);
 
       if (error) throw error;
+
+      console.log('Fetched profiles:', profiles);
 
       // Get additional stats for each member
       const membersWithStats = await Promise.all(
@@ -54,6 +57,8 @@ export function useCommunity() {
       // Filter out null values from unmounted component checks
       const validMembers = membersWithStats.filter(Boolean) as CommunityMember[];
 
+      console.log('Members with stats:', validMembers);
+
       if (mountedRef.current) {
         setMembers(validMembers);
       }
@@ -61,6 +66,7 @@ export function useCommunity() {
       if (error.name !== 'AbortError' && mountedRef.current) {
         const apiError = handleSupabaseError(error);
         logError('fetchCommunityMembers', error);
+        console.error('Community fetch error:', error);
         
         toast({
           title: "Error",
