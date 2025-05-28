@@ -1,67 +1,46 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, Mountain, Wrench, Calendar, Phone } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Mountain, Phone, Users } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { useCommunity } from "@/hooks/useCommunity";
+import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { CommunityMember } from "@/types/community";
 
 export default function Community() {
   const { members, loading } = useCommunity();
+  const { getUserCompletionStats } = useClimbCompletions();
   const [selectedUser, setSelectedUser] = useState<CommunityMember | null>(null);
-  const [showUserOverlay, setShowUserOverlay] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleUserClick = (user: CommunityMember) => {
     setSelectedUser(user);
-    setShowUserOverlay(true);
+    setIsProfileOpen(true);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="text-[#E55A2B]">Loading community members...</div>
+        <div className="text-[#E55A2B]">Loading community...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-2xl mx-auto p-4">
+      <div className="max-w-4xl mx-auto p-4">
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="h-6 w-6 text-[#E55A2B]" />
-            <h1 className="text-2xl font-bold text-[#E55A2B]">Community</h1>
-          </div>
-          <p className="text-stone-600">Connect with fellow climbers in our community</p>
+          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Members</h1>
+          <p className="text-stone-600">Connect with fellow climbers in the TCC community</p>
         </div>
 
-        {/* Community Stats */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Community Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-[#E55A2B]">{members.length}</div>
-                <div className="text-sm text-stone-600">Total Members</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-[#E55A2B]">
-                  {members.filter(m => m.climbing_level && m.climbing_level !== 'Never Climbed').length}
-                </div>
-                <div className="text-sm text-stone-600">Active Climbers</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Members List */}
         <div className="space-y-4">
           {members.map((member) => {
+            const userStats = getUserCompletionStats(member.id);
             const userInitials = member.full_name
               .split(' ')
               .map(n => n[0])
@@ -72,62 +51,70 @@ export default function Community() {
             return (
               <Card 
                 key={member.id} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => handleUserClick(member)}
               >
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12 flex-shrink-0">
                       <AvatarFallback className="bg-[#E55A2B] text-white font-semibold">
                         {userInitials}
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-[#E55A2B]">{member.full_name}</h3>
-                        {member.climbing_level && (
-                          <Badge variant="outline" className="text-xs">
-                            {member.climbing_level}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-stone-600">
-                        {member.equipment_count > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Wrench className="h-3 w-3" />
-                            <span>{member.equipment_count} gear</span>
-                          </div>
-                        )}
-                        
-                        {member.events_count > 0 && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{member.events_count} events</span>
-                          </div>
-                        )}
-                        
-                        {member.phone && (
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                          </div>
-                        )}
-                      </div>
-                      
-                      {member.climbing_experience && member.climbing_experience.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {member.climbing_experience.slice(0, 3).map((exp) => (
-                            <Badge key={exp} variant="secondary" className="text-xs">
-                              {exp}
-                            </Badge>
-                          ))}
-                          {member.climbing_experience.length > 3 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{member.climbing_experience.length - 3} more
-                            </Badge>
+                    <div className="flex-1 min-w-0 space-y-3">
+                      {/* Header */}
+                      <div>
+                        <h3 className="font-semibold text-lg text-stone-800">
+                          {member.full_name}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-stone-600 mt-1">
+                          {member.phone && (
+                            <div className="flex items-center gap-1">
+                              <Phone className="h-4 w-4" />
+                              <span>{member.phone}</span>
+                            </div>
                           )}
                         </div>
+                      </div>
+
+                      {/* Climbing Info */}
+                      {(member.climbing_level || member.climbing_experience) && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Mountain className="h-4 w-4 text-[#E55A2B]" />
+                            <span className="text-sm font-medium">Climbing Info</span>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {member.climbing_level && (
+                              <Badge variant="outline">{member.climbing_level}</Badge>
+                            )}
+                            {member.climbing_experience && member.climbing_experience.length > 0 && (
+                              member.climbing_experience.map((exp) => (
+                                <Badge key={exp} variant="secondary" className="text-xs">
+                                  {exp}
+                                </Badge>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Progress */}
+                      <div className="space-y-2">
+                        <CompletionProgressBars 
+                          completions={userStats.completions} 
+                          compact={true}
+                          areaName="Rattlesnake Point"
+                        />
+                      </div>
+
+                      {/* Description */}
+                      {member.climbing_description && (
+                        <p className="text-sm text-stone-700 bg-stone-50 p-2 rounded">
+                          {member.climbing_description}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -138,13 +125,13 @@ export default function Community() {
         </div>
       </div>
 
+      <Navigation />
+
       <UserProfileOverlay
         user={selectedUser}
-        open={showUserOverlay}
-        onOpenChange={setShowUserOverlay}
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
       />
-
-      <Navigation />
     </div>
   );
 }

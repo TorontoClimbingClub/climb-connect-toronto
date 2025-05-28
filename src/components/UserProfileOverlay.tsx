@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mountain, User, Phone } from "lucide-react";
+import { Mountain, Phone } from "lucide-react";
 import { CompletionProgressBars } from "./CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { CommunityMember } from "@/types/community";
@@ -15,7 +15,7 @@ interface UserProfileOverlayProps {
 }
 
 export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOverlayProps) {
-  const { getUserCompletionStats, fetchCompletions, completions } = useClimbCompletions();
+  const { getUserCompletionStats, completions } = useClimbCompletions();
   const [userCompletions, setUserCompletions] = useState<any[]>([]);
 
   useEffect(() => {
@@ -123,6 +123,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           <CompletionProgressBars 
             completions={userCompletions} 
             title={`${user.full_name}'s Progress`}
+            areaName="Rattlesnake Point"
           />
         </div>
       </DialogContent>

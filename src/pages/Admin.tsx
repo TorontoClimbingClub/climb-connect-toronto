@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/Navigation";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { EventsTab } from "@/components/admin/EventsTab";
+import { RouteManagementTab } from "@/components/admin/RouteManagementTab";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useUserHandlers, useEventHandlers } from "@/utils/admin";
 
@@ -45,13 +46,14 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Admin Panel</h1>
-          <p className="text-stone-600">Manage TCC users and events</p>
+          <p className="text-stone-600">Manage TCC users, events, and routes</p>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
+            <TabsTrigger value="routes">Routes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -72,6 +74,10 @@ export default function Admin() {
               onDeleteEvent={handleDeleteEvent}
               onRefreshEvents={fetchEvents}
             />
+          </TabsContent>
+
+          <TabsContent value="routes">
+            <RouteManagementTab />
           </TabsContent>
         </Tabs>
       </div>

@@ -1,11 +1,12 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Filter } from "lucide-react";
+import { Filter, X } from "lucide-react";
 import { ClimbingRoute } from "@/types/routes";
 import { FilterSelect } from "./filters/FilterSelect";
 import { FilterActions } from "./filters/FilterActions";
 import { sortGrades } from "./filters/GradeSorter";
+import { Badge } from "@/components/ui/badge";
 
 interface RouteFiltersProps {
   routes: ClimbingRoute[];
@@ -52,7 +53,45 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
     onFiltersChange(routes);
   };
 
+  const clearIndividualFilter = (filterType: string) => {
+    switch (filterType) {
+      case 'grade':
+        setSelectedGrade("");
+        break;
+      case 'style':
+        setSelectedStyle("");
+        break;
+      case 'area':
+        setSelectedArea("");
+        break;
+      case 'sector':
+        setSelectedSector("");
+        break;
+    }
+    // Apply filters immediately after clearing individual filter
+    setTimeout(() => {
+      let filtered = routes;
+      const currentGrade = filterType === 'grade' ? "" : selectedGrade;
+      const currentStyle = filterType === 'style' ? "" : selectedStyle;
+      const currentArea = filterType === 'area' ? "" : selectedArea;
+      const currentSector = filterType === 'sector' ? "" : selectedSector;
+
+      if (currentGrade) filtered = filtered.filter(route => route.grade === currentGrade);
+      if (currentStyle) filtered = filtered.filter(route => route.style === currentStyle);
+      if (currentArea) filtered = filtered.filter(route => route.area === currentArea);
+      if (currentSector) filtered = filtered.filter(route => route.sector === currentSector);
+
+      onFiltersChange(filtered);
+    }, 0);
+  };
+
   const hasActiveFilters = Boolean(selectedGrade || selectedStyle || selectedArea || selectedSector);
+  const activeFilters = [
+    selectedGrade && { type: 'grade', label: 'Grade', value: selectedGrade },
+    selectedStyle && { type: 'style', label: 'Style', value: selectedStyle },
+    selectedArea && { type: 'area', label: 'Area', value: selectedArea },
+    selectedSector && { type: 'sector', label: 'Sector', value: selectedSector },
+  ].filter(Boolean);
 
   return (
     <Card className="mb-4">
@@ -66,11 +105,35 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
             Filter Routes
             {hasActiveFilters && (
               <span className="bg-[#E55A2B] text-white text-xs px-2 py-1 rounded-full">
-                {[selectedGrade, selectedStyle, selectedArea, selectedSector].filter(Boolean).length}
+                {activeFilters.length}
               </span>
             )}
           </CardTitle>
         </button>
+        
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="mt-3">
+            <div className="text-sm text-stone-600 mb-2">Active filters:</div>
+            <div className="flex flex-wrap gap-2">
+              {activeFilters.map((filter) => (
+                <Badge 
+                  key={filter.type} 
+                  variant="secondary" 
+                  className="flex items-center gap-1 bg-[#E55A2B] text-white hover:bg-orange-700"
+                >
+                  <span className="text-xs">{filter.label}: {filter.value}</span>
+                  <button
+                    onClick={() => clearIndividualFilter(filter.type)}
+                    className="ml-1 hover:bg-orange-800 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
       </CardHeader>
       
       {isExpanded && (

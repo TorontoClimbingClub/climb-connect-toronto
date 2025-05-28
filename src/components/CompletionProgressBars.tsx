@@ -8,9 +8,16 @@ import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 interface CompletionProgressBarsProps {
   completions: ClimbCompletion[];
   title?: string;
+  areaName?: string;
+  compact?: boolean;
 }
 
-export function CompletionProgressBars({ completions, title = "Climbing Progress" }: CompletionProgressBarsProps) {
+export function CompletionProgressBars({ 
+  completions, 
+  title = "Climbing Progress", 
+  areaName = "Rattlesnake Point",
+  compact = false
+}: CompletionProgressBarsProps) {
   const progressData = useMemo(() => {
     // Group routes by style
     const routesByStyle = rattlesnakeRoutes.reduce((acc, route) => {
@@ -66,12 +73,39 @@ export function CompletionProgressBars({ completions, title = "Climbing Progress
     }
   };
 
+  if (compact) {
+    return (
+      <div className="space-y-2">
+        <div className="text-sm font-medium text-stone-700">
+          {areaName}: {progressData.overall.completed}/{progressData.overall.total} ({progressData.overall.percentage}%)
+        </div>
+        <div className="space-y-1">
+          {progressData.styles.map(({ style, percentage }) => (
+            <div key={style} className="flex items-center gap-2">
+              <span className="text-xs font-medium text-stone-600 w-16">{style}</span>
+              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: getStyleColor(style)
+                  }}
+                />
+              </div>
+              <span className="text-xs text-stone-500 w-8">{percentage}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">{title}</CardTitle>
         <p className="text-sm text-stone-600">
-          {progressData.overall.completed} of {progressData.overall.total} routes completed ({progressData.overall.percentage}%)
+          {areaName}: {progressData.overall.completed} of {progressData.overall.total} routes completed ({progressData.overall.percentage}%)
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
