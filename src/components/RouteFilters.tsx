@@ -52,7 +52,7 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
     onFiltersChange(routes);
   };
 
-  const hasActiveFilters = selectedGrade || selectedStyle || selectedArea || selectedSector;
+  const hasActiveFilters = Boolean(selectedGrade || selectedStyle || selectedArea || selectedSector);
 
   return (
     <Card className="mb-4">
