@@ -20,7 +20,7 @@ export const useRouteComments = (routeId: string) => {
           profiles!route_comments_user_id_fkey(full_name)
         `)
         .eq('route_id', routeId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true }); // Changed to ascending for first to last
 
       if (error) throw error;
       
@@ -35,7 +35,7 @@ export const useRouteComments = (routeId: string) => {
     }
   }, [routeId]);
 
-  const addComment = async (comment: string) => {
+  const addComment = async (comment: string, parentId?: string) => {
     if (!user || !comment.trim()) return;
 
     setLoading(true);
@@ -46,14 +46,15 @@ export const useRouteComments = (routeId: string) => {
           route_id: routeId,
           user_id: user.id,
           comment: comment.trim(),
-          user_name: user.email || "Anonymous"
+          user_name: user.email || "Anonymous",
+          parent_id: parentId || null
         });
 
       if (error) throw error;
 
       toast({
-        title: "Comment added",
-        description: "Your comment has been added successfully",
+        title: parentId ? "Reply added" : "Comment added",
+        description: parentId ? "Your reply has been added successfully" : "Your comment has been added successfully",
       });
 
       fetchComments();
@@ -61,7 +62,36 @@ export const useRouteComments = (routeId: string) => {
       console.error('Error adding comment:', error);
       toast({
         title: "Error",
-        description: "Failed to add comment",
+        description: parentId ? "Failed to add reply" : "Failed to add comment",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const deleteComment = async (commentId: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('route_comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Comment deleted",
+        description: "Your comment has been deleted successfully",
+      });
+
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete comment",
         variant: "destructive",
       });
     }
@@ -72,6 +102,7 @@ export const useRouteComments = (routeId: string) => {
     comments,
     loading,
     addComment,
+    deleteComment,
     fetchComments
   };
 };

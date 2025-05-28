@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { PhotoGallery } from "@/components/PhotoGallery";
+import { CommentItem } from "@/components/CommentItem";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { useRouteData } from "@/hooks/useRouteData";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export default function RouteDetail() {
     photos, 
     loading, 
     addComment, 
+    deleteComment,
     uploadPhoto, 
     deletePhoto, 
     updatePhotoCaption 
@@ -36,6 +38,10 @@ export default function RouteDetail() {
     await addComment(comment);
     setComment("");
   };
+
+  // Group comments by parent/replies
+  const parentComments = comments.filter(c => !c.parent_id);
+  const getReplies = (parentId: string) => comments.filter(c => c.parent_id === parentId);
 
   if (!route) {
     return (
@@ -136,7 +142,6 @@ export default function RouteDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Display photos first */}
             <PhotoGallery 
               photos={photos}
               onDeletePhoto={deletePhoto}
@@ -144,14 +149,12 @@ export default function RouteDetail() {
               loading={loading}
             />
             
-            {/* Upload component below, smaller and less prominent */}
             {photos.length > 0 && (
               <div className="border-t pt-4">
                 <PhotoUpload onUpload={uploadPhoto} loading={loading} />
               </div>
             )}
             
-            {/* If no photos, show upload prominently */}
             {photos.length === 0 && (
               <PhotoUpload onUpload={uploadPhoto} loading={loading} />
             )}
@@ -163,7 +166,7 @@ export default function RouteDetail() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              Comments ({comments.length})
+              Comments ({parentComments.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -192,24 +195,21 @@ export default function RouteDetail() {
 
             {/* Comments List */}
             <div className="space-y-4">
-              {comments.length === 0 ? (
+              {parentComments.length === 0 ? (
                 <div className="text-center py-8 text-stone-500">
                   <MessageCircle className="h-12 w-12 mx-auto mb-4 text-stone-400" />
                   <p>No comments yet. Share your experience!</p>
                 </div>
               ) : (
-                comments.map((comment) => (
-                  <div key={comment.id} className="bg-stone-50 p-4 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm text-[#E55A2B]">
-                        {comment.user_name}
-                      </span>
-                      <span className="text-xs text-stone-500">
-                        {new Date(comment.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-stone-700">{comment.comment}</p>
-                  </div>
+                parentComments.map((comment) => (
+                  <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    replies={getReplies(comment.id)}
+                    onReply={addComment}
+                    onDelete={deleteComment}
+                    loading={loading}
+                  />
                 ))
               )}
             </div>

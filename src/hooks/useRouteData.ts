@@ -8,6 +8,7 @@ export const useRouteData = (routeId: string) => {
     comments,
     loading: commentsLoading,
     addComment,
+    deleteComment,
     fetchComments
   } = useRouteComments(routeId);
 
@@ -30,6 +31,7 @@ export const useRouteData = (routeId: string) => {
     photos,
     loading: commentsLoading || photosLoading,
     addComment,
+    deleteComment,
     uploadPhoto,
     deletePhoto,
     updatePhotoCaption
