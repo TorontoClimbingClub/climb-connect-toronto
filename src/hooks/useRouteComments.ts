@@ -20,7 +20,7 @@ export const useRouteComments = (routeId: string) => {
           profiles!route_comments_user_id_fkey(full_name)
         `)
         .eq('route_id', routeId)
-        .order('created_at', { ascending: true }); // Changed to ascending for first to last
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
       

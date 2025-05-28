@@ -223,6 +223,7 @@ export type Database = {
           comment: string
           created_at: string
           id: string
+          parent_id: string | null
           route_id: string
           user_id: string
           user_name: string
@@ -231,6 +232,7 @@ export type Database = {
           comment: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           route_id: string
           user_id: string
           user_name: string
@@ -239,11 +241,19 @@ export type Database = {
           comment?: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           route_id?: string
           user_id?: string
           user_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "route_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "route_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "route_comments_user_id_fkey"
             columns: ["user_id"]

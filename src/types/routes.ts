@@ -16,6 +16,9 @@ export interface RouteComment {
   created_at: string;
   user_name: string;
   parent_id?: string;
+  profiles?: {
+    full_name: string;
+  };
 }
 
 export interface RoutePhoto {
