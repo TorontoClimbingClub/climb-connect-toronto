@@ -23,6 +23,7 @@ export const PhotoGallery = ({
   const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState("");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   const handleEditStart = (photo: RoutePhoto) => {
     setEditingPhoto(photo.id);
@@ -41,7 +42,18 @@ export const PhotoGallery = ({
   };
 
   const handleImageError = (photoId: string) => {
+    console.log('Image failed to load for photo:', photoId);
     setFailedImages(prev => new Set(prev).add(photoId));
+  };
+
+  const handleImageLoad = (photoId: string) => {
+    console.log('Image loaded successfully for photo:', photoId);
+    setLoadedImages(prev => new Set(prev).add(photoId));
+    setFailedImages(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(photoId);
+      return newSet;
+    });
   };
 
   const canManagePhoto = (photo: RoutePhoto) => {
@@ -68,6 +80,18 @@ export const PhotoGallery = ({
                 <div className="text-center text-stone-500">
                   <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">Image failed to load</p>
+                  <button 
+                    onClick={() => {
+                      setFailedImages(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(photo.id);
+                        return newSet;
+                      });
+                    }}
+                    className="text-xs text-orange-600 hover:text-orange-800 mt-1"
+                  >
+                    Try again
+                  </button>
                 </div>
               </div>
             ) : (
@@ -76,6 +100,8 @@ export const PhotoGallery = ({
                 alt={photo.caption || "Route photo"}
                 className="w-full h-64 object-cover"
                 onError={() => handleImageError(photo.id)}
+                onLoad={() => handleImageLoad(photo.id)}
+                loading="lazy"
               />
             )}
             
