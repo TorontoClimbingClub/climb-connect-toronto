@@ -55,8 +55,8 @@ export default function Index() {
                     <Mountain className="h-5 w-5 text-[#E55A2B]" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Climbing Routes</CardTitle>
-                    <CardDescription>Explore routes at Rattlesnake Point</CardDescription>
+                    <CardTitle className="text-lg">Beta Boards</CardTitle>
+                    <CardDescription>Explore outdoor climbs</CardDescription>
                   </div>
                 </div>
                 <ArrowRight className="h-5 w-5 text-stone-400" />
