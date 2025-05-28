@@ -1,3 +1,4 @@
+
 import { ClimbingRoute } from "@/types/routes";
 
 export const rattlesnakeRoutes: ClimbingRoute[] = [
@@ -40,8 +41,8 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "32", name: "Loblwas", grade: "5.8", style: "Sport", area: "Median Ledge", sector: "West Cliff" },
   { id: "33", name: "The 5.3 Right of Median", grade: "5.3", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
   { id: "34", name: "Maverick", grade: "5.8", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
-  { id: "35", name: "Scary Monsters", grade: "5.10", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
-  { id: "36", name: "Median", grade: "5.0", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
+  { id: "35", name: "Scary Monsters", grade: "5.1", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
+  { id: "36", name: "Median", grade: "5", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
   { id: "37", name: "Median 2nd Pitch", grade: "5.3", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
   { id: "38", name: "Sinusitis", grade: "5.4", style: "Trad", area: "Median Ledge", sector: "West Cliff" },
   { id: "39", name: "Discovery", grade: "5.7", style: "Sport", area: "Median Ledge", sector: "West Cliff" },
@@ -53,7 +54,7 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "43", name: "Peter's Variation", grade: "5.11", style: "Trad", area: "Hardman", sector: "West Cliff" },
   { id: "44", name: "Space Invaders", grade: "5.10c", style: "Trad", area: "Hardman", sector: "West Cliff" },
   { id: "45", name: "Firefall", grade: "5.10b", style: "Trad", area: "Hardman", sector: "West Cliff" },
-  { id: "46", name: "Son of Firefall", grade: "5.10", style: "Top Rope", area: "Hardman", sector: "West Cliff" },
+  { id: "46", name: "Son of Firefall", grade: "5.1", style: "Top Rope", area: "Hardman", sector: "West Cliff" },
   { id: "47", name: "Bogus", grade: "5.12b", style: "Top Rope", area: "Hardman", sector: "West Cliff" },
   { id: "48", name: "Funky Fingers", grade: "5.11a", style: "Trad", area: "Hardman", sector: "West Cliff" },
   { id: "49", name: "S.O.B", grade: "5.11a", style: "Trad", area: "Hardman", sector: "West Cliff" },
@@ -64,7 +65,7 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "54", name: "Crepidation", grade: "5.10b", style: "Trad", area: "Hardman", sector: "West Cliff" },
   
   // Holy Cow Roof routes
-  { id: "55", name: "Zilch", grade: "5.10", style: "Trad", area: "Holy Cow Roof", sector: "West Cliff" },
+  { id: "55", name: "Zilch", grade: "5.1", style: "Trad", area: "Holy Cow Roof", sector: "West Cliff" },
   { id: "56", name: "The Nose", grade: "5.9", style: "Trad", area: "Holy Cow Roof", sector: "West Cliff" },
   { id: "57", name: "Holy Cow", grade: "5.8", style: "Trad", area: "Holy Cow Roof", sector: "West Cliff" },
   { id: "58", name: "Holy Cow Semi-Direct", grade: "5.10a", style: "Trad", area: "Holy Cow Roof", sector: "West Cliff" },
@@ -85,7 +86,7 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "71", name: "Chalky's Balanced Climb", grade: "5.3", style: "Trad", area: "The Plaque", sector: "West Cliff" },
   { id: "72", name: "Raccoon Army", grade: "5.6", style: "Sport", area: "The Plaque", sector: "West Cliff" },
   { id: "73", name: "Chalky's Arete", grade: "5.11", style: "Top Rope", area: "The Plaque", sector: "West Cliff" },
-  { id: "74", name: "Easy Chimney", grade: "5.0", style: "Trad", area: "The Plaque", sector: "West Cliff" },
+  { id: "74", name: "Easy Chimney", grade: "5", style: "Trad", area: "The Plaque", sector: "West Cliff" },
   { id: "75", name: "Army Days", grade: "5.6", style: "Trad", area: "The Plaque", sector: "West Cliff" },
   
   // Showpiece routes
@@ -110,7 +111,7 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "94", name: "Hanging Tree", grade: "5.7", style: "Trad", area: "Showpiece", sector: "West Cliff" },
   
   // Far West routes
-  { id: "95", name: "Buckingham Right", grade: "5.10", style: "Top Rope", area: "Far West", sector: "West Cliff" },
+  { id: "95", name: "Buckingham Right", grade: "5.1", style: "Top Rope", area: "Far West", sector: "West Cliff" },
   { id: "96", name: "Buckingham Palace Direct", grade: "5.8", style: "Trad", area: "Far West", sector: "West Cliff" },
   { id: "97", name: "Buckingham Palace", grade: "5.6", style: "Trad", area: "Far West", sector: "West Cliff" },
   { id: "98", name: "B.S.", grade: "5.10a", style: "Sport", area: "Far West", sector: "West Cliff" },
@@ -219,13 +220,13 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "187", name: "Falling Stars", grade: "5.6", style: "Sport", area: "First Pinnacle", sector: "Bottle Glass" },
   { id: "188", name: "Nice Bulge", grade: "5.7", style: "Sport", area: "First Pinnacle", sector: "Bottle Glass" },
   { id: "189", name: "Korn-eered", grade: "5.7", style: "Sport", area: "First Pinnacle", sector: "Bottle Glass" },
-  { id: "190", name: "The Cardinal Rule", grade: "5.8", style: "Sport", area: "First Pinnacle", sector: "Bottle Glass" },
+  { id: "190", name: "The Cardinal Rule", grade: "5.8", style: "Sport", area: "First PInnacle", sector: "Bottle Glass" },
   { id: "191", name: "Yasser is a Trad Master", grade: "5.9", style: "Trad", area: "First Pinnacle", sector: "Bottle Glass" },
   { id: "192", name: "The Sound of Breaking Glass", grade: "5.8", style: "Trad", area: "First Pinnacle", sector: "Bottle Glass" },
 
   // Bottle Glass - Second Pinnacle routes
   { id: "193", name: "Wally", grade: "5.8", style: "Sport", area: "Second Pinnacle", sector: "Bottle Glass" },
-  { id: "194", name: "Glass Carpet", grade: "5.8", style: "Trad", area: "Second Pinnacle", sector: "Bottle Glass" },
+  { id: "194", name: "Glass Carpet", grade: "5.8", style: "Trad", area: "Second PInnacle", sector: "Bottle Glass" },
   { id: "195", name: "Fat Crack Overhang", grade: "5.9", style: "Trad", area: "Second Pinnacle", sector: "Bottle Glass" },
   { id: "196", name: "Hangover Overhang", grade: "5.9", style: "Sport", area: "Second Pinnacle", sector: "Bottle Glass" },
   { id: "197", name: "99 Bottles of Beer", grade: "5.10b", style: "Sport", area: "Second Pinnacle", sector: "Bottle Glass" },
@@ -243,115 +244,117 @@ export const rattlesnakeRoutes: ClimbingRoute[] = [
   { id: "207", name: "Ray's Big Butt", grade: "5.9", style: "Sport", area: "Not White Bluff", sector: "Bottle Glass" },
   { id: "208", name: "Caveman Descent", grade: "5.0", style: "Trad", area: "Not White Bluff", sector: "Bottle Glass" },
 
-  // Buffalo Crag - Gully Mini-Routes
-  { id: "209", name: "Warm Up", grade: "5.2", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "210", name: "Simian Swing", grade: "5.9", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "211", name: "UoT Special", grade: "5.6", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "212", name: "Trillium", grade: "5.4", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "213", name: "Tree Jam", grade: "5.4", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "214", name: "Mayflower", grade: "5.3", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "215", name: "Solo", grade: "5.4", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "216", name: "Turkey", grade: "5.1", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag" },
-  { id: "217", name: "Calhoun", grade: "5.4", style: "Trad", area: "Calhoun", sector: "Buffalo Crag" },
+  // Buffalo Crag East - Gully Mini-Routes
+  { id: "209", name: "Warm Up", grade: "5.2", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "210", name: "Simian Swing", grade: "5.9", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "211", name: "UoT Special", grade: "5.6", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "212", name: "Trillium", grade: "5.4", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "213", name: "Tree Jam", grade: "5.4", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "214", name: "Mayflower", grade: "5.3", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "215", name: "Solo", grade: "5.4", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "216", name: "Turkey", grade: "5.1", style: "Trad", area: "Gully Mini-Routes", sector: "Buffalo Crag East" },
+  { id: "217", name: "Calhoun", grade: "5.4", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
 
-  // Bottle Glass East - Calhoun routes
-  { id: "218", name: "Brain Salad Surgery", grade: "5.10c", style: "Trad", area: "Calhoun", sector: "Bottle Glass East" },
-  { id: "219", name: "Sinutab", grade: "5.9", style: "Trad", area: "Calhoun", sector: "Bottle Glass East" },
-  { id: "220", name: "Diminishing Returns", grade: "5.8", style: "Trad", area: "Calhoun", sector: "Bottle Glass East" },
-  { id: "221", name: "The Sting", grade: "5.7", style: "Trad", area: "Calhoun", sector: "Bottle Glass East" },
-  { id: "222", name: "Reunion", grade: "5.8", style: "Trad", area: "Calhoun", sector: "Bottle Glass East" },
-  { id: "223", name: "The Dodger", grade: "5.6", style: "Trad", area: "Calhoun", sector: "Bottle Glass East" },
+  // Buffalo Crag East - Calhoun routes
+  { id: "218", name: "Brain Salad Surgery", grade: "5.10c", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
+  { id: "219", name: "Sinutab", grade: "5.9", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
+  { id: "220", name: "Diminishing Returns", grade: "5.8", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
+  { id: "221", name: "The Sting", grade: "5.7", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
+  { id: "222", name: "Reunion", grade: "5.8", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
+  { id: "223", name: "The Dodger", grade: "5.6", style: "Trad", area: "Calhoun", sector: "Buffalo Crag East" },
 
-  // Bottle Glass East - Reservoir routes
-  { id: "224", name: "The Shield", grade: "5.9", style: "Trad", area: "Reservoir", sector: "Bottle Glass East" },
-  { id: "225", name: "Silly Face", grade: "5.8", style: "Trad", area: "Reservoir", sector: "Bottle Glass East" },
-  { id: "226", name: "Super Duper", grade: "5.6", style: "Trad", area: "Reservoir", sector: "Bottle Glass East" },
-  { id: "227", name: "Super Dave's Last Stunt", grade: "5.8", style: "Trad", area: "Reservoir", sector: "Bottle Glass East" },
-  { id: "228", name: "Reservoir", grade: "5.5", style: "Trad", area: "Reservoir", sector: "Bottle Glass East" },
-  { id: "229", name: "Ragusa", grade: "5.6", style: "Trad", area: "Reservoir", sector: "Bottle Glass East" },
+  // Buffalo Crag East - Reservoir routes
+  { id: "224", name: "The Shield", grade: "5.9", style: "Trad", area: "Reservoir", sector: "Buffalo Crag East" },
+  { id: "225", name: "Silly Face", grade: "5.8", style: "Trad", area: "Reservoir", sector: "Buffalo Crag East" },
+  { id: "226", name: "Super Duper", grade: "5.6", style: "Trad", area: "Reservoir", sector: "Buffalo Crag East" },
+  { id: "227", name: "Super Dave's Last Stunt", grade: "5.8", style: "Trad", area: "Reservoir", sector: "Buffalo Crag East" },
+  { id: "228", name: "Reservoir", grade: "5.5", style: "Trad", area: "Reservoir", sector: "Buffalo Crag East" },
+  { id: "229", name: "Ragusa", grade: "5.6", style: "Trad", area: "Reservoir", sector: "Buffalo Crag East" },
 
-  // Bottle Glass East - Sperber routes
-  { id: "230", name: "Yoyo", grade: "5.4", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
-  { id: "231", name: "Sperber", grade: "5.6", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
-  { id: "232", name: "Orc", grade: "5.6", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
-  { id: "233", name: "Nivek", grade: "5.10b", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
-  { id: "234", name: "Sandman", grade: "5.10b", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
-  { id: "235", name: "Dune", grade: "5.8", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
-  { id: "236", name: "Cedar", grade: "5.6", style: "Trad", area: "Sperber", sector: "Bottle Glass East" },
+  // Buffalo Crag East - Sperber routes
+  { id: "230", name: "Yoyo", grade: "5.4", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
+  { id: "231", name: "Sperber", grade: "5.6", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
+  { id: "232", name: "Orc", grade: "5.6", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
+  { id: "233", name: "Nivek", grade: "5.10b", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
+  { id: "234", name: "Sandman", grade: "5.10b", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
+  { id: "235", name: "Dune", grade: "5.8", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
+  { id: "236", name: "Cedar", grade: "5.6", style: "Trad", area: "Sperber", sector: "Buffalo Crag East" },
 
-  // Bottle Glass East - Tapestry routes
-  { id: "237", name: "Tapestry", grade: "5.9", style: "Trad", area: "Tapestry", sector: "Bottle Glass East" },
-  { id: "238", name: "Angels Drawers", grade: "5.10b", style: "Trad", area: "Tapestry", sector: "Bottle Glass East" },
-  { id: "239", name: "Pickle Puss", grade: "5.5", style: "Trad", area: "Tapestry", sector: "Bottle Glass East" },
-  { id: "240", name: "Ramble", grade: "5.4", style: "Trad", area: "Tapestry", sector: "Bottle Glass East" },
-  { id: "241", name: "Second Time Lucky", grade: "5.5", style: "Trad", area: "Tapestry", sector: "Bottle Glass East" },
-  { id: "242", name: "La Guapa", grade: "5.7", style: "Trad", area: "Tapestry", sector: "Bottle Glass East" },
+  // Buffalo Crag East - Tapestry routes
+  { id: "237", name: "Tapestry", grade: "5.9", style: "Trad", area: "Tapestry", sector: "Buffalo Crag East" },
+  { id: "238", name: "Angels Drawers", grade: "5.10b", style: "Trad", area: "Tapestry", sector: "Buffalo Crag East" },
+  { id: "239", name: "Pickle Puss", grade: "5.5", style: "Trad", area: "Tapestry", sector: "Buffalo Crag East" },
+  { id: "240", name: "Ramble", grade: "5.4", style: "Trad", area: "Tapestry", sector: "Buffalo Crag East" },
+  { id: "241", name: "Second Time Lucky", grade: "5.5", style: "Trad", area: "Tapestry", sector: "Buffalo Crag East" },
+  { id: "242", name: "La Guapa", grade: "5.7", style: "Trad", area: "Tapestry", sector: "Buffalo Crag East" },
 
-  // Bottle Glass West - Sunshine routes
-  { id: "243", name: "Apple Crumble", grade: "5.4", style: "Trad", area: "Sunshine", sector: "Bottle Glass West" },
-  { id: "244", name: "The Coke", grade: "5.2", style: "Trad", area: "Sunshine", sector: "Bottle Glass West" },
-  { id: "245", name: "Bob's Your Uncle", grade: "5.7", style: "Trad", area: "Sunshine", sector: "Bottle Glass West" },
-  { id: "246", name: "Durley's Return", grade: "5.5", style: "Trad", area: "Sunshine", sector: "Bottle Glass West" },
-  { id: "247", name: "Sunshine", grade: "5.7", style: "Trad", area: "Sunshine", sector: "Bottle Glass West" },
-  { id: "248", name: "Hydroseal", grade: "5.9", style: "Trad", area: "Sunshine", sector: "Bottle Glass West" },
+  // Buffalo Crag East - Sunshine routes (one route)
+  { id: "243", name: "Apple Crumble", grade: "5.4", style: "Trad", area: "Sunshine", sector: "Buffalo Crag East" },
 
-  // Bottle Glass West - Abyss routes
-  { id: "249", name: "Abyss", grade: "5.10b", style: "Trad", area: "Abyss", sector: "Bottle Glass West" },
-  { id: "250", name: "The Go-Between", grade: "5.11b", style: "Trad", area: "Abyss", sector: "Bottle Glass West" },
-  { id: "251", name: "Operation Evaporation", grade: "5.10", style: "Trad", area: "Abyss", sector: "Bottle Glass West" },
-  { id: "252", name: "The Go-Beside", grade: "5.11b", style: "Trad", area: "Abyss", sector: "Bottle Glass West" },
+  // Buffalo Crag West - Sunshine routes
+  { id: "244", name: "The Coke", grade: "5.2", style: "Trad", area: "Sunshine", sector: "Buffalo Crag West" },
+  { id: "245", name: "Bob's Your Uncle", grade: "5.7", style: "Trad", area: "Sunshine", sector: "Buffalo Crag West" },
+  { id: "246", name: "Durley's Return", grade: "5.5", style: "Trad", area: "Sunshine", sector: "Buffalo Crag West" },
+  { id: "247", name: "Sunshine", grade: "5.7", style: "Trad", area: "Sunshine", sector: "Buffalo Crag West" },
+  { id: "248", name: "Hydroseal", grade: "5.9", style: "Trad", area: "Sunshine", sector: "Buffalo Crag West" },
 
-  // Bottle Glass West - Boa Constrictor routes
-  { id: "253", name: "Shaky Flaky", grade: "5.3", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "254", name: "Veg/Reject Direct", grade: "5.8", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "255", name: "Veg", grade: "5.2", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "256", name: "Boa Constrictor", grade: "5.4", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "257", name: "Nervous System", grade: "5.9", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "258", name: "Skywalker", grade: "5.7", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "259", name: "Knight's Move", grade: "5.7", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "260", name: "Orange Wall", grade: "5.9", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "261", name: "Orange Wall Direct", grade: "5.10b", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "262", name: "Summer Brave", grade: "5.10c", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "263", name: "Lycra Test", grade: "5.11c", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "264", name: "Know Your Rights", grade: "5.11c", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
-  { id: "265", name: "Phenothiazine", grade: "5.10c", style: "Trad", area: "Boa Constrictor", sector: "Bottle Glass West" },
+  // Buffalo Crag West - Abyss routes
+  { id: "249", name: "Abyss", grade: "5.10b", style: "Trad", area: "Abyss", sector: "Buffalo Crag West" },
+  { id: "250", name: "The Go-Between", grade: "5.11b", style: "Trad", area: "Abyss", sector: "Buffalo Crag West" },
+  { id: "251", name: "Operation Evaporation", grade: "5.10", style: "Trad", area: "Abyss", sector: "Buffalo Crag West" },
+  { id: "252", name: "The Go-Beside", grade: "5.11b", style: "Trad", area: "Abyss", sector: "Buffalo Crag West" },
 
-  // Bottle Glass West - Rainy Day Woman routes
-  { id: "266", name: "Rainy Day Woman", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "267", name: "Sad Eyed Lady of the Lowlands", grade: "5.10d", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "268", name: "Serration", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "269", name: "Butterknifed", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "270", name: "Pain Ingot", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "271", name: "Jungle Vines", grade: "5.8", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "272", name: "Goldmund", grade: "5.7", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "273", name: "Marzipan", grade: "5.8", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "274", name: "Narcis", grade: "5.6", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
-  { id: "275", name: "The Field Marshal's Hangover", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Bottle Glass West" },
+  // Buffalo Crag West - Boa Constrictor routes
+  { id: "253", name: "Shaky Flaky", grade: "5.3", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "254", name: "Veg/Reject Direct", grade: "5.8", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "255", name: "Veg", grade: "5.2", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "256", name: "Boa Constrictor", grade: "5.4", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "257", name: "Nervous System", grade: "5.9", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "258", name: "Skywalker", grade: "5.7", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "259", name: "Knight's Move", grade: "5.7", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "260", name: "Orange Wall", grade: "5.9", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "261", name: "Orange Wall Direct", grade: "5.10b", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "262", name: "Summer Brave", grade: "5.10c", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "263", name: "Lycra Test", grade: "5.11c", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "264", name: "Know Your Rights", grade: "5.11c", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
+  { id: "265", name: "Phenothiazine", grade: "5.10c", style: "Trad", area: "Boa Constrictor", sector: "Buffalo Crag West" },
 
-  // Bottle Glass West - Baby Face routes
-  { id: "276", name: "Flying Squirrel", grade: "5.8", style: "Trad", area: "Baby Face", sector: "Bottle Glass West" },
-  { id: "277", name: "Crank if You Love Jesus", grade: "5.11a", style: "Trad", area: "Baby Face", sector: "Bottle Glass West" },
-  { id: "278", name: "Baby Face", grade: "5.10a", style: "Trad", area: "Baby Face", sector: "Bottle Glass West" },
-  { id: "279", name: "Staircase", grade: "5.0", style: "Trad", area: "Baby Face", sector: "Bottle Glass West" },
+  // Buffalo Crag West - Rainy Day Woman routes
+  { id: "266", name: "Rainy Day Woman", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "267", name: "Sad Eyed Lady of the Lowlands", grade: "5.10d", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "268", name: "Serration", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "269", name: "Butterknifed", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "270", name: "Pain Ingot", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "271", name: "Jungle Vines", grade: "5.8", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "272", name: "Goldmund", grade: "5.7", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "273", name: "Marzipan", grade: "5.8", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "274", name: "Narcis", grade: "5.6", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
+  { id: "275", name: "The Field Marshal's Hangover", grade: "5.9", style: "Trad", area: "Rainy Day Woman", sector: "Buffalo Crag West" },
 
-  // Bottle Glass West - Piece of Duff routes
-  { id: "280", name: "Piece of Duff", grade: "5.5", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
-  { id: "281", name: "British Faggots", grade: "5.5", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
-  { id: "282", name: "Fear of Flying", grade: "5.8", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
-  { id: "283", name: "But… It Was Only A Tree", grade: "5.8", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
-  { id: "284", name: "Jetsam", grade: "5.4", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
-  { id: "285", name: "Autumn Finale", grade: "5.3", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
-  { id: "286", name: "Unknown", grade: "5.6", style: "Trad", area: "Piece of Duff", sector: "Bottle Glass West" },
+  // Buffalo Crag West - Baby Face routes
+  { id: "276", name: "Flying Squirrel", grade: "5.8", style: "Trad", area: "Baby Face", sector: "Buffalo Crag West" },
+  { id: "277", name: "Crank if You Love Jesus", grade: "5.11a", style: "Trad", area: "Baby Face", sector: "Buffalo Crag West" },
+  { id: "278", name: "Baby Face", grade: "5.10a", style: "Trad", area: "Baby Face", sector: "Buffalo Crag West" },
+  { id: "279", name: "Staircase", grade: "5.0", style: "Trad", area: "Baby Face", sector: "Buffalo Crag West" },
 
-  // Bottle Glass West - End Game routes
-  { id: "287", name: "Green Thumb", grade: "5.6", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "288", name: "Thin Series", grade: "5.8", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "289", name: "Hyper Extension", grade: "5.11a", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "290", name: "Georger Pecans", grade: "5.10b", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "291", name: "Chopped", grade: "5.10", style: "Top Rope", area: "End Game", sector: "Bottle Glass West" },
-  { id: "292", name: "The Prow", grade: "5.8", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "293", name: "Flying Kiwi", grade: "5.8", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "294", name: "Sunsplash", grade: "5.9", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "295", name: "End Game", grade: "5.7", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
-  { id: "296", name: "Which Way Now", grade: "5.6", style: "Trad", area: "End Game", sector: "Bottle Glass West" },
+  // Buffalo Crag West - Piece of Duff routes
+  { id: "280", name: "Piece of Duff", grade: "5.5", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+  { id: "281", name: "British Faggots", grade: "5.5", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+  { id: "282", name: "Fear of Flying", grade: "5.8", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+  { id: "283", name: "But… It Was Only A Tree", grade: "5.8", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+  { id: "284", name: "Jetsam", grade: "5.4", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+  { id: "285", name: "Autumn Finale", grade: "5.3", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+  { id: "286", name: "Unknown", grade: "5.6", style: "Trad", area: "Piece of Duff", sector: "Buffalo Crag West" },
+
+  // Buffalo Crag West - End Game routes
+  { id: "287", name: "Green Thumb", grade: "5.6", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "288", name: "Thin Series", grade: "5.8", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "289", name: "Hyper Extension", grade: "5.11a", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "290", name: "Georger Pecans", grade: "5.10b", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "291", name: "Chopped", grade: "5.10", style: "Top Rope", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "292", name: "The Prow", grade: "5.8", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "293", name: "Flying Kiwi", grade: "5.8", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "294", name: "Sunsplash", grade: "5.9", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "295", name: "End Game", grade: "5.7", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
+  { id: "296", name: "Which Way Now", grade: "5.6", style: "Trad", area: "End Game", sector: "Buffalo Crag West" },
 ];
