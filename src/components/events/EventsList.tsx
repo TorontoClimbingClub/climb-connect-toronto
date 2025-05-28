@@ -26,14 +26,16 @@ export function EventsList({ events, loading, onEventClick }: EventsListProps) {
     );
   }
 
+  const handleEventClick = (eventId: string) => {
+    onEventClick(eventId);
+  };
+
   return (
     <div className="space-y-4">
       {events.map((event) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          onClick={() => onEventClick(event.id)}
-        />
+        <div key={event.id} onClick={() => handleEventClick(event.id)} className="cursor-pointer">
+          <EventCard event={event} />
+        </div>
       ))}
     </div>
   );

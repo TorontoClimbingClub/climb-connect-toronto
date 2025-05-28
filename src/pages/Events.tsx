@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Events() {
   const navigate = useNavigate();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const { events, loading, refreshEvents } = useEvents();
+  const { upcomingEvents, loading, fetchEvents } = useEvents();
   const { user } = useAuth();
 
   // Get user role from localStorage (set during login)
@@ -26,7 +26,7 @@ export default function Events() {
   };
 
   const handleEventCreated = () => {
-    refreshEvents();
+    fetchEvents();
     setCreateDialogOpen(false);
   };
 
@@ -44,16 +44,15 @@ export default function Events() {
         />
 
         <EventsList 
-          events={events}
+          events={upcomingEvents}
           loading={loading}
           onEventClick={handleEventClick}
         />
 
         <CreateEventDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
+          showForm={createDialogOpen}
+          onToggleForm={setCreateDialogOpen}
           onEventCreated={handleEventCreated}
-          organizerId={user?.id || ''}
         />
       </div>
       <Navigation />
