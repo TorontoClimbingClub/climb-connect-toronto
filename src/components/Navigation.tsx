@@ -1,3 +1,4 @@
+
 import { Home, Calendar, User, Users, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,8 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const navigationItems = [
   { icon: Home, label: "Home", href: "/" },
-  { icon: Calendar, label: "Events", href: "/events" },
-  { icon: Users, label: "Community", href: "/community" },
+  { icon: Calendar, label: "Community", href: "/events" },
   { icon: User, label: "Profile", href: "/profile", requiresAuth: true },
 ];
 

@@ -38,25 +38,8 @@ export default function Index() {
                     <Calendar className="h-5 w-5 text-[#E55A2B]" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Upcoming Events</CardTitle>
-                    <CardDescription>Join outdoor climbing adventures</CardDescription>
-                  </div>
-                </div>
-                <ArrowRight className="h-5 w-5 text-stone-400" />
-              </div>
-            </CardHeader>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/community')}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-orange-100 p-2 rounded-lg">
-                    <Users className="h-5 w-5 text-[#E55A2B]" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Community</CardTitle>
-                    <CardDescription>Meet fellow climbers</CardDescription>
+                    <CardTitle className="text-lg">Community & Events</CardTitle>
+                    <CardDescription>Join adventures and meet climbers</CardDescription>
                   </div>
                 </div>
                 <ArrowRight className="h-5 w-5 text-stone-400" />
@@ -76,12 +59,12 @@ export default function Index() {
               onClick={() => navigate('/events')}
               className="w-full bg-[#E55A2B] hover:bg-orange-700"
             >
-              View Events
+              View Events & Community
             </Button>
           </CardContent>
         </Card>
         
-        {/* Website Return Button - Moved here */}
+        {/* Website Return Button */}
         <div className="mt-6">
           <Button 
             onClick={() => window.open('https://www.torontoclimbingclub.ca', '_blank')}
