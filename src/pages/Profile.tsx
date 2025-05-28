@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -8,7 +9,7 @@ import { ProfileInformation } from "@/components/profile/ProfileInformation";
 import { EquipmentInventory } from "@/components/profile/EquipmentInventory";
 import { forceLogoutAndRedirect } from "@/utils/auth";
 import { UserProfile } from "@/types";
-import { CompletionChart } from "@/components/CompletionChart";
+import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 
 export default function Profile() {
@@ -99,7 +100,7 @@ export default function Profile() {
         />
 
         <div className="mb-6">
-          <CompletionChart completions={completions} />
+          <CompletionProgressBars completions={completions} />
         </div>
 
         <EquipmentInventory

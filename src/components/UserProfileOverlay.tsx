@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mountain, User, Phone } from "lucide-react";
-import { CompletionChart } from "./CompletionChart";
+import { CompletionProgressBars } from "./CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { CommunityMember } from "@/types/community";
 
@@ -119,10 +119,10 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             </div>
           </div>
 
-          {/* Completion Progress Chart */}
-          <CompletionChart 
+          {/* Completion Progress */}
+          <CompletionProgressBars 
             completions={userCompletions} 
-            title="Beta Boards Progress"
+            title={`${user.full_name}'s Progress`}
           />
         </div>
       </DialogContent>
