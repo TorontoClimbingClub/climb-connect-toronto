@@ -17,7 +17,7 @@ export const useRouteData = (routeId: string) => {
         .from('route_comments')
         .select(`
           *,
-          profiles(full_name)
+          profiles!route_comments_user_id_fkey(full_name)
         `)
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
@@ -41,7 +41,7 @@ export const useRouteData = (routeId: string) => {
         .from('route_photos')
         .select(`
           *,
-          profiles(full_name)
+          profiles!route_photos_user_id_fkey(full_name)
         `)
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
