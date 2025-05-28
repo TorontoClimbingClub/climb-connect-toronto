@@ -16,12 +16,21 @@ export const useRouteData = (routeId: string) => {
     try {
       const { data, error } = await supabase
         .from('route_comments')
-        .select('*')
+        .select(`
+          *,
+          profiles!route_comments_user_id_fkey(full_name)
+        `)
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setComments(data || []);
+      
+      const commentsWithNames = data?.map(comment => ({
+        ...comment,
+        user_name: comment.profiles?.full_name || comment.user_name || "Anonymous"
+      })) || [];
+      
+      setComments(commentsWithNames);
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -31,13 +40,22 @@ export const useRouteData = (routeId: string) => {
     try {
       const { data, error } = await supabase
         .from('route_photos')
-        .select('*')
+        .select(`
+          *,
+          profiles!route_photos_user_id_fkey(full_name)
+        `)
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log('Fetched photos:', data);
-      setPhotos(data || []);
+      
+      const photosWithNames = data?.map(photo => ({
+        ...photo,
+        user_name: photo.profiles?.full_name || photo.user_name || "Anonymous"
+      })) || [];
+      
+      console.log('Fetched photos:', photosWithNames);
+      setPhotos(photosWithNames);
     } catch (error) {
       console.error('Error fetching photos:', error);
     }
@@ -95,6 +113,7 @@ export const useRouteData = (routeId: string) => {
         throw uploadError;
       }
 
+      // Get the correct public URL
       const { data: urlData } = supabase.storage
         .from('tccapp')
         .getPublicUrl(fileName);
@@ -138,7 +157,7 @@ export const useRouteData = (routeId: string) => {
 
     setLoading(true);
     try {
-      // Extract file path from URL
+      // Extract file path from URL for deletion
       const urlParts = photoUrl.split('/');
       const fileName = urlParts.slice(-3).join('/'); // user_id/route_id/filename
 

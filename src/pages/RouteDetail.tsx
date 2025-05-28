@@ -77,6 +77,7 @@ export default function RouteDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
+        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <button 
             onClick={() => navigate('/routes')}
@@ -135,13 +136,25 @@ export default function RouteDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <PhotoUpload onUpload={uploadPhoto} loading={loading} />
+            {/* Display photos first */}
             <PhotoGallery 
               photos={photos}
               onDeletePhoto={deletePhoto}
               onUpdateCaption={updatePhotoCaption}
               loading={loading}
             />
+            
+            {/* Upload component below, smaller and less prominent */}
+            {photos.length > 0 && (
+              <div className="border-t pt-4">
+                <PhotoUpload onUpload={uploadPhoto} loading={loading} />
+              </div>
+            )}
+            
+            {/* If no photos, show upload prominently */}
+            {photos.length === 0 && (
+              <PhotoUpload onUpload={uploadPhoto} loading={loading} />
+            )}
           </CardContent>
         </Card>
 
