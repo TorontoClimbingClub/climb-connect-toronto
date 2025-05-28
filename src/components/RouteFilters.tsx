@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Filter, X } from "lucide-react";
+import { Filter } from "lucide-react";
 import { ClimbingRoute } from "@/types/routes";
+import { FilterSelect } from "./filters/FilterSelect";
+import { FilterActions } from "./filters/FilterActions";
+import { sortGrades } from "./filters/GradeSorter";
 
 interface RouteFiltersProps {
   routes: ClimbingRoute[];
@@ -16,60 +18,6 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
   const [selectedArea, setSelectedArea] = useState<string>("");
   const [selectedSector, setSelectedSector] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // Custom sorting function for climbing grades
-  const sortGrades = (grades: string[]) => {
-    return grades.sort((a, b) => {
-      // Extract the base number (e.g., "5.10" from "5.10a")
-      const getBaseGrade = (grade: string) => {
-        const match = grade.match(/5\.(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      };
-
-      // Extract the letter suffix for sport routes (a, b, c)
-      const getLetterSuffix = (grade: string) => {
-        const match = grade.match(/5\.\d+([abc])/);
-        return match ? match[1] : '';
-      };
-
-      // Extract the +/- suffix for top rope routes
-      const getPlusMinus = (grade: string) => {
-        if (grade.includes('+')) return 1;
-        if (grade.includes('-')) return -1;
-        return 0;
-      };
-
-      const baseA = getBaseGrade(a);
-      const baseB = getBaseGrade(b);
-
-      // First sort by base grade number
-      if (baseA !== baseB) {
-        return baseA - baseB;
-      }
-
-      // If base grades are the same, sort by suffixes
-      const letterA = getLetterSuffix(a);
-      const letterB = getLetterSuffix(b);
-      const plusMinusA = getPlusMinus(a);
-      const plusMinusB = getPlusMinus(b);
-
-      // Handle sport route letters (a < b < c)
-      if (letterA && letterB) {
-        return letterA.localeCompare(letterB);
-      }
-
-      // Handle top rope +/- (- < no suffix < +)
-      if (plusMinusA !== plusMinusB) {
-        return plusMinusA - plusMinusB;
-      }
-
-      // If one has letter and other has +/-, prioritize the one without suffix
-      if (letterA && !letterB && plusMinusB === 0) return 1;
-      if (letterB && !letterA && plusMinusA === 0) return -1;
-
-      return 0;
-    });
-  };
 
   // Get unique values for filter options with proper sorting
   const grades = sortGrades([...new Set(routes.map(route => route.grade))]);
@@ -128,89 +76,44 @@ export const RouteFilters = ({ routes, onFiltersChange }: RouteFiltersProps) => 
       {isExpanded && (
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium text-stone-700 mb-1 block">Grade</label>
-              <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any grade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {grades.map((grade) => (
-                    <SelectItem key={grade} value={grade}>
-                      {grade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FilterSelect
+              value={selectedGrade}
+              onValueChange={setSelectedGrade}
+              placeholder="Any grade"
+              label="Grade"
+              options={grades}
+            />
 
-            <div>
-              <label className="text-sm font-medium text-stone-700 mb-1 block">Style</label>
-              <Select value={selectedStyle} onValueChange={setSelectedStyle}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any style" />
-                </SelectTrigger>
-                <SelectContent>
-                  {styles.map((style) => (
-                    <SelectItem key={style} value={style}>
-                      {style}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FilterSelect
+              value={selectedStyle}
+              onValueChange={setSelectedStyle}
+              placeholder="Any style"
+              label="Style"
+              options={styles}
+            />
 
-            <div>
-              <label className="text-sm font-medium text-stone-700 mb-1 block">Area</label>
-              <Select value={selectedArea} onValueChange={setSelectedArea}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any area" />
-                </SelectTrigger>
-                <SelectContent>
-                  {areas.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FilterSelect
+              value={selectedArea}
+              onValueChange={setSelectedArea}
+              placeholder="Any area"
+              label="Area"
+              options={areas}
+            />
 
-            <div>
-              <label className="text-sm font-medium text-stone-700 mb-1 block">Sector</label>
-              <Select value={selectedSector} onValueChange={setSelectedSector}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Any sector" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector} value={sector}>
-                      {sector}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FilterSelect
+              value={selectedSector}
+              onValueChange={setSelectedSector}
+              placeholder="Any sector"
+              label="Sector"
+              options={sectors}
+            />
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button 
-              onClick={applyFilters}
-              className="flex-1 bg-[#E55A2B] hover:bg-orange-700"
-            >
-              Apply Filters
-            </Button>
-            {hasActiveFilters && (
-              <Button 
-                onClick={clearFilters}
-                variant="outline"
-                className="flex items-center gap-1"
-              >
-                <X className="h-4 w-4" />
-                Clear
-              </Button>
-            )}
-          </div>
+          <FilterActions
+            onApplyFilters={applyFilters}
+            onClearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
         </CardContent>
       )}
     </Card>
