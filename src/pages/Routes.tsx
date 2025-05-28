@@ -6,23 +6,26 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronDown, Mountain, ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
+import { RouteFilters } from "@/components/RouteFilters";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { cn } from "@/lib/utils";
+import { ClimbingRoute } from "@/types/routes";
 
 export default function Routes() {
   const navigate = useNavigate();
   const [selectedCrag, setSelectedCrag] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
+  const [filteredRoutes, setFilteredRoutes] = useState<ClimbingRoute[]>(rattlesnakeRoutes);
 
-  // Get unique sectors and areas
-  const sectors = [...new Set(rattlesnakeRoutes.map(route => route.sector))];
+  // Get unique sectors and areas from filtered routes
+  const sectors = [...new Set(filteredRoutes.map(route => route.sector))];
   const areas = selectedSector 
-    ? [...new Set(rattlesnakeRoutes.filter(route => route.sector === selectedSector).map(route => route.area))]
+    ? [...new Set(filteredRoutes.filter(route => route.sector === selectedSector).map(route => route.area))]
     : [];
 
   // Group routes by area within selected sector
-  const routesByArea = selectedSector ? rattlesnakeRoutes
+  const routesByArea = selectedSector ? filteredRoutes
     .filter(route => route.sector === selectedSector)
     .reduce((acc, route) => {
       if (!acc[route.area]) {
@@ -30,7 +33,7 @@ export default function Routes() {
       }
       acc[route.area].push(route);
       return acc;
-    }, {} as Record<string, typeof rattlesnakeRoutes>) : {};
+    }, {} as Record<string, typeof filteredRoutes>) : {};
 
   const toggleArea = (area: string) => {
     const newExpanded = new Set(expandedAreas);
@@ -100,6 +103,14 @@ export default function Routes() {
     return 'Select a climbing area';
   };
 
+  const handleFiltersChange = (newFilteredRoutes: ClimbingRoute[]) => {
+    setFilteredRoutes(newFilteredRoutes);
+    // Reset selections when filters change
+    setSelectedSector(null);
+    setSelectedCrag(null);
+    setExpandedAreas(new Set());
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
@@ -115,6 +126,14 @@ export default function Routes() {
             <p className="text-stone-600">{getPageSubtitle()}</p>
           </div>
         </div>
+
+        {/* Show filters when a crag is selected */}
+        {selectedCrag && (
+          <RouteFilters 
+            routes={rattlesnakeRoutes} 
+            onFiltersChange={handleFiltersChange}
+          />
+        )}
 
         <div className="space-y-4">
           {!selectedCrag && (
@@ -143,7 +162,7 @@ export default function Routes() {
                     <div>
                       <CardTitle className="text-lg">{sector}</CardTitle>
                       <p className="text-stone-600 text-sm">
-                        {rattlesnakeRoutes.filter(route => route.sector === sector).length} routes
+                        {filteredRoutes.filter(route => route.sector === sector).length} routes
                       </p>
                     </div>
                     <ChevronRight className="h-5 w-5 text-stone-400 ml-auto" />

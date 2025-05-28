@@ -20,6 +20,7 @@ export const CommentItem = ({ comment, replies, onReply, onDelete, loading }: Co
   const [replyText, setReplyText] = useState("");
 
   const canDelete = user && comment.user_id === user.id;
+  const canReply = user && comment.user_id !== user.id; // Don't allow replies to own comments
 
   const handleReply = async () => {
     if (!replyText.trim()) return;
@@ -54,7 +55,7 @@ export const CommentItem = ({ comment, replies, onReply, onDelete, loading }: Co
         </div>
         <p className="text-stone-700 mb-2">{comment.comment}</p>
         
-        {user && (
+        {canReply && (
           <Button
             onClick={() => setShowReplyForm(!showReplyForm)}
             variant="ghost"
