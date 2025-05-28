@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { RouteComment } from "@/types/routes";
-import { Trash2, Reply } from "lucide-react";
+import { Trash2, Reply, Shield } from "lucide-react";
+import { useAdminData } from "@/hooks/useAdminData";
 
 interface CommentItemProps {
   comment: RouteComment;
@@ -16,10 +17,11 @@ interface CommentItemProps {
 
 export const CommentItem = ({ comment, replies, onReply, onDelete, loading }: CommentItemProps) => {
   const { user } = useAuth();
+  const { canManageUsers } = useAdminData();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
 
-  const canDelete = user && comment.user_id === user.id;
+  const canDelete = user && (comment.user_id === user.id || canManageUsers);
   const canReply = user && comment.user_id !== user.id; // Don't allow replies to own comments
 
   const handleReply = async () => {
@@ -46,8 +48,12 @@ export const CommentItem = ({ comment, replies, onReply, onDelete, loading }: Co
                 variant="ghost"
                 size="sm"
                 disabled={loading}
-                className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 relative"
+                title={canManageUsers && comment.user_id !== user?.id ? "Admin: Delete comment" : "Delete your comment"}
               >
+                {canManageUsers && comment.user_id !== user?.id && (
+                  <Shield className="h-2 w-2 absolute -top-1 -right-1 text-orange-600" />
+                )}
                 <Trash2 className="h-3 w-3" />
               </Button>
             )}
@@ -113,14 +119,18 @@ export const CommentItem = ({ comment, replies, onReply, onDelete, loading }: Co
                   <span className="text-xs text-stone-500">
                     {new Date(reply.created_at).toLocaleDateString()}
                   </span>
-                  {user && reply.user_id === user.id && (
+                  {user && (reply.user_id === user.id || canManageUsers) && (
                     <Button
                       onClick={() => onDelete(reply.id)}
                       variant="ghost"
                       size="sm"
                       disabled={loading}
-                      className="h-5 w-5 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="h-5 w-5 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 relative"
+                      title={canManageUsers && reply.user_id !== user.id ? "Admin: Delete reply" : "Delete your reply"}
                     >
+                      {canManageUsers && reply.user_id !== user.id && (
+                        <Shield className="h-1.5 w-1.5 absolute -top-0.5 -right-0.5 text-orange-600" />
+                      )}
                       <Trash2 className="h-2.5 w-2.5" />
                     </Button>
                   )}

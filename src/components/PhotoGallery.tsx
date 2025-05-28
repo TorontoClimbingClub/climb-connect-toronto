@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { RoutePhoto } from "@/types/routes";
-import { Edit2, Trash2, Save, X, Camera } from "lucide-react";
+import { Edit2, Trash2, Save, X, Camera, Shield } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +12,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useAdminData } from "@/hooks/useAdminData";
 
 interface PhotoGalleryProps {
   photos: RoutePhoto[];
@@ -27,6 +28,7 @@ export const PhotoGallery = ({
   loading 
 }: PhotoGalleryProps) => {
   const { user } = useAuth();
+  const { canManageUsers } = useAdminData();
   const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState("");
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
@@ -62,6 +64,11 @@ export const PhotoGallery = ({
   };
 
   const canManagePhoto = (photo: RoutePhoto) => {
+    if (!user) return false;
+    return photo.user_id === user.id || canManageUsers;
+  };
+
+  const canEditPhoto = (photo: RoutePhoto) => {
     if (!user) return false;
     return photo.user_id === user.id;
   };
@@ -115,22 +122,28 @@ export const PhotoGallery = ({
                   
                   {canManagePhoto(photo) && (
                     <div className="absolute top-2 right-2 flex gap-1">
-                      <Button
-                        onClick={() => handleEditStart(photo)}
-                        variant="ghost"
-                        size="sm"
-                        disabled={loading}
-                        className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
+                      {canEditPhoto(photo) && (
+                        <Button
+                          onClick={() => handleEditStart(photo)}
+                          variant="ghost"
+                          size="sm"
+                          disabled={loading}
+                          className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
+                      )}
                       <Button
                         onClick={() => onDeletePhoto(photo.id, photo.photo_url)}
                         variant="ghost"
                         size="sm"
                         disabled={loading}
                         className="h-8 w-8 p-0 bg-white/80 hover:bg-red-50 text-red-500 hover:text-red-700"
+                        title={canManageUsers && photo.user_id !== user?.id ? "Admin: Delete photo" : "Delete your photo"}
                       >
+                        {canManageUsers && photo.user_id !== user?.id && (
+                          <Shield className="h-2 w-2 absolute -top-1 -right-1 text-orange-600" />
+                        )}
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
