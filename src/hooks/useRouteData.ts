@@ -36,6 +36,7 @@ export const useRouteData = (routeId: string) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched photos:', data);
       setPhotos(data || []);
     } catch (error) {
       console.error('Error fetching photos:', error);
@@ -83,27 +84,37 @@ export const useRouteData = (routeId: string) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${routeId}/${Date.now()}.${fileExt}`;
 
+      console.log('Uploading file to:', fileName);
+
       const { error: uploadError } = await supabase.storage
         .from('tccapp')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: urlData } = supabase.storage
         .from('tccapp')
         .getPublicUrl(fileName);
+
+      console.log('Generated public URL:', urlData.publicUrl);
 
       const { error: dbError } = await supabase
         .from('route_photos')
         .insert({
           route_id: routeId,
           user_id: user.id,
-          photo_url: publicUrl,
+          photo_url: urlData.publicUrl,
           caption: caption || null,
           user_name: user.email || "Anonymous"
         });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
 
       toast({
         title: "Photo uploaded",
@@ -122,6 +133,80 @@ export const useRouteData = (routeId: string) => {
     setLoading(false);
   };
 
+  const deletePhoto = async (photoId: string, photoUrl: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      // Extract file path from URL
+      const urlParts = photoUrl.split('/');
+      const fileName = urlParts.slice(-3).join('/'); // user_id/route_id/filename
+
+      console.log('Deleting file:', fileName);
+
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('tccapp')
+        .remove([fileName]);
+
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('route_photos')
+        .delete()
+        .eq('id', photoId);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Photo deleted",
+        description: "Your photo has been deleted successfully",
+      });
+
+      fetchPhotos();
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete photo",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const updatePhotoCaption = async (photoId: string, newCaption: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('route_photos')
+        .update({ caption: newCaption.trim() || null })
+        .eq('id', photoId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Caption updated",
+        description: "Photo caption has been updated successfully",
+      });
+
+      fetchPhotos();
+    } catch (error) {
+      console.error('Error updating caption:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update caption",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     fetchComments();
     fetchPhotos();
@@ -132,6 +217,8 @@ export const useRouteData = (routeId: string) => {
     photos,
     loading,
     addComment,
-    uploadPhoto
+    uploadPhoto,
+    deletePhoto,
+    updatePhotoCaption
   };
 };

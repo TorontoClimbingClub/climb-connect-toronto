@@ -9,6 +9,7 @@ import { ArrowLeft, Camera, MessageCircle, Mountain } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigation } from "@/components/Navigation";
 import { PhotoUpload } from "@/components/PhotoUpload";
+import { PhotoGallery } from "@/components/PhotoGallery";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { useRouteData } from "@/hooks/useRouteData";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,15 @@ export default function RouteDetail() {
   const [comment, setComment] = useState("");
 
   const route = rattlesnakeRoutes.find(r => r.id === routeId);
-  const { comments, photos, loading, addComment, uploadPhoto } = useRouteData(routeId || "");
+  const { 
+    comments, 
+    photos, 
+    loading, 
+    addComment, 
+    uploadPhoto, 
+    deletePhoto, 
+    updatePhotoCaption 
+  } = useRouteData(routeId || "");
 
   const handleAddComment = async () => {
     if (!comment.trim()) return;
@@ -125,36 +134,14 @@ export default function RouteDetail() {
               Photos ({photos.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <PhotoUpload onUpload={uploadPhoto} loading={loading} />
-            
-            {photos.length > 0 && (
-              <div className="mt-6 space-y-4">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="space-y-2">
-                    <img 
-                      src={photo.photo_url} 
-                      alt={photo.caption || route.name}
-                      className="w-full rounded-lg object-cover"
-                    />
-                    {photo.caption && (
-                      <p className="text-sm text-stone-600">{photo.caption}</p>
-                    )}
-                    <div className="flex items-center justify-between text-xs text-stone-500">
-                      <span>by {photo.user_name}</span>
-                      <span>{new Date(photo.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {photos.length === 0 && (
-              <div className="text-center py-8 text-stone-500">
-                <Camera className="h-12 w-12 mx-auto mb-4 text-stone-400" />
-                <p>No photos yet. Be the first to share!</p>
-              </div>
-            )}
+            <PhotoGallery 
+              photos={photos}
+              onDeletePhoto={deletePhoto}
+              onUpdateCaption={updatePhotoCaption}
+              loading={loading}
+            />
           </CardContent>
         </Card>
 
