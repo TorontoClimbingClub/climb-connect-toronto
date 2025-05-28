@@ -100,15 +100,17 @@ export function CompletionProgressBars({ completions, title = "Climbing Progress
                 <span className="text-sm text-stone-600">{percentage}%</span>
               </div>
               <div className="relative">
-                <Progress 
-                  value={percentage} 
-                  className="h-2"
-                />
-                <style jsx>{`
-                  .progress-${style.toLowerCase().replace(' ', '-')} [data-state="complete"] {
-                    background-color: ${getStyleColor(style)};
-                  }
-                `}</style>
+                <div 
+                  className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: getStyleColor(style)
+                    }}
+                  />
+                </div>
               </div>
               <p className="text-xs text-stone-500">
                 {completed} / {total} routes
