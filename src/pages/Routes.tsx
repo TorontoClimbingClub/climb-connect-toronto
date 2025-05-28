@@ -88,6 +88,11 @@ export default function Routes() {
       return `${selectedCrag} - ${selectedSector}`;
     }
     if (selectedCrag) {
+      // Show filtered route count when filters are active
+      const hasActiveFilters = filteredRoutes.length !== rattlesnakeRoutes.length;
+      if (hasActiveFilters) {
+        return `${selectedCrag} (${filteredRoutes.length} routes)`;
+      }
       return selectedCrag;
     }
     return 'Beta Boards';
@@ -98,6 +103,10 @@ export default function Routes() {
       return 'Select an area to view routes';
     }
     if (selectedCrag) {
+      const hasActiveFilters = filteredRoutes.length !== rattlesnakeRoutes.length;
+      if (hasActiveFilters) {
+        return `Showing filtered results - ${filteredRoutes.length} of ${rattlesnakeRoutes.length} routes`;
+      }
       return 'Select a sector';
     }
     return 'Select a climbing area';

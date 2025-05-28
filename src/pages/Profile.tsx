@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +8,8 @@ import { ProfileInformation } from "@/components/profile/ProfileInformation";
 import { EquipmentInventory } from "@/components/profile/EquipmentInventory";
 import { forceLogoutAndRedirect } from "@/utils/auth";
 import { UserProfile } from "@/types";
+import { CompletionChart } from "@/components/CompletionChart";
+import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 
 export default function Profile() {
   const {
@@ -30,6 +31,8 @@ export default function Profile() {
     addEquipment,
     fetchEquipment,
   } = useEquipmentProfile();
+
+  const { completions } = useClimbCompletions();
 
   const { toast } = useToast();
 
@@ -94,6 +97,10 @@ export default function Profile() {
           onCancel={handleCancel}
           onFormDataChange={handleFormDataChange}
         />
+
+        <div className="mb-6">
+          <CompletionChart completions={completions} />
+        </div>
 
         <EquipmentInventory
           equipment={equipment}
