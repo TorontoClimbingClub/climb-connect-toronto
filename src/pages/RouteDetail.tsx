@@ -16,13 +16,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 export default function RouteDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [newComment, setNewComment] = useState("");
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
 
-  const route = rattlesnakeRoutes.find(r => r.id === id);
+  const route = rattlesnakeRoutes.find(r => r.id === routeId);
   
   const {
     comments,
@@ -33,10 +33,10 @@ export default function RouteDetail() {
     uploadPhoto,
     deletePhoto,
     updatePhotoCaption
-  } = useRouteData(id || "");
+  } = useRouteData(routeId || "");
 
   const { toggleCompletion, isCompleted } = useClimbCompletions();
-  const completed = isCompleted(id || "");
+  const completed = isCompleted(routeId || "");
 
   if (!route) {
     return (
@@ -64,8 +64,8 @@ export default function RouteDetail() {
   };
 
   const handleToggleCompletion = () => {
-    if (user && id) {
-      toggleCompletion(id);
+    if (user && routeId) {
+      toggleCompletion(routeId);
     }
   };
 
