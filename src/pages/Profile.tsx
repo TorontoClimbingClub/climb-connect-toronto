@@ -7,6 +7,7 @@ import { useProfileManagement } from "@/hooks/useProfileManagement";
 import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
 import { ProfileInformation } from "@/components/profile/ProfileInformation";
 import { EquipmentInventory } from "@/components/profile/EquipmentInventory";
+import { CompletedRoutesList } from "@/components/profile/CompletedRoutesList";
 import { forceLogoutAndRedirect } from "@/utils/auth";
 import { UserProfile } from "@/types";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
@@ -101,6 +102,10 @@ export default function Profile() {
 
         <div className="mb-6">
           <CompletionProgressBars completions={completions} />
+        </div>
+
+        <div className="mb-6">
+          <CompletedRoutesList completions={completions} />
         </div>
 
         <EquipmentInventory

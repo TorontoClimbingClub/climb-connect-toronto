@@ -44,7 +44,10 @@ const CLIMBING_EXPERIENCES = [
   'Lead',
   'Lead Belay',
   'Cleaning',
-  'Anchor Building',
+  'Sport Anchor Building',
+  'Trad Second',
+  'Trad First',
+  'Trad Anchor Building',
   'Rappelling'
 ];
 
@@ -215,7 +218,7 @@ export function ProfileInformation({
             <Eye className="h-5 w-5" />
             Privacy Settings
           </CardTitle>
-          <CardDescription>Control what other members see on your community member card and profile</CardDescription>
+          <CardDescription>Control what other members see on your community member card</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -254,7 +257,7 @@ export function ProfileInformation({
             <div className="space-y-0.5">
               <Label className="text-base">Show Progress Bars</Label>
               <p className="text-sm text-muted-foreground">
-                Display climbing progress bars on your member card
+                Display progress bars on your member card
               </p>
             </div>
             <Checkbox

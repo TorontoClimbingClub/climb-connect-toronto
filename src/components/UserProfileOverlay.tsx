@@ -42,7 +42,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
   const canShowClimbingProgress = user.show_climbing_progress !== false || isOwnProfile;
   const canShowCompletionStats = user.show_completion_stats !== false || isOwnProfile;
 
-  // Check if user allows profile viewing
+  // Check if user allows profile viewing - but don't show this restriction to their own profile
   if (!user.allow_profile_viewing && !isOwnProfile) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,12 +70,14 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
     );
   }
 
-  // Get hidden styles based on privacy settings
+  // Get hidden styles based on privacy settings (but show everything for own profile)
   const getHiddenStyles = () => {
+    if (isOwnProfile) return []; // Show everything for own profile
+    
     const hidden: string[] = [];
-    if (user.show_trad_progress === false && !isOwnProfile) hidden.push('Trad');
-    if (user.show_sport_progress === false && !isOwnProfile) hidden.push('Sport');
-    if (user.show_top_rope_progress === false && !isOwnProfile) hidden.push('Top Rope');
+    if (user.show_trad_progress === false) hidden.push('Trad');
+    if (user.show_sport_progress === false) hidden.push('Sport');
+    if (user.show_top_rope_progress === false) hidden.push('Top Rope');
     return hidden;
   };
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -48,7 +47,6 @@ export default function Routes() {
   const handleBack = () => {
     if (selectedSector) {
       setSelectedSector(null);
-      setSelectedCrag(null);
       setExpandedAreas(new Set());
     } else if (selectedCrag) {
       setSelectedCrag(null);

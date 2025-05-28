@@ -3,10 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 
 export function MapWidget() {
-  const rattlesnakePointCoords = "43.3945,-79.9637"; // Rattlesnake Point coordinates
-  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${rattlesnakePointCoords}&zoom=14`;
+  const rattlesnakePointCoords = "43.47134738744105,-79.91270091664332";
   
-  // Fallback to Google Maps link if no API key
+  // Use Google Maps link with the exact coordinates
   const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${rattlesnakePointCoords}`;
 
   return (
@@ -17,7 +16,7 @@ export function MapWidget() {
           <h3 className="font-semibold text-sm">Rattlesnake Point Location</h3>
         </div>
         
-        {/* Simple clickable map preview */}
+        {/* Clickable map preview */}
         <div className="relative">
           <a 
             href={googleMapsLink}
@@ -32,6 +31,9 @@ export function MapWidget() {
               </div>
               <div className="text-xs text-green-600 mt-1">
                 Milton, Ontario • Click to view in Google Maps
+              </div>
+              <div className="text-xs text-green-500 mt-1">
+                43.471347, -79.912701
               </div>
             </div>
           </a>
