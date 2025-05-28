@@ -45,7 +45,7 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
   const [formData, setFormData] = useState({
     name: route?.name || '',
     grade: route?.grade || '',
-    style: route?.style || 'Trad',
+    style: route?.style || 'Trad' as 'Trad' | 'Sport' | 'Top Rope',
     area: route?.area || '',
     sector: route?.sector || '',
   });
@@ -102,7 +102,7 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
             <Label htmlFor="style">Style *</Label>
             <Select 
               value={formData.style} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, style: value }))}
+              onValueChange={(value: 'Trad' | 'Sport' | 'Top Rope') => setFormData(prev => ({ ...prev, style: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select climbing style" />
