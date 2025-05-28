@@ -218,6 +218,63 @@ export type Database = {
         }
         Relationships: []
       }
+      route_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          route_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          route_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          route_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
+      route_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          photo_url: string
+          route_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          photo_url: string
+          route_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          photo_url?: string
+          route_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       user_equipment: {
         Row: {
           category_id: string

@@ -1,88 +1,31 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Camera, MessageCircle, Upload, Mountain } from "lucide-react";
+import { ArrowLeft, Camera, MessageCircle, Mountain } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { Navigation } from "@/components/Navigation";
+import { PhotoUpload } from "@/components/PhotoUpload";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
+import { useRouteData } from "@/hooks/useRouteData";
 import { cn } from "@/lib/utils";
 
 export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<any[]>([]);
-  const [photos, setPhotos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const route = rattlesnakeRoutes.find(r => r.id === routeId);
-
-  useEffect(() => {
-    // In a real app, you would fetch comments and photos from your database
-    // For now, we'll use placeholder data
-    setComments([]);
-    setPhotos([]);
-  }, [routeId]);
+  const { comments, photos, loading, addComment, uploadPhoto } = useRouteData(routeId || "");
 
   const handleAddComment = async () => {
-    if (!comment.trim() || !user) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to add comments",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // In a real app, you would save to your database
-      const newComment = {
-        id: Date.now().toString(),
-        comment: comment.trim(),
-        user_name: user.email || "Anonymous",
-        created_at: new Date().toISOString(),
-      };
-      
-      setComments(prev => [newComment, ...prev]);
-      setComment("");
-      
-      toast({
-        title: "Comment added",
-        description: "Your comment has been added successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add comment",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handlePhotoUpload = () => {
-    if (!user) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to upload photos",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // In a real app, you would implement photo upload functionality
-    toast({
-      title: "Photo upload",
-      description: "Photo upload functionality will be implemented soon",
-    });
+    if (!comment.trim()) return;
+    await addComment(comment);
+    setComment("");
   };
 
   if (!route) {
@@ -177,39 +120,39 @@ export default function RouteDetail() {
         {/* Photos Section */}
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Photos
-              </CardTitle>
-              <Button 
-                onClick={handlePhotoUpload}
-                size="sm" 
-                variant="outline"
-                className="text-[#E55A2B] border-[#E55A2B]"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload
-              </Button>
-            </div>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Photos ({photos.length})
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {photos.length === 0 ? (
-              <div className="text-center py-8 text-stone-500">
-                <Camera className="h-12 w-12 mx-auto mb-4 text-stone-400" />
-                <p>No photos yet. Be the first to share!</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
+            <PhotoUpload onUpload={uploadPhoto} loading={loading} />
+            
+            {photos.length > 0 && (
+              <div className="mt-6 space-y-4">
                 {photos.map((photo) => (
-                  <div key={photo.id} className="aspect-square bg-stone-100 rounded-lg">
+                  <div key={photo.id} className="space-y-2">
                     <img 
                       src={photo.photo_url} 
                       alt={photo.caption || route.name}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full rounded-lg object-cover"
                     />
+                    {photo.caption && (
+                      <p className="text-sm text-stone-600">{photo.caption}</p>
+                    )}
+                    <div className="flex items-center justify-between text-xs text-stone-500">
+                      <span>by {photo.user_name}</span>
+                      <span>{new Date(photo.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {photos.length === 0 && (
+              <div className="text-center py-8 text-stone-500">
+                <Camera className="h-12 w-12 mx-auto mb-4 text-stone-400" />
+                <p>No photos yet. Be the first to share!</p>
               </div>
             )}
           </CardContent>
@@ -220,26 +163,32 @@ export default function RouteDetail() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              Comments
+              Comments ({comments.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {/* Add Comment */}
-            <div className="space-y-3 mb-6">
-              <Textarea
-                placeholder="Share your experience on this route..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="min-h-20"
-              />
-              <Button 
-                onClick={handleAddComment}
-                disabled={loading || !comment.trim()}
-                className="w-full bg-[#E55A2B] hover:bg-orange-700"
-              >
-                Add Comment
-              </Button>
-            </div>
+            {user ? (
+              <div className="space-y-3 mb-6">
+                <Textarea
+                  placeholder="Share your experience on this route..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="min-h-20"
+                />
+                <Button 
+                  onClick={handleAddComment}
+                  disabled={loading || !comment.trim()}
+                  className="w-full bg-[#E55A2B] hover:bg-orange-700"
+                >
+                  Add Comment
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-stone-500 mb-6">
+                <p>Please sign in to add comments</p>
+              </div>
+            )}
 
             {/* Comments List */}
             <div className="space-y-4">
