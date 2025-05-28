@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Dialog,
@@ -146,7 +145,7 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
                   <SelectItem value="R">R (Runout)</SelectItem>
                   <SelectItem value="X">X (Extremely Dangerous)</SelectItem>
                 </SelectContent>
-              </SelectContent>
+              </Select>
             </div>
           )}
           
