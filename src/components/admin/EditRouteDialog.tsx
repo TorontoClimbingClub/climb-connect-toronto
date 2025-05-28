@@ -49,7 +49,7 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
     area: route?.area || '',
     sector: route?.sector || '',
   });
-  const [riskRating, setRiskRating] = useState('');
+  const [riskRating, setRiskRating] = useState('none');
   const { toast } = useToast();
 
   const handleSave = () => {
@@ -63,7 +63,7 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
     }
 
     let finalGrade = formData.grade;
-    if (riskRating && formData.style === 'Trad') {
+    if (riskRating && riskRating !== 'none' && formData.style === 'Trad') {
       finalGrade = `${formData.grade}${riskRating}`;
     }
 
@@ -142,11 +142,11 @@ export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRoute
                   <SelectValue placeholder="Select risk rating" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   <SelectItem value="R">R (Runout)</SelectItem>
                   <SelectItem value="X">X (Extremely Dangerous)</SelectItem>
                 </SelectContent>
-              </Select>
+              </SelectContent>
             </div>
           )}
           
