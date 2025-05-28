@@ -42,12 +42,12 @@ export const useRoutePhotos = (routeId: string) => {
     setLoading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${routeId}/${Date.now()}.${fileExt}`;
+      const fileName = `route-photos/${routeId}/${user.id}/${Date.now()}.${fileExt}`;
 
       console.log('Uploading file to:', fileName);
 
       const { error: uploadError } = await supabase.storage
-        .from('tccapp')
+        .from('route-images')
         .upload(fileName, file);
 
       if (uploadError) {
@@ -55,7 +55,9 @@ export const useRoutePhotos = (routeId: string) => {
         throw uploadError;
       }
 
-      const publicUrl = `https://munpnfjhjgewqqfzzbga.supabase.co/storage/v1/object/public/tccapp/${fileName}`;
+      const { data: { publicUrl } } = supabase.storage
+        .from('route-images')
+        .getPublicUrl(fileName);
 
       console.log('Generated public URL:', publicUrl);
 
@@ -96,17 +98,19 @@ export const useRoutePhotos = (routeId: string) => {
 
     setLoading(true);
     try {
-      const urlParts = photoUrl.split('/');
-      const fileName = urlParts.slice(-3).join('/');
+      // Extract file path from URL
+      const urlParts = photoUrl.split('/storage/v1/object/public/route-images/');
+      const filePath = urlParts[1];
 
-      console.log('Deleting file:', fileName);
+      if (filePath) {
+        console.log('Deleting file:', filePath);
+        const { error: storageError } = await supabase.storage
+          .from('route-images')
+          .remove([filePath]);
 
-      const { error: storageError } = await supabase.storage
-        .from('tccapp')
-        .remove([fileName]);
-
-      if (storageError) {
-        console.error('Storage deletion error:', storageError);
+        if (storageError) {
+          console.error('Storage deletion error:', storageError);
+        }
       }
 
       const { error: dbError } = await supabase
