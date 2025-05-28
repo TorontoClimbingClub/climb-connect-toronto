@@ -23,6 +23,9 @@ export function useProfileManagement() {
     show_climbing_progress: true,
     show_completion_stats: true,
     show_climbing_level: true,
+    show_trad_progress: true,
+    show_sport_progress: true,
+    show_top_rope_progress: true,
     created_at: '',
   });
   const { user } = useAuth();
@@ -129,6 +132,9 @@ export function useProfileManagement() {
           show_climbing_progress: formData.show_climbing_progress,
           show_completion_stats: formData.show_completion_stats,
           show_climbing_level: formData.show_climbing_level,
+          show_trad_progress: formData.show_trad_progress,
+          show_sport_progress: formData.show_sport_progress,
+          show_top_rope_progress: formData.show_top_rope_progress,
         })
         .eq('id', user.id);
 

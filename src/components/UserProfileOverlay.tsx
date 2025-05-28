@@ -42,6 +42,15 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
   const canShowClimbingProgress = user.show_climbing_progress !== false || isOwnProfile;
   const canShowCompletionStats = user.show_completion_stats !== false || isOwnProfile;
 
+  // Get hidden styles based on privacy settings
+  const getHiddenStyles = () => {
+    const hidden: string[] = [];
+    if (user.show_trad_progress === false && !isOwnProfile) hidden.push('Trad');
+    if (user.show_sport_progress === false && !isOwnProfile) hidden.push('Sport');
+    if (user.show_top_rope_progress === false && !isOwnProfile) hidden.push('Top Rope');
+    return hidden;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -134,6 +143,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               completions={userCompletions} 
               title={`${user.full_name}'s Progress`}
               areaName="Rattlesnake Point"
+              hiddenStyles={getHiddenStyles()}
             />
           ) : (
             <div className="bg-stone-50 p-6 rounded-lg text-center">

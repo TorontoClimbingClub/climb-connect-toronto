@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Users, Car, Package, Phone, Mountain } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { useEvents } from "@/hooks/useEvents";
 import { useCommunity } from "@/hooks/useCommunity";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
+import { UserProfileOverlay } from "@/components/UserProfileOverlay";
+import { CommunityMember } from "@/types/community";
 
 export default function Events() {
   const { upcomingEvents, userParticipations, loading: eventsLoading, fetchEvents, fetchUserParticipations, updateUserParticipation } = useEvents();
@@ -20,6 +22,8 @@ export default function Events() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { joinEvent, loading: actionLoading } = useEventActions();
+  const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
+  const [profileOverlayOpen, setProfileOverlayOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -42,6 +46,21 @@ export default function Events() {
       updateUserParticipation(eventId, true);
       fetchEvents(); // Refresh to update participant counts
     }
+  };
+
+  const handleMemberClick = (member: CommunityMember) => {
+    if (member.id !== user?.id) {
+      setSelectedMember(member);
+      setProfileOverlayOpen(true);
+    }
+  };
+
+  const getHiddenStyles = (member: CommunityMember) => {
+    const hidden: string[] = [];
+    if (member.show_trad_progress === false && member.id !== user?.id) hidden.push('Trad');
+    if (member.show_sport_progress === false && member.id !== user?.id) hidden.push('Sport');
+    if (member.show_top_rope_progress === false && member.id !== user?.id) hidden.push('Top Rope');
+    return hidden;
   };
 
   if (eventsLoading || communityLoading) {
@@ -103,9 +122,15 @@ export default function Events() {
           <div className="space-y-4">
             {members.map((member) => {
               const userStats = getUserCompletionStats(member.id);
+              const hiddenStyles = getHiddenStyles(member);
+              const isOwnProfile = member.id === user?.id;
               
               return (
-                <Card key={member.id} className={member.id === user?.id ? "border-orange-200 bg-orange-50" : ""}>
+                <Card 
+                  key={member.id} 
+                  className={`${member.id === user?.id ? "border-orange-200 bg-orange-50" : ""} ${!isOwnProfile ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
+                  onClick={() => handleMemberClick(member)}
+                >
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -170,6 +195,7 @@ export default function Events() {
                           completions={userStats.completions} 
                           compact={true}
                           areaName="Rattlesnake Point"
+                          hiddenStyles={hiddenStyles}
                         />
                       </div>
                     )}
@@ -197,6 +223,13 @@ export default function Events() {
           </div>
         </div>
       </div>
+
+      <UserProfileOverlay
+        user={selectedMember}
+        open={profileOverlayOpen}
+        onOpenChange={setProfileOverlayOpen}
+      />
+
       <Navigation />
     </div>
   );

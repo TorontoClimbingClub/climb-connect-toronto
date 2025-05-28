@@ -20,6 +20,9 @@ interface UserProfile {
   show_climbing_progress?: boolean;
   show_completion_stats?: boolean;
   show_climbing_level?: boolean;
+  show_trad_progress?: boolean;
+  show_sport_progress?: boolean;
+  show_top_rope_progress?: boolean;
 }
 
 interface ProfileInformationProps {
@@ -232,6 +235,55 @@ export function ProfileInformation({
               disabled={!editing}
             />
           </div>
+
+          {/* Granular Progress Settings */}
+          {formData.show_climbing_progress && (
+            <div className="ml-6 space-y-3 p-3 bg-stone-50 rounded-lg">
+              <p className="text-sm font-medium text-stone-700">Individual Progress Bars:</p>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Show Trad Progress</Label>
+                  <p className="text-xs text-muted-foreground">Traditional climbing routes</p>
+                </div>
+                <Checkbox
+                  checked={formData.show_trad_progress ?? true}
+                  onCheckedChange={(checked) => 
+                    onFormDataChange({ ...formData, show_trad_progress: checked as boolean })
+                  }
+                  disabled={!editing}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Show Sport Progress</Label>
+                  <p className="text-xs text-muted-foreground">Sport climbing routes</p>
+                </div>
+                <Checkbox
+                  checked={formData.show_sport_progress ?? true}
+                  onCheckedChange={(checked) => 
+                    onFormDataChange({ ...formData, show_sport_progress: checked as boolean })
+                  }
+                  disabled={!editing}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Show Top Rope Progress</Label>
+                  <p className="text-xs text-muted-foreground">Top rope climbing routes</p>
+                </div>
+                <Checkbox
+                  checked={formData.show_top_rope_progress ?? true}
+                  onCheckedChange={(checked) => 
+                    onFormDataChange({ ...formData, show_top_rope_progress: checked as boolean })
+                  }
+                  disabled={!editing}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

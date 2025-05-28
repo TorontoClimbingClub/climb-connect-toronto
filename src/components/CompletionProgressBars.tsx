@@ -10,13 +10,15 @@ interface CompletionProgressBarsProps {
   title?: string;
   areaName?: string;
   compact?: boolean;
+  hiddenStyles?: string[];
 }
 
 export function CompletionProgressBars({ 
   completions, 
   title = "Climbing Progress", 
   areaName = "Rattlesnake Point",
-  compact = false
+  compact = false,
+  hiddenStyles = []
 }: CompletionProgressBarsProps) {
   const progressData = useMemo(() => {
     // Group routes by style
@@ -29,21 +31,23 @@ export function CompletionProgressBars({
     }, {} as Record<string, typeof rattlesnakeRoutes>);
 
     // Calculate completions by style
-    const styleProgress = Object.entries(routesByStyle).map(([style, routes]) => {
-      const completedRoutes = completions.filter(completion => 
-        routes.some(route => route.id === completion.route_id)
-      ).length;
+    const styleProgress = Object.entries(routesByStyle)
+      .filter(([style]) => !hiddenStyles.includes(style))
+      .map(([style, routes]) => {
+        const completedRoutes = completions.filter(completion => 
+          routes.some(route => route.id === completion.route_id)
+        ).length;
 
-      const totalRoutes = routes.length;
-      const percentage = totalRoutes > 0 ? Math.round((completedRoutes / totalRoutes) * 100) : 0;
+        const totalRoutes = routes.length;
+        const percentage = totalRoutes > 0 ? Math.round((completedRoutes / totalRoutes) * 100) : 0;
 
-      return {
-        style,
-        completed: completedRoutes,
-        total: totalRoutes,
-        percentage,
-      };
-    });
+        return {
+          style,
+          completed: completedRoutes,
+          total: totalRoutes,
+          percentage,
+        };
+      });
 
     // Calculate overall progress
     const totalCompleted = completions.length;
@@ -58,7 +62,7 @@ export function CompletionProgressBars({
         percentage: overallPercentage,
       },
     };
-  }, [completions]);
+  }, [completions, hiddenStyles]);
 
   const getStyleColor = (style: string) => {
     switch (style) {
@@ -125,33 +129,35 @@ export function CompletionProgressBars({
         </div>
 
         {/* Progress by Style */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-stone-700">Progress by Style</h4>
-          {progressData.styles.map(({ style, completed, total, percentage }) => (
-            <div key={style} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">{style}</span>
-                <span className="text-sm text-stone-600">{percentage}%</span>
-              </div>
-              <div className="relative">
-                <div 
-                  className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"
-                >
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: `${percentage}%`,
-                      backgroundColor: getStyleColor(style)
-                    }}
-                  />
+        {progressData.styles.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-stone-700">Progress by Style</h4>
+            {progressData.styles.map(({ style, completed, total, percentage }) => (
+              <div key={style} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">{style}</span>
+                  <span className="text-sm text-stone-600">{percentage}%</span>
                 </div>
+                <div className="relative">
+                  <div 
+                    className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"
+                  >
+                    <div
+                      className="h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${percentage}%`,
+                        backgroundColor: getStyleColor(style)
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-stone-500">
+                  {completed} / {total} routes
+                </p>
               </div>
-              <p className="text-xs text-stone-500">
-                {completed} / {total} routes
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

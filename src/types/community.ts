@@ -13,4 +13,7 @@ export interface CommunityMember {
   show_climbing_progress?: boolean;
   show_completion_stats?: boolean;
   show_climbing_level?: boolean;
+  show_trad_progress?: boolean;
+  show_sport_progress?: boolean;
+  show_top_rope_progress?: boolean;
 }
