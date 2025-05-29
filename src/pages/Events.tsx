@@ -93,7 +93,7 @@ export default function Events() {
             Community Spotlight
           </h2>
           <div className="space-y-4">
-            {members.slice(0, 3).map((member) => {
+            {members.map((member) => {
               const userStats = getUserCompletionStats(member.id);
               return (
                 <CommunityMemberCard 
