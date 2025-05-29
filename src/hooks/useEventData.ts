@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,10 +33,13 @@ export function useEventData(eventId: string | undefined) {
   const [userJoined, setUserJoined] = useState(false);
   const [currentUserParticipation, setCurrentUserParticipation] = useState<Participant | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
   const fetchEventDetails = async () => {
+    if (!eventId) return;
+    
     try {
       // Fetch basic event details
       const { data, error } = await supabase
@@ -76,11 +80,13 @@ export function useEventData(eventId: string | undefined) {
 
     } catch (error) {
       console.error('Error fetching event details:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load event details",
-        variant: "destructive",
-      });
+      if (initialLoadComplete) {
+        toast({
+          title: "Error",
+          description: "Failed to load event details",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -139,6 +145,8 @@ export function useEventData(eventId: string | undefined) {
   };
 
   const fetchParticipants = async () => {
+    if (!eventId) return;
+    
     try {
       const { data: participantsData, error: participantsError } = await supabase
         .from('event_participants')
@@ -175,6 +183,8 @@ export function useEventData(eventId: string | undefined) {
   };
 
   const fetchEquipment = async () => {
+    if (!eventId) return;
+    
     try {
       const { data: eventEquipmentData, error: eventEquipmentError } = await supabase
         .from('event_equipment')
@@ -227,8 +237,6 @@ export function useEventData(eventId: string | undefined) {
       }
     } catch (error) {
       console.error('Error fetching equipment:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -291,11 +299,15 @@ export function useEventData(eventId: string | undefined) {
         checkUserParticipation()
       ]).finally(() => {
         setLoading(false);
+        setInitialLoadComplete(true);
       });
       
       if (user) {
         fetchUserEquipment();
       }
+    } else {
+      setLoading(false);
+      setInitialLoadComplete(true);
     }
   }, [eventId, user]);
 

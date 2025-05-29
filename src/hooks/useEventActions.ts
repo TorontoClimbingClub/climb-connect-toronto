@@ -132,6 +132,23 @@ export const useEventActions = () => {
   const leaveEvent = async (eventId: string, userId: string) => {
     setLoading(true);
     try {
+      // First, get the user's participation to check if they're a driver
+      const { data: participation } = await supabase
+        .from('event_participants')
+        .select('id, user_id, is_carpool_driver')
+        .eq('event_id', eventId)
+        .eq('user_id', userId)
+        .single();
+
+      if (participation?.is_carpool_driver) {
+        // If user is a driver, clear all passengers assigned to them
+        await supabase
+          .from('event_participants')
+          .update({ assigned_driver_id: null })
+          .eq('assigned_driver_id', userId);
+      }
+
+      // Remove the user's participation
       const { error } = await supabase
         .from('event_participants')
         .delete()
@@ -171,7 +188,7 @@ export const useEventActions = () => {
       if (!isDriver) {
         updateData.assigned_driver_id = null;
         
-        // Also clear any passengers assigned to this user
+        // Get the user_id for this participation to clear passengers
         const { data: participation } = await supabase
           .from('event_participants')
           .select('user_id')
@@ -179,6 +196,7 @@ export const useEventActions = () => {
           .single();
 
         if (participation) {
+          // Clear any passengers assigned to this user
           await supabase
             .from('event_participants')
             .update({ assigned_driver_id: null })

@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +86,15 @@ export default function EventDetail() {
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-[#E55A2B]">Loading event details...</div>
+      </div>;
+  }
+
+  if (!eventId) {
+    return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-stone-600 mb-4">Invalid event ID</p>
+          <button onClick={() => navigate('/events')}>Back to Events</button>
+        </div>
       </div>;
   }
 
