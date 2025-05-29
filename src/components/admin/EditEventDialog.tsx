@@ -2,14 +2,14 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Edit } from "lucide-react";
+import { Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Event } from "@/types/events";
+import { EventBasicInfo } from "./edit-event/EventBasicInfo";
+import { EventDateTimeLocation } from "./edit-event/EventDateTimeLocation";
+import { EventCapacitySettings } from "./edit-event/EventCapacitySettings";
+import { EventDifficultySettings } from "./edit-event/EventDifficultySettings";
 
 interface EditEventDialogProps {
   event: Event;
@@ -34,6 +34,10 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
     required_climbing_experience: event.required_climbing_experience || [],
     capacity_limit: event.capacity_limit || ""
   });
+
+  const handleFieldChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,16 +79,6 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
     }
   };
 
-  const climbingExperiences = [
-    "Top Rope",
-    "Sport Climbing", 
-    "Traditional Climbing",
-    "Bouldering",
-    "Multi-pitch",
-    "Ice Climbing",
-    "Alpine Climbing"
-  ];
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -98,130 +92,10 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
           <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Event Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Brief event summary..."
-                className="min-h-[80px]"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="details">Details</Label>
-              <Textarea
-                id="details"
-                value={formData.details}
-                onChange={(e) => setFormData(prev => ({ ...prev, details: e.target.value }))}
-                placeholder="Additional event details, what to bring, meeting instructions..."
-                className="min-h-[100px]"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="date">Date *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="time">Time *</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="location">Location *</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Event location"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="max_participants">Max Participants</Label>
-                <Input
-                  id="max_participants"
-                  type="number"
-                  min="1"
-                  value={formData.max_participants}
-                  onChange={(e) => setFormData(prev => ({ ...prev, max_participants: e.target.value }))}
-                  placeholder="No limit"
-                />
-              </div>
-              <div>
-                <Label htmlFor="capacity_limit">Capacity Limit</Label>
-                <Input
-                  id="capacity_limit"
-                  type="number"
-                  min="1"
-                  value={formData.capacity_limit}
-                  onChange={(e) => setFormData(prev => ({ ...prev, capacity_limit: e.target.value }))}
-                  placeholder="No limit"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="difficulty_level">Difficulty Level</Label>
-              <Select value={formData.difficulty_level} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value === "none" ? "" : value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select difficulty level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No difficulty level</SelectItem>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                  <SelectItem value="Expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="required_climbing_level">Required Climbing Level</Label>
-              <Select value={formData.required_climbing_level} onValueChange={(value) => setFormData(prev => ({ ...prev, required_climbing_level: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select required climbing level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No requirement</SelectItem>
-                  <SelectItem value="Never Climbed">Never Climbed</SelectItem>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <EventBasicInfo formData={formData} onChange={handleFieldChange} />
+          <EventDateTimeLocation formData={formData} onChange={handleFieldChange} />
+          <EventCapacitySettings formData={formData} onChange={handleFieldChange} />
+          <EventDifficultySettings formData={formData} onChange={handleFieldChange} />
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
