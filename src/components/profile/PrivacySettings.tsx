@@ -49,27 +49,6 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
     onFormDataChange(updatedData);
   };
 
-  if (!editing) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Privacy Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm text-stone-600">Profile Viewing: {formData.allow_profile_viewing ? 'Enabled' : 'Disabled'}</p>
-            <p className="text-sm text-stone-600">Show Climbing Level: {formData.show_climbing_level ? 'Yes' : 'No'}</p>
-            <p className="text-sm text-stone-600">Show Climbing Progress: {formData.show_climbing_progress ? 'Yes' : 'No'}</p>
-            <p className="text-sm text-stone-600">Show Completion Stats: {formData.show_completion_stats ? 'Yes' : 'No'}</p>
-            <p className="text-sm text-stone-600">Show Trad Progress: {formData.show_trad_progress ? 'Yes' : 'No'}</p>
-            <p className="text-sm text-stone-600">Show Sport Progress: {formData.show_sport_progress ? 'Yes' : 'No'}</p>
-            <p className="text-sm text-stone-600">Show Top Rope Progress: {formData.show_top_rope_progress ? 'Yes' : 'No'}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -81,7 +60,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="allow_profile_viewing"
               checked={Boolean(formData.allow_profile_viewing)}
-              onCheckedChange={(checked) => handlePrivacyChange('allow_profile_viewing', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('allow_profile_viewing', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="allow_profile_viewing">Allow others to view my profile</Label>
           </div>
@@ -90,7 +70,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="show_climbing_level"
               checked={Boolean(formData.show_climbing_level)}
-              onCheckedChange={(checked) => handlePrivacyChange('show_climbing_level', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('show_climbing_level', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="show_climbing_level">Show my climbing level</Label>
           </div>
@@ -99,7 +80,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="show_climbing_progress"
               checked={Boolean(formData.show_climbing_progress)}
-              onCheckedChange={(checked) => handlePrivacyChange('show_climbing_progress', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('show_climbing_progress', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="show_climbing_progress">Show my climbing progress</Label>
           </div>
@@ -108,7 +90,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="show_completion_stats"
               checked={Boolean(formData.show_completion_stats)}
-              onCheckedChange={(checked) => handlePrivacyChange('show_completion_stats', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('show_completion_stats', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="show_completion_stats">Show my completion statistics</Label>
           </div>
@@ -117,7 +100,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="show_trad_progress"
               checked={Boolean(formData.show_trad_progress)}
-              onCheckedChange={(checked) => handlePrivacyChange('show_trad_progress', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('show_trad_progress', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="show_trad_progress">Show my traditional climbing progress</Label>
           </div>
@@ -126,7 +110,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="show_sport_progress"
               checked={Boolean(formData.show_sport_progress)}
-              onCheckedChange={(checked) => handlePrivacyChange('show_sport_progress', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('show_sport_progress', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="show_sport_progress">Show my sport climbing progress</Label>
           </div>
@@ -135,7 +120,8 @@ export function PrivacySettings({ editing, formData, onFormDataChange }: Privacy
             <Checkbox
               id="show_top_rope_progress"
               checked={Boolean(formData.show_top_rope_progress)}
-              onCheckedChange={(checked) => handlePrivacyChange('show_top_rope_progress', Boolean(checked))}
+              onCheckedChange={editing ? (checked) => handlePrivacyChange('show_top_rope_progress', Boolean(checked)) : undefined}
+              disabled={!editing}
             />
             <Label htmlFor="show_top_rope_progress">Show my top rope progress</Label>
           </div>

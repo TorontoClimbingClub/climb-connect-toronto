@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -10,7 +9,6 @@ import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { CommunityMember } from "@/types/community";
 import { EventCard } from "@/components/events/EventCard";
-import { CommunityStats } from "@/components/events/CommunityStats";
 import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
 
@@ -104,8 +102,7 @@ export default function Events() {
 
         {/* Community Section */}
         <div>
-          <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Active Members</h2>
-          <CommunityStats memberCount={members?.length || 0} />
+          <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Members</h2>
 
           <div className="space-y-4">
             {members && members.map((member) => {
