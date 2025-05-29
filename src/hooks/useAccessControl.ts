@@ -1,6 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
+import { errorLogger } from '@/utils/errorLogger';
 
 export const useAccessControl = (requiredAccess: 'authenticated' | 'public' = 'public') => {
   const { user, loading } = useAuth();
@@ -24,7 +25,17 @@ export const useAccessControl = (requiredAccess: 'authenticated' | 'public' = 'p
 
       if (requiredAccess === 'authenticated') {
         if (!user) {
-          console.warn('❌ Access Denied: User not authenticated for route:', window.location.pathname);
+          const route = window.location.pathname;
+          console.warn('❌ Access Denied: User not authenticated for route:', route);
+          
+          // Log the access denied error
+          errorLogger.logAccessDenied(
+            route,
+            undefined,
+            undefined,
+            `Unauthenticated user attempted to access ${route}`
+          );
+          
           setHasAccess(false);
         } else {
           console.log('✅ Access Granted: User authenticated');
