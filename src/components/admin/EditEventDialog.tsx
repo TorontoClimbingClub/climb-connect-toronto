@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,8 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
         ...formData,
         max_participants: formData.max_participants ? parseInt(formData.max_participants.toString()) : null,
         capacity_limit: formData.capacity_limit ? parseInt(formData.capacity_limit.toString()) : null,
+        difficulty_level: formData.difficulty_level || null,
+        required_climbing_level: formData.required_climbing_level === "none" || !formData.required_climbing_level ? null : formData.required_climbing_level,
         updated_at: new Date().toISOString()
       };
 
@@ -189,7 +192,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
 
             <div>
               <Label htmlFor="difficulty_level">Difficulty Level</Label>
-              <Select value={formData.difficulty_level} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}>
+              <Select value={formData.difficulty_level} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value === "none" ? "" : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select difficulty level" />
                 </SelectTrigger>
