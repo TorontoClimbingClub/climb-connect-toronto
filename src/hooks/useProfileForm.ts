@@ -23,6 +23,7 @@ export function useProfileForm(initialProfile: UserProfile | null) {
       climbing_level: '',
       climbing_experience: [],
       bio: '',
+      profile_photo_url: null,
       created_at: '',
       allow_profile_viewing: true,
       show_climbing_progress: false,

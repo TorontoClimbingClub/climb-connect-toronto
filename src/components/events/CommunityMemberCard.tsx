@@ -2,6 +2,7 @@
 import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Car, Phone, Mountain, Package, Users } from "lucide-react";
 import { CommunityMember } from "@/types/community";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
@@ -40,6 +41,7 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     climbing_description: member?.climbing_description || null,
     equipment_count: member?.equipment_count || 0,
     events_count: member?.events_count || 0,
+    profile_photo_url: member?.profile_photo_url || null,
     show_climbing_level: member?.show_climbing_level ?? true,
     show_climbing_progress: member?.show_climbing_progress ?? true,
     show_completion_stats: member?.show_completion_stats ?? true,
@@ -63,6 +65,10 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     if (!safeMember.show_sport_progress) filtered.push('Sport');
     if (!safeMember.show_top_rope_progress) filtered.push('Top Rope');
     return filtered;
+  };
+
+  const getUserInitials = () => {
+    return safeMember.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const handleCardClick = () => {
@@ -91,19 +97,25 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     >
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-[#E55A2B] truncate">
-              {safeMember.full_name}
-              {isCurrentUser && (
-                <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+          <div className="min-w-0 flex-1 flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={safeMember.profile_photo_url || undefined} />
+              <AvatarFallback className="text-sm">{getUserInitials()}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-[#E55A2B] truncate">
+                {safeMember.full_name}
+                {isCurrentUser && (
+                  <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                )}
+              </h3>
+              {safeMember.phone && (
+                <div className="flex items-center text-sm text-stone-600 mt-1">
+                  <Phone className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+                  <span className="truncate">{safeMember.phone}</span>
+                </div>
               )}
-            </h3>
-            {safeMember.phone && (
-              <div className="flex items-center text-sm text-stone-600 mt-1">
-                <Phone className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
-                <span className="truncate">{safeMember.phone}</span>
-              </div>
-            )}
+            </div>
           </div>
           
           {safeMember.is_carpool_driver && (

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,7 @@ import { Edit2, Save, X, User, Phone, FileText } from "lucide-react";
 import { validateInput, sanitizeHtml, getGenericErrorMessage } from "@/utils/security";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
 
 interface UserProfile {
   id: string;
@@ -19,6 +21,7 @@ interface UserProfile {
   climbing_level?: string;
   climbing_experience?: string[];
   bio?: string;
+  profile_photo_url?: string | null;
   allow_profile_viewing?: boolean;
   show_climbing_progress?: boolean;
   show_completion_stats?: boolean;
@@ -105,6 +108,15 @@ export function BasicInformation({
     }
   };
 
+  const handlePhotoUpdate = (photoUrl: string | null) => {
+    onFormDataChange({ ...formData, profile_photo_url: photoUrl });
+  };
+
+  const getUserInitials = () => {
+    const name = profile?.full_name || formData.full_name || "User";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   if (!profile) return null;
 
   return (
@@ -121,7 +133,17 @@ export function BasicInformation({
           </Button>
         )}
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
+        {/* Profile Photo Section */}
+        <div>
+          <Label className="text-sm font-medium text-stone-500 mb-3 block">Profile Photo</Label>
+          <ProfilePhotoUpload 
+            currentPhotoUrl={formData.profile_photo_url}
+            onPhotoUpdate={handlePhotoUpdate}
+            userInitials={getUserInitials()}
+          />
+        </div>
+
         {editing ? (
           <>
             <div className="space-y-2">

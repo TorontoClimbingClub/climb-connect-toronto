@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { X, Phone, Mountain, Car, Package, Users, Calendar } from "lucide-react";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { CompletedRoutesList } from "@/components/profile/CompletedRoutesList";
@@ -32,6 +33,10 @@ export const UserProfileOverlay = memo(function UserProfileOverlay({
     onOpenChange(false);
   };
 
+  const getUserInitials = () => {
+    return user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   // Calculate privacy-filtered hidden styles
   const getHiddenStyles = () => {
     const hidden: string[] = [];
@@ -48,9 +53,15 @@ export const UserProfileOverlay = memo(function UserProfileOverlay({
         aria-describedby="user-profile-description"
       >
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <DialogTitle className="text-xl font-bold text-[#E55A2B]">
-            {user.full_name}'s Profile
-          </DialogTitle>
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={user.profile_photo_url || undefined} />
+              <AvatarFallback>{getUserInitials()}</AvatarFallback>
+            </Avatar>
+            <DialogTitle className="text-xl font-bold text-[#E55A2B]">
+              {user.full_name}'s Profile
+            </DialogTitle>
+          </div>
           <Button
             variant="ghost"
             size="sm"

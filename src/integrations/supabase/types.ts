@@ -357,6 +357,7 @@ export type Database = {
           passenger_capacity: number | null
           personal_message: string | null
           phone: string | null
+          profile_photo_url: string | null
           show_climbing_level: boolean | null
           show_climbing_progress: boolean | null
           show_completion_stats: boolean | null
@@ -378,6 +379,7 @@ export type Database = {
           passenger_capacity?: number | null
           personal_message?: string | null
           phone?: string | null
+          profile_photo_url?: string | null
           show_climbing_level?: boolean | null
           show_climbing_progress?: boolean | null
           show_completion_stats?: boolean | null
@@ -399,6 +401,7 @@ export type Database = {
           passenger_capacity?: number | null
           personal_message?: string | null
           phone?: string | null
+          profile_photo_url?: string | null
           show_climbing_level?: boolean | null
           show_climbing_progress?: boolean | null
           show_completion_stats?: boolean | null

@@ -28,6 +28,7 @@ export function useProfileSave() {
           climbing_level: formData.climbing_level,
           climbing_experience: formData.climbing_experience,
           bio: formData.bio,
+          profile_photo_url: formData.profile_photo_url,
           allow_profile_viewing: formData.allow_profile_viewing,
           show_climbing_progress: formData.show_climbing_progress,
           show_completion_stats: formData.show_completion_stats,
