@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -20,30 +21,37 @@ export function useLeaderboards() {
 
   const fetchEventAttendees = async () => {
     try {
-      // Use the new attendance approval system for accurate event counts
-      const { data, error } = await supabase
+      // Get approved attendances first
+      const { data: approvalsData, error: approvalsError } = await supabase
         .from('event_attendance_approvals')
-        .select(`
-          user_id,
-          user:profiles!inner(full_name)
-        `)
+        .select('user_id')
         .eq('status', 'approved');
 
-      if (error) throw error;
+      if (approvalsError) throw approvalsError;
+
+      // Get unique user IDs and their profiles
+      const userIds = [...new Set(approvalsData?.map(a => a.user_id) || [])];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
 
       // Count approved attendances per user
-      const userCounts = data.reduce((acc: Record<string, any>, curr) => {
+      const userCounts = approvalsData?.reduce((acc: Record<string, any>, curr) => {
         const userId = curr.user_id;
         if (!acc[userId]) {
+          const profile = profilesData?.find(p => p.id === userId);
           acc[userId] = {
             id: userId,
-            full_name: curr.user.full_name,
+            full_name: profile?.full_name || 'Unknown User',
             count: 0
           };
         }
         acc[userId].count++;
         return acc;
-      }, {});
+      }, {}) || {};
 
       const sortedUsers = Object.values(userCounts)
         .sort((a: any, b: any) => b.count - a.count)
@@ -62,16 +70,21 @@ export function useLeaderboards() {
 
   const fetchTopGradeClimbers = async () => {
     try {
-      const { data, error } = await supabase
+      // Get completions first
+      const { data: completionsData, error: completionsError } = await supabase
         .from('climb_completions')
-        .select(`
-          user_id,
-          route_id,
-          user:profiles!inner(full_name),
-          route:routes!inner(grade, style)
-        `);
+        .select('user_id, route_id');
 
-      if (error) throw error;
+      if (completionsError) throw completionsError;
+
+      // Get routes and profiles separately
+      const routeIds = [...new Set(completionsData?.map(c => c.route_id) || [])];
+      const userIds = [...new Set(completionsData?.map(c => c.user_id) || [])];
+
+      const [{ data: routesData }, { data: profilesData }] = await Promise.all([
+        supabase.from('routes').select('id, grade, style').in('id', routeIds),
+        supabase.from('profiles').select('id, full_name').in('id', userIds)
+      ]);
 
       const gradeOrder = [
         '5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9',
@@ -83,9 +96,14 @@ export function useLeaderboards() {
         '5.15a', '5.15b', '5.15c', '5.15d'
       ];
 
-      const userHighestGrades = data.reduce((acc: Record<string, any>, curr) => {
+      const userHighestGrades = completionsData?.reduce((acc: Record<string, any>, curr) => {
         const userId = curr.user_id;
-        const grade = curr.route.grade;
+        const route = routesData?.find(r => r.id === curr.route_id);
+        const profile = profilesData?.find(p => p.id === userId);
+        
+        if (!route || !profile) return acc;
+        
+        const grade = route.grade;
         const currentIndex = gradeOrder.indexOf(grade);
         
         if (currentIndex === -1) return acc;
@@ -93,13 +111,13 @@ export function useLeaderboards() {
         if (!acc[userId] || gradeOrder.indexOf(acc[userId].grade) < currentIndex) {
           acc[userId] = {
             id: userId,
-            full_name: curr.user.full_name,
+            full_name: profile.full_name,
             grade: grade,
             gradeIndex: currentIndex
           };
         }
         return acc;
-      }, {});
+      }, {}) || {};
 
       const sortedUsers = Object.values(userHighestGrades)
         .sort((a: any, b: any) => b.gradeIndex - a.gradeIndex)
@@ -118,29 +136,42 @@ export function useLeaderboards() {
 
   const fetchTopStyleClimbers = async (style: string, setter: (users: LeaderboardUser[]) => void) => {
     try {
-      const { data, error } = await supabase
+      // Get completions first
+      const { data: completionsData, error: completionsError } = await supabase
         .from('climb_completions')
-        .select(`
-          user_id,
-          user:profiles!inner(full_name),
-          route:routes!inner(style)
-        `)
-        .eq('routes.style', style);
+        .select('user_id, route_id');
 
-      if (error) throw error;
+      if (completionsError) throw completionsError;
 
-      const userCounts = data.reduce((acc: Record<string, any>, curr) => {
+      // Get routes of specific style and profiles separately
+      const routeIds = [...new Set(completionsData?.map(c => c.route_id) || [])];
+      const userIds = [...new Set(completionsData?.map(c => c.user_id) || [])];
+
+      const [{ data: routesData }, { data: profilesData }] = await Promise.all([
+        supabase.from('routes').select('id, style').eq('style', style).in('id', routeIds),
+        supabase.from('profiles').select('id, full_name').in('id', userIds)
+      ]);
+
+      const styleRouteIds = new Set(routesData?.map(r => r.id) || []);
+
+      const userCounts = completionsData?.reduce((acc: Record<string, any>, curr) => {
+        if (!styleRouteIds.has(curr.route_id)) return acc;
+        
         const userId = curr.user_id;
+        const profile = profilesData?.find(p => p.id === userId);
+        
+        if (!profile) return acc;
+        
         if (!acc[userId]) {
           acc[userId] = {
             id: userId,
-            full_name: curr.user.full_name,
+            full_name: profile.full_name,
             count: 0
           };
         }
         acc[userId].count++;
         return acc;
-      }, {});
+      }, {}) || {};
 
       const sortedUsers = Object.values(userCounts)
         .sort((a: any, b: any) => b.count - a.count)
@@ -159,28 +190,38 @@ export function useLeaderboards() {
 
   const fetchTopGearOwners = async () => {
     try {
-      const { data, error } = await supabase
+      // Get equipment data first
+      const { data: equipmentData, error: equipmentError } = await supabase
         .from('user_equipment')
-        .select(`
-          user_id,
-          quantity,
-          user:profiles!inner(full_name)
-        `);
+        .select('user_id, quantity');
 
-      if (error) throw error;
+      if (equipmentError) throw equipmentError;
 
-      const userCounts = data.reduce((acc: Record<string, any>, curr) => {
+      // Get profiles separately
+      const userIds = [...new Set(equipmentData?.map(e => e.user_id) || [])];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const userCounts = equipmentData?.reduce((acc: Record<string, any>, curr) => {
         const userId = curr.user_id;
+        const profile = profilesData?.find(p => p.id === userId);
+        
+        if (!profile) return acc;
+        
         if (!acc[userId]) {
           acc[userId] = {
             id: userId,
-            full_name: curr.user.full_name,
+            full_name: profile.full_name,
             totalQuantity: 0
           };
         }
         acc[userId].totalQuantity += curr.quantity || 0;
         return acc;
-      }, {});
+      }, {}) || {};
 
       const sortedUsers = Object.values(userCounts)
         .sort((a: any, b: any) => b.totalQuantity - a.totalQuantity)

@@ -24,4 +24,11 @@ export interface EventAttendanceApproval {
   status: 'pending' | 'approved' | 'rejected';
   approved_at: string | null;
   created_at: string;
+  event?: {
+    title: string;
+    date: string;
+  };
+  user?: {
+    full_name: string;
+  };
 }

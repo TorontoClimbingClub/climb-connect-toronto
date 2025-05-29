@@ -11,17 +11,32 @@ export function useAttendanceApprovals() {
 
   const fetchApprovals = async () => {
     try {
-      const { data, error } = await supabase
+      // First get the approvals
+      const { data: approvalsData, error: approvalsError } = await supabase
         .from('event_attendance_approvals')
-        .select(`
-          *,
-          event:events(title, date),
-          user:profiles(full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setApprovals(data || []);
+      if (approvalsError) throw approvalsError;
+
+      // Then get events and profiles separately to avoid join issues
+      const eventIds = [...new Set(approvalsData?.map(a => a.event_id) || [])];
+      const userIds = [...new Set(approvalsData?.map(a => a.user_id) || [])];
+
+      const [{ data: eventsData }, { data: profilesData }] = await Promise.all([
+        supabase.from('events').select('id, title, date').in('id', eventIds),
+        supabase.from('profiles').select('id, full_name').in('id', userIds)
+      ]);
+
+      // Map the data together
+      const enrichedApprovals = approvalsData?.map(approval => ({
+        ...approval,
+        status: approval.status as 'pending' | 'approved' | 'rejected',
+        event: eventsData?.find(e => e.id === approval.event_id) || { title: 'Unknown Event', date: '' },
+        user: profilesData?.find(p => p.id === approval.user_id) || { full_name: 'Unknown User' }
+      })) || [];
+
+      setApprovals(enrichedApprovals);
     } catch (error: any) {
       console.error('Error fetching attendance approvals:', error);
       toast({
