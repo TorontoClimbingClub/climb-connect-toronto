@@ -1,5 +1,5 @@
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Car, Phone, Mountain, Package, Users, CheckCircle2, X } from "lucide-react";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
+import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
 
 interface UserProfileOverlayProps {
   user: CommunityMember | null;
@@ -20,6 +21,7 @@ interface UserProfileOverlayProps {
 export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOverlayProps) {
   const { user: currentUser } = useAuth();
   const { getUserCompletionStats } = useClimbCompletions();
+  const { equipment: userEquipment } = useEquipmentProfile();
   
   if (!user) return null;
 
@@ -49,15 +51,18 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
   const shouldShowClimbingProgress = user.show_climbing_progress !== false;
   const shouldShowCompletionStats = user.show_completion_stats !== false;
 
+  // Get equipment for this user (only show for own profile for now)
+  const equipmentToShow = isOwnProfile ? userEquipment : [];
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-w-md overflow-y-auto pb-20">
-        <SheetHeader>
-          <SheetTitle className="text-[#E55A2B]">{user.full_name}</SheetTitle>
-          <SheetDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-[#E55A2B]">{user.full_name}</DialogTitle>
+          <DialogDescription>
             View {isOwnProfile ? 'your' : `${user.full_name}'s`} climbing profile and achievements
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="space-y-6 mt-6">
           {/* Bio */}
@@ -111,6 +116,38 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
                 {user.climbing_description && (
                   <p className="text-sm text-stone-600">{user.climbing_description}</p>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Equipment List - Only for own profile for now */}
+          {isOwnProfile && equipmentToShow.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Equipment ({equipmentToShow.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {equipmentToShow.slice(0, 10).map((item) => (
+                    <div key={item.id} className="p-2 bg-stone-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-stone-900">{item.item_name}</span>
+                        <span className="text-sm text-stone-600">×{item.quantity}</span>
+                      </div>
+                      <div className="text-xs text-stone-500">
+                        {item.equipment_categories?.name}
+                      </div>
+                    </div>
+                  ))}
+                  {equipmentToShow.length > 10 && (
+                    <p className="text-sm text-stone-500 text-center">
+                      +{equipmentToShow.length - 10} more items
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
@@ -191,20 +228,20 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               <p className="text-xs text-stone-600">Events Joined</p>
             </div>
           </div>
-        </div>
 
-        {/* Prominent Close Button at Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-          <Button 
-            onClick={() => onOpenChange(false)}
-            className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
-            size="lg"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Close Profile
-          </Button>
+          {/* Close Button */}
+          <div className="pt-4 border-t">
+            <Button 
+              onClick={() => onOpenChange(false)}
+              className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
+              size="lg"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Close Profile
+            </Button>
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

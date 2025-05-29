@@ -24,7 +24,7 @@ export function CommunityMemberCard({
   onClick
 }: CommunityMemberCardProps) {
   // Ensure member object has all required properties with defaults
-  const safeMemeber = {
+  const safeMember = {
     id: member?.id || '',
     full_name: member?.full_name || 'Unknown User',
     phone: member?.phone || null,
@@ -45,9 +45,9 @@ export function CommunityMemberCard({
   };
 
   // For privacy settings, hide from everyone (including the user) if they've disabled it
-  const shouldShowClimbingLevel = safeMemeber.show_climbing_level;
-  const shouldShowClimbingProgress = safeMemeber.show_climbing_progress;
-  const shouldShowCompletionStats = safeMemeber.show_completion_stats;
+  const shouldShowClimbingLevel = safeMember.show_climbing_level;
+  const shouldShowClimbingProgress = safeMember.show_climbing_progress;
+  const shouldShowCompletionStats = safeMember.show_completion_stats;
 
   return (
     <Card 
@@ -58,44 +58,44 @@ export function CommunityMemberCard({
         <div className="flex justify-between items-start mb-3">
           <div>
             <h3 className="font-semibold text-[#E55A2B]">
-              {safeMemeber.full_name}
+              {safeMember.full_name}
               {isCurrentUser && (
                 <Badge variant="outline" className="ml-2 text-xs">You</Badge>
               )}
             </h3>
-            {safeMemeber.phone && (
+            {safeMember.phone && (
               <div className="flex items-center text-sm text-stone-600 mt-1">
                 <Phone className="h-3 w-3 mr-1" />
-                {safeMemeber.phone}
+                {safeMember.phone}
               </div>
             )}
           </div>
           
           <div className="flex flex-col gap-1">
-            {safeMemeber.is_carpool_driver && (
+            {safeMember.is_carpool_driver && (
               <Badge variant="secondary" className="text-xs">
                 <Car className="h-3 w-3 mr-1" />
-                Driver ({safeMemeber.passenger_capacity} seats)
+                Driver ({safeMember.passenger_capacity} seats)
               </Badge>
             )}
           </div>
         </div>
 
         {/* Climbing Level and Experience */}
-        {shouldShowClimbingLevel && (safeMemeber.climbing_level || safeMemeber.climbing_experience.length > 0) && (
+        {shouldShowClimbingLevel && (safeMember.climbing_level || safeMember.climbing_experience.length > 0) && (
           <div className="mb-3 p-3 bg-stone-50 rounded-lg">
             <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
                 <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
                 <div>
-                  {safeMemeber.climbing_level && (
+                  {safeMember.climbing_level && (
                     <p className="text-sm font-medium text-stone-700">
-                      {safeMemeber.climbing_level}
+                      {safeMember.climbing_level}
                     </p>
                   )}
-                  {safeMemeber.climbing_experience && safeMemeber.climbing_experience.length > 0 && (
+                  {safeMember.climbing_experience && safeMember.climbing_experience.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {safeMemeber.climbing_experience.map((exp) => (
+                      {safeMember.climbing_experience.map((exp) => (
                         <Badge key={exp} variant="outline" className="text-xs bg-white">
                           {exp}
                         </Badge>
@@ -104,8 +104,8 @@ export function CommunityMemberCard({
                   )}
                 </div>
               </div>
-              {safeMemeber.climbing_description && (
-                <p className="text-sm text-stone-700 mt-1">{safeMemeber.climbing_description}</p>
+              {safeMember.climbing_description && (
+                <p className="text-sm text-stone-700 mt-1">{safeMember.climbing_description}</p>
               )}
             </div>
           </div>
@@ -126,17 +126,11 @@ export function CommunityMemberCard({
         <div className="flex justify-between text-sm text-stone-600">
           <div className="flex items-center">
             <Package className="h-4 w-4 mr-1" />
-            {safeMemeber.equipment_count} gear items
+            {safeMember.equipment_count} gear items
           </div>
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            {safeMemeber.events_count} events joined
-            {shouldShowCompletionStats && userStats?.completions && (
-              <>
-                <span className="mx-2">•</span>
-                {userStats.completions.length} routes
-              </>
-            )}
+            {safeMember.events_count} events joined
           </div>
         </div>
       </CardContent>

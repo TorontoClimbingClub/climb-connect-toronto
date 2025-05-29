@@ -101,9 +101,9 @@ export function EquipmentInventory({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Equipment Inventory
+                Equipment
               </CardTitle>
-              <CardDescription>Manage your climbing gear collection</CardDescription>
+              <CardDescription>Add gear here to add to events</CardDescription>
             </div>
             <AddEquipmentDialog 
               categories={categories}
