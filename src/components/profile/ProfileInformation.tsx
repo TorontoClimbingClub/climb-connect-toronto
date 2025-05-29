@@ -269,8 +269,8 @@ export function ProfileInformation({
             />
           </div>
 
-          {/* Granular Progress Settings */}
-          {formData.show_climbing_progress && (
+          {/* Granular Progress Settings - only show when editing */}
+          {formData.show_climbing_progress && editing && (
             <div className="ml-6 space-y-3 p-3 bg-stone-50 rounded-lg">
               <p className="text-sm font-medium text-stone-700">Individual Progress Bars:</p>
               

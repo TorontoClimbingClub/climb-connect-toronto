@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
-import { RouteFilters } from "@/components/RouteFilters";
+import { EnhancedRouteFilters } from "@/components/filters/EnhancedRouteFilters";
 import { PageHeader } from "@/components/routes/PageHeader";
 import { CragCard } from "@/components/routes/CragCard";
 import { SectorCard } from "@/components/routes/SectorCard";
@@ -12,6 +12,7 @@ import { ClimbingRoute } from "@/types/routes";
 
 export default function Routes() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedCrag, setSelectedCrag] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
@@ -86,10 +87,7 @@ export default function Routes() {
 
   const handleFiltersChange = (newFilteredRoutes: ClimbingRoute[]) => {
     setFilteredRoutes(newFilteredRoutes);
-    // Reset selections when filters change
-    setSelectedSector(null);
-    setSelectedCrag(null);
-    setExpandedAreas(new Set());
+    // Don't reset selections when filters change - keep user on same page
   };
 
   return (
@@ -101,17 +99,6 @@ export default function Routes() {
           onBack={handleBack}
         />
 
-        {/* Show map widget when no crag is selected */}
-        {!selectedCrag && <MapWidget />}
-
-        {/* Show filters when a crag is selected */}
-        {selectedCrag && (
-          <RouteFilters 
-            routes={rattlesnakeRoutes} 
-            onFiltersChange={handleFiltersChange}
-          />
-        )}
-
         <div className="space-y-4">
           {!selectedCrag && (
             <CragCard
@@ -122,14 +109,21 @@ export default function Routes() {
           )}
 
           {selectedCrag && !selectedSector && (
-            sectors.map((sector) => (
-              <SectorCard
-                key={sector}
-                name={sector}
-                routeCount={filteredRoutes.filter(route => route.sector === sector).length}
-                onClick={() => setSelectedSector(sector)}
+            <>
+              <MapWidget />
+              <EnhancedRouteFilters 
+                routes={rattlesnakeRoutes} 
+                onFiltersChange={handleFiltersChange}
               />
-            ))
+              {sectors.map((sector) => (
+                <SectorCard
+                  key={sector}
+                  name={sector}
+                  routeCount={filteredRoutes.filter(route => route.sector === sector).length}
+                  onClick={() => setSelectedSector(sector)}
+                />
+              ))}
+            </>
           )}
 
           {selectedSector && (

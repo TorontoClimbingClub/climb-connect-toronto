@@ -2,10 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Mountain, ExternalLink } from "lucide-react";
+import { CheckCircle2, Mountain, ExternalLink, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
-import { ClimbCompletion } from "@/hooks/useClimbCompletions";
+import { ClimbCompletion, useClimbCompletions } from "@/hooks/useClimbCompletions";
 
 interface CompletedRoutesListProps {
   completions: ClimbCompletion[];
@@ -13,6 +13,7 @@ interface CompletedRoutesListProps {
 
 export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
   const navigate = useNavigate();
+  const { toggleCompletion } = useClimbCompletions();
 
   const completedRoutes = completions.map(completion => {
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
@@ -48,8 +49,14 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
     return 'text-green-600';
   };
 
-  const handleRouteClick = (routeId: string) => {
+  const handleRouteClick = (routeId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
     navigate(`/routes/${routeId}`);
+  };
+
+  const handleToggleCompletion = (routeId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    toggleCompletion(routeId);
   };
 
   if (completedRoutes.length === 0) {
@@ -86,10 +93,12 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
             return (
               <div
                 key={route.id}
-                className="flex items-center justify-between p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer"
-                onClick={() => handleRouteClick(route.id)}
+                className="flex items-center justify-between p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors"
               >
-                <div className="flex-1">
+                <div 
+                  className="flex-1 cursor-pointer"
+                  onClick={(e) => handleRouteClick(route.id, e)}
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-medium text-stone-900">{route.name}</h4>
                     <Badge className={getStyleColor(route.style)} variant="secondary">
@@ -106,9 +115,25 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
                     </span>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm">
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={(e) => handleRouteClick(route.id, e)}
+                    className="text-stone-500 hover:text-stone-700"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={(e) => handleToggleCompletion(route.id, e)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    title="Mark as not completed"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             );
           })}

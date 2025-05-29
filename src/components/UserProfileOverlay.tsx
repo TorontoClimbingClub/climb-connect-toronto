@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mountain, Phone, Eye, EyeOff } from "lucide-react";
+import { Mountain, Phone, Eye, EyeOff, ExternalLink } from "lucide-react";
 import { CompletionProgressBars } from "./CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { useAuth } from "@/contexts/AuthContext";
 import { CommunityMember } from "@/types/community";
+import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfileOverlayProps {
   user: CommunityMember | null;
@@ -19,6 +21,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
   const { getUserCompletionStats, completions } = useClimbCompletions();
   const { user: currentUser } = useAuth();
   const [userCompletions, setUserCompletions] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user && open) {
@@ -79,6 +82,46 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
     if (user.show_sport_progress === false) hidden.push('Sport');
     if (user.show_top_rope_progress === false) hidden.push('Top Rope');
     return hidden;
+  };
+
+  // Get completed routes with details
+  const completedRoutes = userCompletions.map(completion => {
+    const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
+    return route ? { ...route, completedAt: completion.completed_at } : null;
+  }).filter(Boolean).sort((a, b) => {
+    if (!a || !b) return 0;
+    return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+  });
+
+  const getStyleColor = (style: string) => {
+    switch (style) {
+      case 'Trad':
+        return 'bg-orange-100 text-orange-800';
+      case 'Sport':
+        return 'bg-blue-100 text-blue-800';
+      case 'Top Rope':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getDifficultyColor = (grade: string) => {
+    if (grade.includes('5.1') && (grade.includes('0') || grade.includes('1') || grade.includes('2'))) {
+      return 'text-red-600 font-bold';
+    }
+    if (grade.includes('5.9') || grade.includes('5.10')) {
+      return 'text-orange-600 font-semibold';
+    }
+    if (grade.includes('5.7') || grade.includes('5.8')) {
+      return 'text-yellow-600 font-medium';
+    }
+    return 'text-green-600';
+  };
+
+  const handleRouteClick = (routeId: string) => {
+    navigate(`/routes/${routeId}`);
+    onOpenChange(false);
   };
 
   return (
@@ -189,6 +232,44 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             <div className="bg-stone-50 p-6 rounded-lg text-center">
               <EyeOff className="h-8 w-8 text-stone-400 mx-auto mb-2" />
               <p className="text-stone-600">Climbing progress is private</p>
+            </div>
+          )}
+
+          {/* Completed Routes List */}
+          {canShowCompletionStats && completedRoutes.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3">Completed Routes ({completedRoutes.length})</h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {completedRoutes.map((route) => {
+                  if (!route) return null;
+                  return (
+                    <div
+                      key={route.id}
+                      className="flex items-center justify-between p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer"
+                      onClick={() => handleRouteClick(route.id)}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-stone-900 text-sm">{route.name}</h4>
+                          <Badge className={getStyleColor(route.style)} variant="secondary">
+                            {route.style}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-stone-600">
+                          <span className={getDifficultyColor(route.grade)}>
+                            {route.grade}
+                          </span>
+                          <span>{route.area}</span>
+                          <span>
+                            {new Date(route.completedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-stone-400" />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
