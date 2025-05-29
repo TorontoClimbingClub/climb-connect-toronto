@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -14,7 +15,19 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  
+  // Use try-catch to handle auth context issues gracefully
+  let user = null;
+  let authError = false;
+  
+  try {
+    const authData = useAuth();
+    user = authData.user;
+  } catch (error) {
+    console.warn('Auth context not available:', error);
+    authError = true;
+  }
+
   const [selectedCrag, setSelectedCrag] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
@@ -23,7 +36,8 @@ export default function Routes() {
   console.log('🏔️ Routes page loaded:', {
     userId: user?.id,
     userEmail: user?.email,
-    route: location.pathname
+    route: location.pathname,
+    authError
   });
 
   // Get unique sectors and areas from filtered routes
@@ -66,7 +80,14 @@ export default function Routes() {
 
   const handleRouteClick = (routeId: string) => {
     console.log('🎯 Navigating to route:', { routeId, userId: user?.id });
-    navigate(`/routes/${routeId}`);
+    
+    // Pass current navigation state to route detail page
+    const currentParams = new URLSearchParams();
+    if (selectedSector) currentParams.set('sector', selectedSector);
+    if (selectedCrag) currentParams.set('area', selectedCrag);
+    
+    const routeUrl = `/routes/${routeId}${currentParams.toString() ? `?${currentParams.toString()}` : ''}`;
+    navigate(routeUrl);
   };
 
   const getPageTitle = () => {

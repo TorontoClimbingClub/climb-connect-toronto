@@ -15,13 +15,25 @@ export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  
+  // Use try-catch to handle auth context issues gracefully
+  let user = null;
+  let authError = false;
+  
+  try {
+    const authData = useAuth();
+    user = authData.user;
+  } catch (error) {
+    console.warn('Auth context not available:', error);
+    authError = true;
+  }
 
   console.log('🏔️ RouteDetail - Component mounted:', {
     routeId,
     userId: user?.id,
     userEmail: user?.email,
-    route: location.pathname
+    route: location.pathname,
+    authError
   });
 
   const route = rattlesnakeRoutes.find(r => r.id === routeId);
@@ -37,8 +49,12 @@ export default function RouteDetail() {
     updatePhotoCaption
   } = useRouteData(routeId || "");
 
-  const { toggleCompletion, isCompleted } = useClimbCompletions();
-  const completed = isCompleted(routeId || "");
+  // Only use climb completions if user is available
+  const { toggleCompletion, isCompleted } = user ? useClimbCompletions() : { 
+    toggleCompletion: () => {}, 
+    isCompleted: () => false 
+  };
+  const completed = user ? isCompleted(routeId || "") : false;
 
   if (!route) {
     console.error('❌ Route not found:', routeId);
@@ -62,6 +78,10 @@ export default function RouteDetail() {
   };
 
   const handleAddComment = async (comment: string, parentId?: string) => {
+    if (!user) {
+      console.warn('User not authenticated, cannot add comment');
+      return;
+    }
     console.log('💬 Adding comment:', { userId: user?.id, routeId, comment, parentId });
     await addComment(comment, parentId);
   };
@@ -101,16 +121,16 @@ export default function RouteDetail() {
         <PhotosSection
           photos={photos}
           loading={loading}
-          onUploadPhoto={uploadPhoto}
-          onDeletePhoto={deletePhoto}
-          onUpdateCaption={updatePhotoCaption}
+          onUploadPhoto={user ? uploadPhoto : undefined}
+          onDeletePhoto={user ? deletePhoto : undefined}
+          onUpdateCaption={user ? updatePhotoCaption : undefined}
         />
 
         <CommentsSection
           comments={comments}
           loading={loading}
           onAddComment={handleAddComment}
-          onDeleteComment={deleteComment}
+          onDeleteComment={user ? deleteComment : undefined}
         />
       </div>
       <Navigation />

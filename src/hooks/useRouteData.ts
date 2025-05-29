@@ -22,9 +22,15 @@ export const useRouteData = (routeId: string) => {
   } = useRoutePhotos(routeId);
 
   useEffect(() => {
-    fetchComments();
-    fetchPhotos();
-  }, [fetchComments, fetchPhotos]);
+    if (routeId) {
+      try {
+        fetchComments();
+        fetchPhotos();
+      } catch (error) {
+        console.warn('Error fetching route data:', error);
+      }
+    }
+  }, [fetchComments, fetchPhotos, routeId]);
 
   return {
     comments,
