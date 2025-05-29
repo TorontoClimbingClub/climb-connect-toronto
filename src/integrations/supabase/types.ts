@@ -54,6 +54,58 @@ export type Database = {
         }
         Relationships: []
       }
+      event_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          event_id: string
+          id: string
+          parent_id: string | null
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          event_id: string
+          id?: string
+          parent_id?: string | null
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          parent_id?: string | null
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_comments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_with_participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "event_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_equipment: {
         Row: {
           created_at: string | null
@@ -109,6 +161,7 @@ export type Database = {
           id: string
           is_carpool_driver: boolean | null
           joined_at: string | null
+          needs_carpool: boolean | null
           user_id: string
         }
         Insert: {
@@ -119,6 +172,7 @@ export type Database = {
           id?: string
           is_carpool_driver?: boolean | null
           joined_at?: string | null
+          needs_carpool?: boolean | null
           user_id: string
         }
         Update: {
@@ -129,6 +183,7 @@ export type Database = {
           id?: string
           is_carpool_driver?: boolean | null
           joined_at?: string | null
+          needs_carpool?: boolean | null
           user_id?: string
         }
         Relationships: [
