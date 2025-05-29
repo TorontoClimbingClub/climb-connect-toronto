@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
 
 export function RouteManagementTab() {
-  const { routes, updateRoute, addRoute, deleteRoute } = useRouteManagement();
+  const { routes, loading, updateRoute, addRoute, deleteRoute } = useRouteManagement();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRoute, setSelectedRoute] = useState<ClimbingRoute | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -34,12 +35,12 @@ export function RouteManagementTab() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveRoute = (routeData: Partial<ClimbingRoute>) => {
+  const handleSaveRoute = async (routeData: Partial<ClimbingRoute>) => {
     console.log('Saving route data:', routeData);
     
     if (selectedRoute) {
-      // Edit existing route using global management
-      const success = updateRoute(selectedRoute.id, routeData);
+      // Edit existing route using database management
+      const success = await updateRoute(selectedRoute.id, routeData);
       if (success) {
         toast({
           title: "Route Updated",
@@ -62,25 +63,39 @@ export function RouteManagementTab() {
         area: routeData.area!,
         sector: routeData.sector!,
       };
-      addRoute(newRoute);
-      toast({
-        title: "Route Added",
-        description: `${routeData.name} has been added successfully`,
-      });
+      const success = await addRoute(newRoute);
+      if (success) {
+        toast({
+          title: "Route Added",
+          description: `${routeData.name} has been added successfully`,
+        });
+      } else {
+        toast({
+          title: "Add Failed",
+          description: "Failed to add the route",
+          variant: "destructive",
+        });
+      }
     }
     
     setIsEditDialogOpen(false);
     setSelectedRoute(null);
   };
 
-  const handleDeleteRoute = (routeId: string) => {
+  const handleDeleteRoute = async (routeId: string) => {
     const route = routes.find(r => r.id === routeId);
     if (window.confirm(`Are you sure you want to delete "${route?.name}"? This action cannot be undone.`)) {
-      const success = deleteRoute(routeId);
+      const success = await deleteRoute(routeId);
       if (success) {
         toast({
           title: "Route Deleted",
           description: `${route?.name} has been deleted`,
+        });
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: "Failed to delete the route",
+          variant: "destructive",
         });
       }
     }
@@ -98,6 +113,17 @@ export function RouteManagementTab() {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E55A2B] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading routes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

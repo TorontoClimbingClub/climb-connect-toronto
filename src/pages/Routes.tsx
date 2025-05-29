@@ -15,7 +15,7 @@ import { useRouteManagement } from "@/hooks/useRouteManagement";
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { routes } = useRouteManagement();
+  const { routes, loading } = useRouteManagement();
   
   // Use try-catch to handle auth context issues gracefully
   let user = null;
@@ -39,8 +39,31 @@ export default function Routes() {
     userEmail: user?.email,
     route: location.pathname,
     authError,
-    totalRoutes: routes.length
+    totalRoutes: routes.length,
+    loading
   });
+
+  // Update filtered routes when routes change
+  useState(() => {
+    setFilteredRoutes(routes);
+  });
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+        <div className="max-w-md mx-auto p-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E55A2B] mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading routes...</p>
+            </div>
+          </div>
+        </div>
+        <Navigation />
+      </div>
+    );
+  }
 
   // Get unique sectors and areas from filtered routes
   const sectors = [...new Set(filteredRoutes.map(route => route.sector))];
