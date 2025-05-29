@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -74,6 +75,18 @@ const addToRemoveQueue = (toastId: string) => {
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
+      // Check if this is an error toast and suppress it
+      const isErrorToast = action.toast.variant === 'destructive' || 
+                          (typeof action.toast.title === 'string' && action.toast.title.toLowerCase().includes('error')) ||
+                          (typeof action.toast.description === 'string' && action.toast.description.toLowerCase().includes('error')) ||
+                          (typeof action.toast.description === 'string' && action.toast.description.toLowerCase().includes('access')) ||
+                          (typeof action.toast.description === 'string' && action.toast.description.toLowerCase().includes('denied'));
+      
+      if (isErrorToast) {
+        console.log('🔇 Toast suppressed:', action.toast);
+        return state; // Don't add error toasts
+      }
+
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
@@ -141,6 +154,22 @@ type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
   const id = genId()
+
+  // Check if this is an error toast and suppress it
+  const isErrorToast = props.variant === 'destructive' || 
+                      (typeof props.title === 'string' && props.title.toLowerCase().includes('error')) ||
+                      (typeof props.description === 'string' && props.description.toLowerCase().includes('error')) ||
+                      (typeof props.description === 'string' && props.description.toLowerCase().includes('access')) ||
+                      (typeof props.description === 'string' && props.description.toLowerCase().includes('denied'));
+  
+  if (isErrorToast) {
+    console.log('🔇 Toast suppressed:', props);
+    return {
+      id: id,
+      dismiss: () => {},
+      update: () => {},
+    };
+  }
 
   const update = (props: ToasterToast) =>
     dispatch({
