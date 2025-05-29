@@ -1,10 +1,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, Edit, Check, X } from "lucide-react";
-import { PersonalInfoSection } from "./PersonalInfoSection";
-import { ClimbingInfoSection } from "./ClimbingInfoSection";
-import { PrivacySettingsSection } from "./PrivacySettingsSection";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { User, Phone, Edit, Check, X, Mountain, Eye, EyeOff } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -35,6 +37,20 @@ interface ProfileInformationProps {
   onFormDataChange: (data: UserProfile) => void;
 }
 
+const CLIMBING_LEVELS = ['Never Climbed', 'Beginner', 'Intermediate', 'Advanced'];
+const CLIMBING_EXPERIENCES = [
+  'Top Rope',
+  'Top Rope Belay', 
+  'Lead',
+  'Lead Belay',
+  'Cleaning',
+  'Sport Anchor Building',
+  'Trad Second',
+  'Trad First',
+  'Trad Anchor Building',
+  'Rappelling'
+];
+
 export function ProfileInformation({
   profile,
   editing,
@@ -44,6 +60,21 @@ export function ProfileInformation({
   onCancel,
   onFormDataChange,
 }: ProfileInformationProps) {
+  const handleExperienceChange = (experience: string, checked: boolean) => {
+    const currentExperience = formData.climbing_experience || [];
+    if (checked) {
+      onFormDataChange({ 
+        ...formData, 
+        climbing_experience: [...currentExperience, experience] 
+      });
+    } else {
+      onFormDataChange({ 
+        ...formData, 
+        climbing_experience: currentExperience.filter(exp => exp !== experience) 
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -76,24 +107,234 @@ export function ProfileInformation({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <PersonalInfoSection 
-            formData={formData}
-            editing={editing}
-            onFormDataChange={onFormDataChange}
-          />
-          <ClimbingInfoSection 
-            formData={formData}
-            editing={editing}
-            onFormDataChange={onFormDataChange}
-          />
+          <div>
+            <Label htmlFor="full_name">Full Name</Label>
+            <Input
+              id="full_name"
+              value={formData.full_name}
+              onChange={(e) => onFormDataChange({ ...formData, full_name: e.target.value })}
+              disabled={!editing}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="(555) 123-4567"
+                value={formData.phone || ''}
+                onChange={(e) => onFormDataChange({ ...formData, phone: e.target.value })}
+                disabled={!editing}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              placeholder="Tell other members about yourself, your interests, availability, etc."
+              value={formData.bio || ''}
+              onChange={(e) => onFormDataChange({ ...formData, bio: e.target.value })}
+              disabled={!editing}
+              rows={3}
+            />
+          </div>
+
+          {/* Climbing Level Section */}
+          <div className="space-y-3 pt-4 border-t">
+            <div className="flex items-center gap-2 mb-3">
+              <Mountain className="h-5 w-5 text-[#E55A2B]" />
+              <Label className="text-base font-semibold">Climbing Information</Label>
+            </div>
+            
+            <div>
+              <Label htmlFor="climbing_level">Climbing Level</Label>
+              <Select 
+                value={formData.climbing_level || ''} 
+                onValueChange={(value) => onFormDataChange({ ...formData, climbing_level: value })}
+                disabled={!editing}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your climbing level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLIMBING_LEVELS.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Climbing Experience</Label>
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                {CLIMBING_EXPERIENCES.map((experience) => (
+                  <div key={experience} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={experience}
+                      checked={(formData.climbing_experience || []).includes(experience)}
+                      onCheckedChange={(checked) => 
+                        handleExperienceChange(experience, checked as boolean)
+                      }
+                      disabled={!editing}
+                    />
+                    <Label 
+                      htmlFor={experience}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {experience}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="climbing_description">Describe your climbing style</Label>
+            <Textarea
+              id="climbing_description"
+              placeholder="Tell other members about your climbing experience, preferred styles, goals, etc."
+              value={formData.climbing_description || ''}
+              onChange={(e) => onFormDataChange({ ...formData, climbing_description: e.target.value })}
+              disabled={!editing}
+              rows={4}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      <PrivacySettingsSection 
-        formData={formData}
-        editing={editing}
-        onFormDataChange={onFormDataChange}
-      />
+      {/* Privacy Settings Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Privacy Settings
+          </CardTitle>
+          <CardDescription>Control what other members see on your community member card</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Allow Profile Viewing</Label>
+              <p className="text-sm text-muted-foreground">
+                Let other members view your detailed profile by clicking your member card
+              </p>
+            </div>
+            <Checkbox
+              checked={formData.allow_profile_viewing ?? true}
+              onCheckedChange={(checked) => 
+                onFormDataChange({ ...formData, allow_profile_viewing: checked as boolean })
+              }
+              disabled={!editing}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Show Climbing Level</Label>
+              <p className="text-sm text-muted-foreground">
+                Display your climbing level on your member card
+              </p>
+            </div>
+            <Checkbox
+              checked={formData.show_climbing_level ?? true}
+              onCheckedChange={(checked) => 
+                onFormDataChange({ ...formData, show_climbing_level: checked as boolean })
+              }
+              disabled={!editing}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Show Progress Bars</Label>
+              <p className="text-sm text-muted-foreground">
+                Display progress bars on your member card
+              </p>
+            </div>
+            <Checkbox
+              checked={formData.show_climbing_progress ?? true}
+              onCheckedChange={(checked) => 
+                onFormDataChange({ ...formData, show_climbing_progress: checked as boolean })
+              }
+              disabled={!editing}
+            />
+          </div>
+
+          {/* Granular Progress Settings */}
+          {formData.show_climbing_progress && (
+            <div className="ml-6 space-y-3 p-3 bg-stone-50 rounded-lg">
+              <p className="text-sm font-medium text-stone-700">Individual Progress Bars:</p>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Show Trad Progress</Label>
+                  <p className="text-xs text-muted-foreground">Traditional climbing routes</p>
+                </div>
+                <Checkbox
+                  checked={formData.show_trad_progress ?? true}
+                  onCheckedChange={(checked) => 
+                    onFormDataChange({ ...formData, show_trad_progress: checked as boolean })
+                  }
+                  disabled={!editing}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Show Sport Progress</Label>
+                  <p className="text-xs text-muted-foreground">Sport climbing routes</p>
+                </div>
+                <Checkbox
+                  checked={formData.show_sport_progress ?? true}
+                  onCheckedChange={(checked) => 
+                    onFormDataChange({ ...formData, show_sport_progress: checked as boolean })
+                  }
+                  disabled={!editing}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">Show Top Rope Progress</Label>
+                  <p className="text-xs text-muted-foreground">Top rope climbing routes</p>
+                </div>
+                <Checkbox
+                  checked={formData.show_top_rope_progress ?? true}
+                  onCheckedChange={(checked) => 
+                    onFormDataChange({ ...formData, show_top_rope_progress: checked as boolean })
+                  }
+                  disabled={!editing}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Show Completion Stats</Label>
+              <p className="text-sm text-muted-foreground">
+                Display the number of routes completed on your member card
+              </p>
+            </div>
+            <Checkbox
+              checked={formData.show_completion_stats ?? true}
+              onCheckedChange={(checked) => 
+                onFormDataChange({ ...formData, show_completion_stats: checked as boolean })
+              }
+              disabled={!editing}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

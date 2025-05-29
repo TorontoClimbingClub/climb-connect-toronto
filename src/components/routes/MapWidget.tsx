@@ -18,26 +18,25 @@ export function MapWidget() {
         
         {/* Clickable map preview */}
         <div className="relative">
-          <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-4 text-center border border-green-300">
-            <MapPin className="h-6 w-6 text-green-700 mx-auto mb-2" />
-            <div className="text-sm font-medium text-green-800 mb-2">
-              Rattlesnake Point Conservation Area
+          <a 
+            href={googleMapsLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-lg p-6 text-center hover:from-green-200 hover:to-green-300 transition-colors cursor-pointer border border-green-300">
+              <MapPin className="h-8 w-8 text-green-700 mx-auto mb-2" />
+              <div className="text-sm font-medium text-green-800">
+                Rattlesnake Point Conservation Area
+              </div>
+              <div className="text-xs text-green-600 mt-1">
+                Milton, Ontario • Click to view in Google Maps
+              </div>
+              <div className="text-xs text-green-500 mt-1">
+                43.471347, -79.912701
+              </div>
             </div>
-            <div className="text-xs text-green-600 mb-3">
-              Milton, Ontario
-            </div>
-            <div className="text-xs text-green-500 mb-3">
-              43.471347, -79.912701
-            </div>
-            <a 
-              href={googleMapsLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded transition-colors"
-            >
-              View in Maps
-            </a>
-          </div>
+          </a>
         </div>
       </CardContent>
     </Card>
