@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorMonitor } from "@/components/ErrorMonitor";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
@@ -34,6 +35,13 @@ const queryClient = new QueryClient({
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
+  console.log('🛡️ ProtectedRoute check:', {
+    userId: user?.id,
+    userEmail: user?.email,
+    loading,
+    route: window.location.pathname
+  });
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -43,6 +51,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (!user) {
+    console.warn('🚫 ProtectedRoute: Redirecting unauthenticated user to auth');
     return <Navigate to="/auth" replace />;
   }
   
@@ -51,6 +60,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
+  
+  console.log('🗺️ AppRoutes render:', {
+    userId: user?.id,
+    userEmail: user?.email,
+    loading,
+    route: window.location.pathname
+  });
   
   if (loading) {
     return (
@@ -83,6 +99,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AuthProvider>
+          <ErrorMonitor />
           <BrowserRouter>
             <AppRoutes />
           </BrowserRouter>

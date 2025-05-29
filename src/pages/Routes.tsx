@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -7,16 +8,37 @@ import { CragCard } from "@/components/routes/CragCard";
 import { SectorCard } from "@/components/routes/SectorCard";
 import { AreaCard } from "@/components/routes/AreaCard";
 import { MapWidget } from "@/components/routes/MapWidget";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbingRoute } from "@/types/routes";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const { hasAccess, accessLoading } = useAccessControl('public');
   const [selectedCrag, setSelectedCrag] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
   const [filteredRoutes, setFilteredRoutes] = useState<ClimbingRoute[]>(rattlesnakeRoutes);
+
+  console.log('🏔️ Routes page loaded:', {
+    userId: user?.id,
+    userEmail: user?.email,
+    hasAccess,
+    accessLoading,
+    route: location.pathname
+  });
+
+  // Show loading state while checking access
+  if (accessLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Loading routes...</div>
+      </div>
+    );
+  }
 
   // Get unique sectors and areas from filtered routes
   const sectors = [...new Set(filteredRoutes.map(route => route.sector))];
@@ -54,6 +76,11 @@ export default function Routes() {
     } else {
       navigate('/');
     }
+  };
+
+  const handleRouteClick = (routeId: string) => {
+    console.log('🎯 Navigating to route:', { routeId, userId: user?.id });
+    navigate(`/routes/${routeId}`);
   };
 
   const getPageTitle = () => {
@@ -134,7 +161,7 @@ export default function Routes() {
                 routes={routes}
                 isExpanded={expandedAreas.has(area)}
                 onToggle={() => toggleArea(area)}
-                onRouteClick={(routeId) => navigate(`/routes/${routeId}`)}
+                onRouteClick={handleRouteClick}
               />
             ))
           )}

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, MessageCircle } from "lucide-react";
+import { Camera, MessageCircle, AlertTriangle } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -13,14 +13,25 @@ import { RouteHeader } from "@/components/route-detail/RouteHeader";
 import { RouteDetailsCard } from "@/components/route-detail/RouteDetailsCard";
 import { useRouteData } from "@/hooks/useRouteData";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [newComment, setNewComment] = useState("");
+  const { hasAccess, accessLoading } = useAccessControl('public');
+
+  console.log('🏔️ RouteDetail - Component mounted:', {
+    routeId,
+    userId: user?.id,
+    userEmail: user?.email,
+    hasAccess,
+    accessLoading
+  });
 
   const route = rattlesnakeRoutes.find(r => r.id === routeId);
   
@@ -38,7 +49,41 @@ export default function RouteDetail() {
   const { toggleCompletion, isCompleted } = useClimbCompletions();
   const completed = isCompleted(routeId || "");
 
+  // Show loading state while checking access
+  if (accessLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="text-[#E55A2B]">Checking access permissions...</div>
+      </div>
+    );
+  }
+
+  // Show access denied message
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
+        <div className="max-w-md text-center">
+          <Alert className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Access denied. Please check your account permissions or sign in to view this route.
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-4">
+            <Button onClick={() => navigate("/auth")} className="w-full">
+              Sign In
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/routes")} className="w-full">
+              Back to Routes
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!route) {
+    console.error('❌ Route not found:', routeId);
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
         <div className="text-center">
@@ -55,23 +100,26 @@ export default function RouteDetail() {
     if (!newComment.trim()) return;
     
     try {
+      console.log('💬 Adding comment:', { userId: user?.id, routeId, comment: newComment });
       await addComment(newComment);
       setNewComment("");
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('❌ Error adding comment:', error);
     }
   };
 
   const handleReply = async (comment: string, parentId: string) => {
     try {
+      console.log('💬 Adding reply:', { userId: user?.id, routeId, comment, parentId });
       await addComment(comment, parentId);
     } catch (error) {
-      console.error('Error adding reply:', error);
+      console.error('❌ Error adding reply:', error);
     }
   };
 
   const handleToggleCompletion = () => {
     if (user && routeId) {
+      console.log('🎯 Toggling completion:', { userId: user.id, routeId });
       toggleCompletion(routeId);
     }
   };
