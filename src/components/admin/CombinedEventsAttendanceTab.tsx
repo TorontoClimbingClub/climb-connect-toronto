@@ -1,26 +1,12 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Trash2, Calendar, MapPin, Users, Edit, Check, X, Clock } from "lucide-react";
-import { CreateEventDialog } from "./CreateEventDialog";
-import { EditEventDialog } from "./EditEventDialog";
-import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState, useEffect } from "react";
 import type { Event } from "@/types/events";
-
-interface EventParticipant {
-  id: string;
-  user_id: string;
-  full_name: string;
-  profile_photo_url?: string;
-  attendance_status?: 'pending' | 'approved' | 'rejected';
-  approval_id?: string;
-}
+import { useEventStatus } from "@/hooks/useEventStatus";
+import { useEventParticipants } from "@/hooks/useEventParticipants";
+import { EventsAttendanceHeader } from "./events-attendance/EventsAttendanceHeader";
+import { CreateEventForm } from "./events-attendance/CreateEventForm";
+import { EventCard } from "./events-attendance/EventCard";
+import { EmptyEventsState } from "./events-attendance/EmptyEventsState";
 
 interface CombinedEventsAttendanceTabProps {
   events: Event[];
@@ -38,335 +24,55 @@ export function CombinedEventsAttendanceTab({
   onRefreshEvents 
 }: CombinedEventsAttendanceTabProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [eventsWithParticipants, setEventsWithParticipants] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
-  const { toast } = useToast();
+  const { getEventStatus } = useEventStatus();
+  const { 
+    eventsWithParticipants, 
+    loading, 
+    fetchEventsWithParticipants, 
+    handleConfirmAttendance, 
+    handleRejectAttendance 
+  } = useEventParticipants();
 
-  const getEventStatus = (event: any) => {
-    const now = new Date();
-    const eventStartTime = new Date(`${event.date}T${event.time}`);
-    const eventEndTime = event.end_time ? new Date(`${event.date}T${event.end_time}`) : null;
-
-    if (now < eventStartTime) {
-      return { status: 'upcoming', label: 'Upcoming', color: 'blue' };
-    } else if (eventEndTime && now >= eventStartTime && now <= eventEndTime) {
-      return { status: 'running', label: 'Event Running', color: 'green' };
-    } else {
-      return { status: 'ended', label: 'Event Ended', color: 'gray' };
-    }
-  };
-
-  const fetchEventsWithParticipants = async () => {
-    setLoading(true);
-    try {
-      const eventsWithParticipantsData = await Promise.all(
-        events.map(async (event) => {
-          const { data: participants, error: participantsError } = await supabase
-            .from('event_participants')
-            .select(`
-              id,
-              user_id,
-              profiles!inner(
-                full_name,
-                profile_photo_url
-              )
-            `)
-            .eq('event_id', event.id);
-
-          if (participantsError) throw participantsError;
-
-          const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
-
-          const participantsWithStatus = participants?.map(participant => {
-            const approval = eventApprovals.find(a => a.user_id === participant.user_id);
-            return {
-              id: participant.id,
-              user_id: participant.user_id,
-              full_name: participant.profiles.full_name,
-              profile_photo_url: participant.profiles.profile_photo_url,
-              attendance_status: approval?.status || 'pending',
-              approval_id: approval?.id
-            };
-          }) || [];
-
-          const eventStatus = getEventStatus(event);
-
-          return {
-            ...event,
-            participants: participantsWithStatus,
-            participants_count: participantsWithStatus.length,
-            event_status: eventStatus,
-            event_date_time: new Date(`${event.date}T${event.time}`)
-          };
-        })
-      );
-
-      setEventsWithParticipants(eventsWithParticipantsData);
-    } catch (error: any) {
-      console.error('Error fetching events with participants:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load events and participants",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmAttendance = async (participantUserId: string, eventId: string) => {
-    try {
-      const existingApproval = approvals.find(
-        a => a.user_id === participantUserId && a.event_id === eventId
-      );
-
-      if (existingApproval) {
-        await approveAttendance(existingApproval.id);
-      } else {
-        const { error } = await supabase
-          .from('event_attendance_approvals')
-          .insert({
-            user_id: participantUserId,
-            event_id: eventId,
-            status: 'approved',
-            approved_at: new Date().toISOString()
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Attendance confirmed successfully",
-        });
-      }
-
-      await refreshApprovals();
-      await fetchEventsWithParticipants();
-    } catch (error: any) {
-      console.error('Error confirming attendance:', error);
-      toast({
-        title: "Error",
-        description: "Failed to confirm attendance",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRejectAttendance = async (participantUserId: string, eventId: string) => {
-    try {
-      const existingApproval = approvals.find(
-        a => a.user_id === participantUserId && a.event_id === eventId
-      );
-
-      if (existingApproval) {
-        await rejectAttendance(existingApproval.id);
-      } else {
-        const { error } = await supabase
-          .from('event_attendance_approvals')
-          .insert({
-            user_id: participantUserId,
-            event_id: eventId,
-            status: 'rejected'
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Attendance marked as not present",
-        });
-      }
-
-      await refreshApprovals();
-      await fetchEventsWithParticipants();
-    } catch (error: any) {
-      console.error('Error rejecting attendance:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update attendance",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getUserInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
-  // Load events with participants when component mounts or approvals change
-  React.useEffect(() => {
+  // Load events with participants when component mounts or events change
+  useEffect(() => {
     if (events.length > 0) {
-      fetchEventsWithParticipants();
+      const eventsWithStatus = events.map(event => ({
+        ...event,
+        event_status: getEventStatus(event)
+      }));
+      fetchEventsWithParticipants(eventsWithStatus);
     }
-  }, [events, approvals]);
+  }, [events]);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold text-emerald-800">Events & Attendance Management</h2>
-          <p className="text-stone-600">Manage events and confirm member attendance</p>
-        </div>
-        {canCreateEvents && !showCreateForm && (
-          <Button 
-            onClick={() => setShowCreateForm(true)}
-            className="bg-emerald-600 hover:bg-emerald-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Event
-          </Button>
-        )}
-      </div>
+      <EventsAttendanceHeader
+        canCreateEvents={canCreateEvents}
+        showCreateForm={showCreateForm}
+        onToggleCreateForm={setShowCreateForm}
+      />
 
-      {showCreateForm && (
-        <div className="flex justify-center">
-          <div className="w-full max-w-2xl">
-            <CreateEventDialog
-              showForm={true}
-              onToggleForm={setShowCreateForm}
-              onEventCreated={() => {
-                setShowCreateForm(false);
-                onRefreshEvents();
-              }}
-              hideButton={true}
-            />
-          </div>
-        </div>
-      )}
+      <CreateEventForm
+        showForm={showCreateForm}
+        onToggleForm={setShowCreateForm}
+        onEventCreated={onRefreshEvents}
+      />
 
       {!showCreateForm && (
         <div className="space-y-4">
           {eventsWithParticipants.map((event) => (
-            <Card key={event.id} className={`w-full border-${event.event_status.color}-200`}>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-[#E55A2B]" />
-                      <CardTitle className="text-lg">{event.title}</CardTitle>
-                      <Badge variant="outline" className={`text-${event.event_status.color}-700 border-${event.event_status.color}-700`}>
-                        {event.event_status.label}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 text-sm text-stone-600">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>
-                          {event.event_date_time.toLocaleDateString()} 
-                          {' '}
-                          {event.event_date_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          {event.end_time && ` - ${new Date(`${event.date}T${event.end_time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                        </span>
-                      </div>
-                      {event.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          <span>{event.location}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {canManageUsers && (
-                    <div className="flex gap-2 flex-shrink-0 ml-2">
-                      <EditEventDialog 
-                        event={event} 
-                        onEventUpdated={onRefreshEvents}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDeleteEvent(event.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-3">
-                  {event.description && (
-                    <p className="text-sm text-stone-600">{event.description}</p>
-                  )}
-                  
-                  <div>
-                    <h4 className="font-medium mb-3 flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Participants ({event.participants_count})
-                    </h4>
-                    
-                    {event.participants.length > 0 ? (
-                      <div className="space-y-2">
-                        {event.participants
-                          .filter((participant: EventParticipant) => 
-                            event.event_status.status === 'ended' ? 
-                            participant.attendance_status === 'pending' : true
-                          )
-                          .map((participant: EventParticipant) => (
-                          <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={participant.profile_photo_url || undefined} />
-                                <AvatarFallback className="text-xs">
-                                  {getUserInitials(participant.full_name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium">{participant.full_name}</span>
-                              {participant.attendance_status !== 'pending' && (
-                                <Badge 
-                                  variant={participant.attendance_status === 'approved' ? 'default' : 'destructive'}
-                                  className="text-xs"
-                                >
-                                  {participant.attendance_status === 'approved' ? 'Confirmed' : 'Not Present'}
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            {event.event_status.status === 'ended' && participant.attendance_status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleConfirmAttendance(participant.user_id, event.id)}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Confirm
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleRejectAttendance(participant.user_id, event.id)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <X className="h-4 w-4 mr-1" />
-                                  Not Present
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-stone-500 text-sm">No participants registered for this event</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <EventCard
+              key={event.id}
+              event={event}
+              canManageUsers={canManageUsers}
+              onDeleteEvent={onDeleteEvent}
+              onRefreshEvents={onRefreshEvents}
+              onConfirmAttendance={handleConfirmAttendance}
+              onRejectAttendance={handleRejectAttendance}
+            />
           ))}
           
-          {events.length === 0 && (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-stone-600">No events found</p>
-              </CardContent>
-            </Card>
-          )}
+          {events.length === 0 && <EmptyEventsState />}
         </div>
       )}
     </div>
