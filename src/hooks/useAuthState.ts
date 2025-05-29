@@ -24,10 +24,22 @@ export function useAuthState() {
 
         // Set up auth state listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event, session) => {
+          async (event, session) => {
             if (!mounted) return;
             
             console.log('Auth state change:', event, session?.user?.id);
+            
+            // Handle email verification completion
+            if (event === 'SIGNED_IN' && session) {
+              // Check if this is from email verification
+              const url = new URL(window.location.href);
+              if (url.searchParams.get('type') === 'email_change' || 
+                  url.searchParams.get('type') === 'signup') {
+                // Clear URL parameters and redirect to home
+                window.history.replaceState({}, document.title, '/');
+              }
+            }
+            
             setSession(session);
             setUser(session?.user ?? null);
           }

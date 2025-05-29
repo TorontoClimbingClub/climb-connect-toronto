@@ -36,11 +36,11 @@ export const ErrorMonitor = () => {
       console.log('Timestamp:', errorInfo.timestamp);
       console.groupEnd();
 
-      // Show user-friendly toast for access errors
-      if (event.message?.includes('Access Denied') || event.message?.includes('permission')) {
+      // Only show toasts for critical authentication errors, not access control
+      if (event.message?.includes('JWT') || event.message?.includes('session')) {
         toast({
-          title: "Access Error",
-          description: "You don't have permission to access this page. Please check your account status.",
+          title: "Session Error",
+          description: "Your session has expired. Please sign in again.",
           variant: "destructive",
         });
       }

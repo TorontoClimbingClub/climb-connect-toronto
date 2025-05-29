@@ -25,13 +25,33 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user was redirected after email verification
+    // Check for various auth-related URL parameters
     const verified = searchParams.get('verified');
-    if (verified === 'true') {
+    const type = searchParams.get('type');
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+
+    if (error) {
+      toast({
+        title: "Authentication Error",
+        description: errorDescription || "An error occurred during authentication",
+        variant: "destructive",
+      });
+      // Clear error parameters from URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('error');
+      newUrl.searchParams.delete('error_description');
+      window.history.replaceState({}, document.title, newUrl.pathname);
+    } else if (verified === 'true' || type === 'email_change' || type === 'signup') {
       toast({
         title: "Email verified successfully!",
         description: "Your account has been activated. You can now sign in.",
       });
+      // Clear verification parameters from URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('verified');
+      newUrl.searchParams.delete('type');
+      window.history.replaceState({}, document.title, newUrl.pathname);
     }
   }, [searchParams, toast]);
 

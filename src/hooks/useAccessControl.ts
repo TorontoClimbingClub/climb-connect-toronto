@@ -1,11 +1,9 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 
 export const useAccessControl = (requiredAccess: 'authenticated' | 'public' = 'public') => {
   const { user, loading } = useAuth();
-  const { toast } = useToast();
   const [hasAccess, setHasAccess] = useState(false);
   const [accessLoading, setAccessLoading] = useState(true);
 
@@ -28,17 +26,12 @@ export const useAccessControl = (requiredAccess: 'authenticated' | 'public' = 'p
         if (!user) {
           console.warn('❌ Access Denied: User not authenticated for route:', window.location.pathname);
           setHasAccess(false);
-          toast({
-            title: "Access Denied",
-            description: "You need to be signed in to access this page.",
-            variant: "destructive",
-          });
         } else {
           console.log('✅ Access Granted: User authenticated');
           setHasAccess(true);
         }
       } else {
-        // Public access - always allow, no toast needed
+        // Public access - always allow
         console.log('✅ Access Granted: Public route');
         setHasAccess(true);
       }
@@ -47,7 +40,7 @@ export const useAccessControl = (requiredAccess: 'authenticated' | 'public' = 'p
     };
 
     checkAccess();
-  }, [user, loading, requiredAccess, toast]);
+  }, [user, loading, requiredAccess]);
 
   return { hasAccess, accessLoading };
 };
