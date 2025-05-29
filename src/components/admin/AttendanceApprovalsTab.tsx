@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export function AttendanceApprovalsTab() {
   const { approvals, loading, approveAttendance, rejectAttendance } = useAttendanceApprovals();
-  const { events } = useEvents();
+  const { upcomingEvents } = useEvents();
   const { user } = useAuth();
   const { toast } = useToast();
   const [joiningEvent, setJoiningEvent] = useState<string | null>(null);
@@ -81,8 +81,8 @@ export function AttendanceApprovalsTab() {
   const pendingApprovals = approvals.filter(approval => approval.status === 'pending');
   const processedApprovals = approvals.filter(approval => approval.status !== 'pending');
 
-  // Get upcoming events for the event attendance section
-  const upcomingEvents = events
+  // Get upcoming events and sort them
+  const sortedUpcomingEvents = upcomingEvents
     .filter(event => new Date(`${event.date}T${event.time}`) >= new Date())
     .sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime())
     .slice(0, 5);
@@ -97,12 +97,12 @@ export function AttendanceApprovalsTab() {
       {/* Upcoming Events Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-[#E55A2B]">
-          Upcoming Events ({upcomingEvents.length})
+          Upcoming Events ({sortedUpcomingEvents.length})
         </h3>
         
-        {upcomingEvents.length > 0 ? (
+        {sortedUpcomingEvents.length > 0 ? (
           <div className="grid gap-4">
-            {upcomingEvents.map((event) => {
+            {sortedUpcomingEvents.map((event) => {
               const eventTimeReached = isEventTimeReached(event.date, event.time);
               const eventDateTime = new Date(`${event.date}T${event.time}`);
               

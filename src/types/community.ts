@@ -11,6 +11,7 @@ export interface CommunityMember {
   climbing_level?: string;
   climbing_experience?: string[];
   bio?: string;
+  profile_photo_url?: string | null;
   allow_profile_viewing?: boolean;
   show_climbing_progress?: boolean;
   show_completion_stats?: boolean;
