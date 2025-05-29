@@ -1,3 +1,4 @@
+
 export interface Event {
   id: string;
   title: string;
@@ -11,6 +12,7 @@ export interface Event {
   organizer_id: string;
   participants_count?: number;
   carpool_seats?: number;
+  available_carpool_seats?: number;
   equipment_count?: number;
   required_climbing_level?: string | null;
   required_climbing_experience?: string[] | null;

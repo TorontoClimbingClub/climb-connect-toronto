@@ -49,7 +49,7 @@ export function useEventData(eventId: string | undefined) {
       // Get additional stats
       const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
         supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', eventId),
-        supabase.from('event_participants').select('available_seats, assigned_driver_id').eq('event_id', eventId).not('available_seats', 'is', null),
+        supabase.from('event_participants').select('available_seats, assigned_driver_id, user_id').eq('event_id', eventId).not('available_seats', 'is', null),
         supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', eventId)
       ]);
 
