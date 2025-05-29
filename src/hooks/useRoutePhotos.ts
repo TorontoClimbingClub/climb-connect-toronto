@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +12,15 @@ export const useRoutePhotos = (routeId: string) => {
   const [loading, setLoading] = useState(false);
 
   const fetchPhotos = useCallback(async () => {
+    if (!routeId) {
+      console.log('No routeId provided for photo fetch');
+      return;
+    }
+
+    setLoading(true);
     try {
+      console.log('Fetching photos for route:', routeId);
+      
       const { data, error } = await supabase
         .from('route_photos')
         .select(`
@@ -22,22 +30,44 @@ export const useRoutePhotos = (routeId: string) => {
         .eq('route_id', routeId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching photos:', error);
+        throw error;
+      }
       
       const photosWithNames = data?.map(photo => ({
         ...photo,
         user_name: photo.profiles?.full_name || photo.user_name || "Anonymous"
       })) || [];
       
-      console.log('Fetched photos:', photosWithNames);
+      console.log('Fetched photos:', photosWithNames.length, 'photos for route', routeId);
       setPhotos(photosWithNames);
     } catch (error) {
       console.error('Error fetching photos:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load photos",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [routeId]);
+  }, [routeId, toast]);
+
+  // Auto-fetch photos when routeId changes
+  useEffect(() => {
+    fetchPhotos();
+  }, [fetchPhotos]);
 
   const uploadPhoto = async (file: File, caption?: string) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to upload photos",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -81,6 +111,7 @@ export const useRoutePhotos = (routeId: string) => {
         description: "Your photo has been uploaded successfully",
       });
 
+      // Refresh photos after upload
       fetchPhotos();
     } catch (error) {
       console.error('Error uploading photo:', error);

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, Eye } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -11,14 +11,30 @@ interface PhotosSectionProps {
 }
 
 export function PhotosSection({ routeId }: PhotosSectionProps) {
-  const { photos, loading, uploadPhoto } = useRoutePhotos(routeId);
+  const { photos, loading, uploadPhoto, fetchPhotos } = useRoutePhotos(routeId);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+
+  // Fetch photos when component mounts or routeId changes
+  useEffect(() => {
+    if (routeId) {
+      console.log('PhotosSection: Fetching photos for route', routeId);
+      fetchPhotos();
+    }
+  }, [routeId, fetchPhotos]);
 
   const handlePhotoClick = (index: number) => {
     setCurrentPhotoIndex(index);
     setViewerOpen(true);
   };
+
+  const handleUploadSuccess = async (file: File, caption?: string) => {
+    await uploadPhoto(file, caption);
+    // Refetch photos after successful upload
+    fetchPhotos();
+  };
+
+  console.log('PhotosSection render:', { routeId, photosCount: photos.length, loading });
 
   return (
     <Card>
@@ -29,7 +45,7 @@ export function PhotosSection({ routeId }: PhotosSectionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <PhotoUpload onUpload={uploadPhoto} loading={loading} />
+        <PhotoUpload onUpload={handleUploadSuccess} loading={loading} />
         
         {photos.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -43,6 +59,14 @@ export function PhotosSection({ routeId }: PhotosSectionProps) {
                   src={photo.photo_url}
                   alt={photo.caption || 'Route photo'}
                   className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  onError={(e) => {
+                    console.error('Failed to load image:', photo.photo_url);
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully:', photo.photo_url);
+                  }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
                   <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
