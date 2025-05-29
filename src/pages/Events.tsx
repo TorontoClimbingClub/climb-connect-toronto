@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
@@ -18,6 +18,7 @@ export default function Events() {
   const { upcomingEvents, userParticipations, loading, fetchUserParticipations } = useOptimizedEvents();
   const { members, loading: membersLoading, fetchCommunityMembers } = useCommunityData();
   const { getUserCompletionStats, loading: completionsLoading } = useClimbCompletions();
+  const [membersWithStats, setMembersWithStats] = useState(members);
 
   // Enable real-time updates for events
   useRealtimeEvents();
@@ -31,6 +32,14 @@ export default function Events() {
   useEffect(() => {
     fetchCommunityMembers();
   }, [fetchCommunityMembers]);
+
+  // Update members with stats only when both members and completions are loaded
+  useEffect(() => {
+    if (!membersLoading && !completionsLoading && members.length > 0) {
+      console.log('🔄 Events: Updating members with stats');
+      setMembersWithStats(members);
+    }
+  }, [members, membersLoading, completionsLoading]);
 
   if (accessLoading || loading) {
     return (
@@ -66,7 +75,7 @@ export default function Events() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
         <CommunityStats
-          memberCount={members.length}
+          memberCount={membersWithStats.length}
         />
 
         <div className="mt-8">
@@ -97,9 +106,9 @@ export default function Events() {
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#E55A2B]"></div>
               <span className="ml-2 text-gray-600">Loading members...</span>
             </div>
-          ) : members.length > 0 ? (
+          ) : membersWithStats.length > 0 ? (
             <div className="space-y-4">
-              {members.map((member) => {
+              {membersWithStats.map((member) => {
                 const userStats = getUserCompletionStats(member.id);
                 return (
                   <CommunityMemberCard 

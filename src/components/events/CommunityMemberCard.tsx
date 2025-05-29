@@ -44,19 +44,17 @@ export function CommunityMemberCard({
     allow_profile_viewing: member?.allow_profile_viewing ?? true,
   };
 
-  // Apply privacy settings - if user has set privacy to false, don't show the content
-  const shouldShowClimbingLevel = isCurrentUser || safeMember.show_climbing_level;
-  const shouldShowClimbingProgress = isCurrentUser || safeMember.show_climbing_progress;
-  const shouldShowCompletionStats = isCurrentUser || safeMember.show_completion_stats;
+  // Apply privacy settings - show content only if privacy setting allows it (for all users including self)
+  const shouldShowClimbingLevel = safeMember.show_climbing_level;
+  const shouldShowClimbingProgress = safeMember.show_climbing_progress;
+  const shouldShowCompletionStats = safeMember.show_completion_stats;
 
   // Calculate hidden styles based on privacy settings
   const getPrivacyFilteredHiddenStyles = () => {
     const filtered = [...hiddenStyles];
-    if (!isCurrentUser) {
-      if (!safeMember.show_trad_progress) filtered.push('Trad');
-      if (!safeMember.show_sport_progress) filtered.push('Sport');
-      if (!safeMember.show_top_rope_progress) filtered.push('Top Rope');
-    }
+    if (!safeMember.show_trad_progress) filtered.push('Trad');
+    if (!safeMember.show_sport_progress) filtered.push('Sport');
+    if (!safeMember.show_top_rope_progress) filtered.push('Top Rope');
     return filtered;
   };
 
@@ -137,11 +135,11 @@ export function CommunityMemberCard({
         <div className="flex justify-between text-sm text-stone-600">
           <div className="flex items-center">
             <Package className="h-4 w-4 mr-1" />
-            {safeMember.equipment_count} gear items
+            {safeMember.equipment_count || 0} gear items
           </div>
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            {safeMember.events_count} events joined
+            {safeMember.events_count || 0} events joined
           </div>
         </div>
       </CardContent>
