@@ -112,6 +112,17 @@ export function EventParticipantItem({
             </Button>
           )}
           
+          {isRejected && (
+            <Button
+              size="sm"
+              onClick={() => onConfirmAttendance(participant.user_id, eventId)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Confirm
+            </Button>
+          )}
+          
           {isApproved && (
             <Button
               size="sm"
@@ -121,17 +132,6 @@ export function EventParticipantItem({
             >
               <X className="h-4 w-4 mr-1" />
               Not Present
-            </Button>
-          )}
-          
-          {isRejected && (
-            <Button
-              size="sm"
-              onClick={() => onConfirmAttendance(participant.user_id, eventId)}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Confirm
             </Button>
           )}
         </div>
