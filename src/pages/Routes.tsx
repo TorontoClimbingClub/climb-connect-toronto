@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { EnhancedRouteFilters } from "@/components/filters/EnhancedRouteFilters";
@@ -11,12 +10,16 @@ import { MapWidget } from "@/components/routes/MapWidget";
 import { ClimbingRoute } from "@/types/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
+import { useRealtimeRoutes } from "@/hooks/useRealtimeRoutes";
 
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
   const { routes, loading } = useRouteManagement();
   
+  // Enable real-time updates for routes
+  useRealtimeRoutes();
+
   // Use try-catch to handle auth context issues gracefully
   let user = null;
   let authError = false;

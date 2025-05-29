@@ -2,6 +2,7 @@
 import { BasicInformation } from "./BasicInformation";
 import { ClimbingInformation } from "./ClimbingInformation";
 import { PrivacySettings } from "./PrivacySettings";
+import { ClimbingStatsCard } from "./ClimbingStatsCard";
 
 interface UserProfile {
   id: string;
@@ -41,6 +42,9 @@ export function ProfileInformation(props: ProfileInformationProps) {
         formData={props.formData}
         onFormDataChange={props.onFormDataChange}
       />
+      {props.profile && !props.editing && (
+        <ClimbingStatsCard userId={props.profile.id} />
+      )}
       <PrivacySettings 
         editing={props.editing}
         formData={props.formData}

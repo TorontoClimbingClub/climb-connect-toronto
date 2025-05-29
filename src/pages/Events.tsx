@@ -1,32 +1,23 @@
-
-import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { useEventActions } from "@/hooks/useEventActions";
+import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { useEvents } from "@/hooks/useEvents";
-import { useCommunity } from "@/hooks/useCommunity";
-import { useClimbCompletions } from "@/hooks/useClimbCompletions";
-import { useCommunitySort } from "@/hooks/useCommunitySort";
-import { UserProfileOverlay } from "@/components/UserProfileOverlay";
-import { CommunityMember } from "@/types/community";
 import { EventCard } from "@/components/events/EventCard";
-import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
+import { CommunityStats } from "@/components/events/CommunityStats";
+import { useAuth } from "@/contexts/AuthContext";
+import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
+import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
+import { useCommunityData } from "@/hooks/useCommunityData";
+import { useAccessControl } from "@/hooks/useAccessControl";
 
 export default function Events() {
-  const { upcomingEvents, userParticipations, loading: eventsLoading, fetchEvents, fetchUserParticipations, updateUserParticipation } = useEvents();
-  const { members, loading: communityLoading } = useCommunity();
-  const { completions, getUserCompletionStats } = useClimbCompletions();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const { joinEvent, loading: actionLoading } = useEventActions();
-  const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
-  const [profileOverlayOpen, setProfileOverlayOpen] = useState(false);
+  const { hasAccess, accessLoading } = useAccessControl('authenticated');
+  const { upcomingEvents, userParticipations, loading, fetchUserParticipations } = useOptimizedEvents();
+  const { members, loading: membersLoading, fetchCommunityMembers } = useCommunityData();
 
-  const { sortedMembers, sortBy, setSortBy } = useCommunitySort(members || [], getUserCompletionStats);
+  // Enable real-time updates for events
+  useRealtimeEvents();
 
   useEffect(() => {
     if (user) {
@@ -34,45 +25,36 @@ export default function Events() {
     }
   }, [user, fetchUserParticipations]);
 
-  const handleJoinEvent = async (eventId: string) => {
-    if (!user) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to join events",
-        variant: "destructive",
-      });
-      return;
-    }
+  useEffect(() => {
+    fetchCommunityMembers();
+  }, [fetchCommunityMembers]);
 
-    const result = await joinEvent(eventId, user.id);
-    if (result.success) {
-      updateUserParticipation(eventId, true);
-      fetchEvents();
-    }
-  };
-
-  const handleMemberClick = (member: CommunityMember) => {
-    if (member.id === user?.id || member.allow_profile_viewing !== false) {
-      setSelectedMember(member);
-      setProfileOverlayOpen(true);
-    }
-  };
-
-  const getHiddenStyles = (member: CommunityMember) => {
-    if (!member) return [];
-    
-    const hidden: string[] = [];
-    // Hide styles for everyone if the member has disabled them
-    if (member.show_trad_progress === false) hidden.push('Trad');
-    if (member.show_sport_progress === false) hidden.push('Sport');
-    if (member.show_top_rope_progress === false) hidden.push('Top Rope');
-    return hidden;
-  };
-
-  if (eventsLoading || communityLoading) {
+  if (accessLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="text-[#E55A2B]">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+        <div className="max-w-md mx-auto p-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E55A2B] mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading events...</p>
+            </div>
+          </div>
+        </div>
+        <Navigation />
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+        <div className="max-w-md mx-auto p-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-[#E55A2B] mb-4">Access Required</h1>
+            <p className="text-gray-600 mb-4">Please log in to view events.</p>
+          </div>
+        </div>
+        <Navigation />
       </div>
     );
   }
@@ -80,24 +62,22 @@ export default function Events() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Community & Events</h1>
-          <p className="text-stone-600">Join climbing events and connect with fellow climbers</p>
-        </div>
+        <CommunityStats
+          memberCount={members.length}
+          loading={membersLoading}
+        />
 
-        {/* Events Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Upcoming Events</h2>
-          {upcomingEvents && upcomingEvents.length > 0 ? (
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Upcoming Events
+          </h2>
+          {upcomingEvents.length > 0 ? (
             <div className="space-y-4">
               {upcomingEvents.map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}
-                  showJoinButton={!!user}
                   userJoined={userParticipations.has(event.id)}
-                  onJoin={() => handleJoinEvent(event.id)}
-                  isLoading={actionLoading}
                 />
               ))}
             </div>
@@ -106,57 +86,17 @@ export default function Events() {
           )}
         </div>
 
-        {/* Community Section */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-[#E55A2B]">Members</h2>
-            
-            <div className="flex items-center gap-2">
-              <Label htmlFor="sort-select" className="text-sm text-stone-600">Sort by:</Label>
-              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger className="w-40" id="sort-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="climbing-progress">Climbing Progress</SelectItem>
-                  <SelectItem value="gear-count">Gear Count</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Community Spotlight
+          </h2>
           <div className="space-y-4">
-            {sortedMembers && sortedMembers.map((member) => {
-              if (!member || !member.id) return null;
-              
-              const userStats = getUserCompletionStats(member.id);
-              const hiddenStyles = getHiddenStyles(member);
-              const isCurrentUser = member.id === user?.id;
-              const canViewProfile = isCurrentUser || member.allow_profile_viewing !== false;
-              
-              return (
-                <CommunityMemberCard
-                  key={member.id}
-                  member={member}
-                  userStats={userStats}
-                  isCurrentUser={isCurrentUser}
-                  canViewProfile={canViewProfile}
-                  hiddenStyles={hiddenStyles}
-                  onClick={() => handleMemberClick(member)}
-                />
-              );
-            })}
+            {members.slice(0, 3).map((member) => (
+              <CommunityMemberCard key={member.id} member={member} />
+            ))}
           </div>
         </div>
       </div>
-
-      <UserProfileOverlay
-        user={selectedMember}
-        open={profileOverlayOpen}
-        onOpenChange={setProfileOverlayOpen}
-      />
-
       <Navigation />
     </div>
   );
