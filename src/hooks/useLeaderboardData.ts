@@ -61,16 +61,19 @@ export const fetchGearData = async () => {
 };
 
 export const fetchEventData = async () => {
-  console.log('Fetching event attendance data...');
+  console.log('Fetching event attendance data for Event Enthusiast leaderboard...');
   const { data, error } = await supabase
     .from('event_attendance_approvals')
-    .select('user_id, status');
+    .select('user_id, status, event_id, approved_at');
   
   if (error) {
-    console.error('Error fetching event data:', error);
+    console.error('Error fetching event attendance data:', error);
     throw error;
   }
   
-  console.log('Event data fetched:', data?.length);
+  console.log('Event attendance data fetched:', data?.length, 'total records');
+  const approvedCount = data?.filter(item => item.status === 'approved').length || 0;
+  console.log('Approved attendances:', approvedCount);
+  
   return data || [];
 };
