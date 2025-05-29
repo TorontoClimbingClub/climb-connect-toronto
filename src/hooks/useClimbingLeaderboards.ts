@@ -55,18 +55,21 @@ export const processClimbingData = (
     
     acc[userId].routes.push({ grade, style });
     
-    // Count by style
-    if (style === 'Traditional') {
+    // Count by style - Fixed the style matching logic
+    const normalizedStyle = style.toLowerCase().trim();
+    console.log(`🔍 [CLIMBING STYLE] User ${userId} route style: "${style}" (normalized: "${normalizedStyle}")`);
+    
+    if (normalizedStyle === 'trad' || normalizedStyle === 'traditional') {
       acc[userId].tradRoutes++;
       console.log(`📈 [CLIMBING STATS] User ${userId} trad routes: ${acc[userId].tradRoutes}`);
-    }
-    if (style === 'Sport') {
+    } else if (normalizedStyle === 'sport') {
       acc[userId].sportRoutes++;
       console.log(`📈 [CLIMBING STATS] User ${userId} sport routes: ${acc[userId].sportRoutes}`);
-    }
-    if (style === 'Top Rope') {
+    } else if (normalizedStyle === 'top rope' || normalizedStyle === 'toprope') {
       acc[userId].topRopeRoutes++;
       console.log(`📈 [CLIMBING STATS] User ${userId} top rope routes: ${acc[userId].topRopeRoutes}`);
+    } else {
+      console.warn(`⚠️ [CLIMBING WARNING] Unknown style "${style}" for user ${userId}`);
     }
     
     // Track highest grade
@@ -81,7 +84,7 @@ export const processClimbingData = (
   }, {});
 
   console.log('📊 [CLIMBING STATS] User stats calculated:', Object.keys(userStats).length, 'users');
-  console.log('📊 [CLIMBING STATS] Sample user stats:', Object.values(userStats)[0]);
+  console.log('📊 [CLIMBING STATS] Full user stats:', userStats);
 
   // Create leaderboard entries for each category
   const createLeaderboard = (metric: string, isGrade = false) => {
@@ -96,6 +99,8 @@ export const processClimbingData = (
         }
         
         const value = isGrade ? stats.highestGrade : stats[metric];
+        console.log(`🔍 [CLIMBING VALUE] User ${userId} (${profile.full_name}) - ${metric}: ${value} (type: ${typeof value})`);
+        
         if (!value || (typeof value === 'number' && value === 0)) {
           console.log(`📊 [CLIMBING FILTER] User ${userId} (${profile.full_name}) filtered out - ${metric}: ${value}`);
           return null;
