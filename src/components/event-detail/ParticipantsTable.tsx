@@ -34,11 +34,26 @@ export function ParticipantsTable({ participants }: ParticipantsTableProps) {
         </Badge>
       );
     } else if (participant.assigned_driver_id) {
-      return (
-        <Badge variant="secondary">
-          Assigned passenger
-        </Badge>
+      // Check if the assigned driver is still actually a driver
+      const assignedDriver = participants.find(p => 
+        p.user_id === participant.assigned_driver_id && 
+        p.is_carpool_driver === true
       );
+      
+      if (assignedDriver) {
+        return (
+          <Badge variant="secondary">
+            Assigned passenger
+          </Badge>
+        );
+      } else {
+        // Driver is no longer available, show looking for ride
+        return (
+          <Badge variant="secondary">
+            Looking for ride
+          </Badge>
+        );
+      }
     } else if (participant.needs_carpool === true) {
       return (
         <Badge variant="secondary">
