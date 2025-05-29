@@ -34,8 +34,13 @@ export function PrivacySettings({
   formData,
   onFormDataChange,
 }: PrivacySettingsProps) {
-  const handleCheckboxChange = (field: keyof UserProfile, checked: boolean) => {
-    const updatedData = { ...formData, [field]: checked };
+  const handleCheckboxChange = (field: keyof UserProfile, checked: boolean | "indeterminate") => {
+    console.log(`Checkbox change: ${field} = ${checked}`);
+    const updatedData = { 
+      ...formData, 
+      [field]: checked === true
+    };
+    console.log('Updated form data:', updatedData);
     onFormDataChange(updatedData);
   };
 
@@ -57,9 +62,9 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.allow_profile_viewing ?? true}
+            checked={formData.allow_profile_viewing === true}
             onCheckedChange={(checked) => 
-              handleCheckboxChange('allow_profile_viewing', Boolean(checked))
+              handleCheckboxChange('allow_profile_viewing', checked)
             }
             disabled={!editing}
           />
@@ -73,9 +78,9 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.show_climbing_level ?? true}
+            checked={formData.show_climbing_level === true}
             onCheckedChange={(checked) => 
-              handleCheckboxChange('show_climbing_level', Boolean(checked))
+              handleCheckboxChange('show_climbing_level', checked)
             }
             disabled={!editing}
           />
@@ -89,9 +94,9 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.show_climbing_progress ?? false}
+            checked={formData.show_climbing_progress === true}
             onCheckedChange={(checked) => 
-              handleCheckboxChange('show_climbing_progress', Boolean(checked))
+              handleCheckboxChange('show_climbing_progress', checked)
             }
             disabled={!editing}
           />
@@ -107,9 +112,9 @@ export function PrivacySettings({
               <p className="text-xs text-muted-foreground">Traditional climbing routes</p>
             </div>
             <Checkbox
-              checked={formData.show_trad_progress ?? false}
+              checked={formData.show_trad_progress === true}
               onCheckedChange={(checked) => 
-                handleCheckboxChange('show_trad_progress', Boolean(checked))
+                handleCheckboxChange('show_trad_progress', checked)
               }
               disabled={!editing}
             />
@@ -121,9 +126,9 @@ export function PrivacySettings({
               <p className="text-xs text-muted-foreground">Sport climbing routes</p>
             </div>
             <Checkbox
-              checked={formData.show_sport_progress ?? false}
+              checked={formData.show_sport_progress === true}
               onCheckedChange={(checked) => 
-                handleCheckboxChange('show_sport_progress', Boolean(checked))
+                handleCheckboxChange('show_sport_progress', checked)
               }
               disabled={!editing}
             />
@@ -135,9 +140,9 @@ export function PrivacySettings({
               <p className="text-xs text-muted-foreground">Top rope climbing routes</p>
             </div>
             <Checkbox
-              checked={formData.show_top_rope_progress ?? false}
+              checked={formData.show_top_rope_progress === true}
               onCheckedChange={(checked) => 
-                handleCheckboxChange('show_top_rope_progress', Boolean(checked))
+                handleCheckboxChange('show_top_rope_progress', checked)
               }
               disabled={!editing}
             />
@@ -152,9 +157,9 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.show_completion_stats ?? false}
+            checked={formData.show_completion_stats === true}
             onCheckedChange={(checked) => 
-              handleCheckboxChange('show_completion_stats', Boolean(checked))
+              handleCheckboxChange('show_completion_stats', checked)
             }
             disabled={!editing}
           />
