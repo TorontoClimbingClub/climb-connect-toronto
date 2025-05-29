@@ -11,6 +11,8 @@ interface Participant {
   joined_at: string;
   full_name: string;
   phone: string | null;
+  needs_carpool?: boolean | null;
+  assigned_driver_id?: string | null;
 }
 
 interface ParticipantsTableProps {
@@ -18,6 +20,40 @@ interface ParticipantsTableProps {
 }
 
 export function ParticipantsTable({ participants }: ParticipantsTableProps) {
+  const getCarpoolStatus = (participant: Participant) => {
+    if (participant.is_carpool_driver) {
+      return (
+        <Badge variant="default">
+          Driver ({participant.available_seats || 0} seats)
+        </Badge>
+      );
+    } else if (participant.needs_carpool === false) {
+      return (
+        <Badge variant="outline">
+          Own transport
+        </Badge>
+      );
+    } else if (participant.assigned_driver_id) {
+      return (
+        <Badge variant="secondary">
+          Assigned passenger
+        </Badge>
+      );
+    } else if (participant.needs_carpool !== false) {
+      return (
+        <Badge variant="secondary">
+          Looking for ride
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline">
+          Passenger
+        </Badge>
+      );
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -42,13 +78,7 @@ export function ParticipantsTable({ participants }: ParticipantsTableProps) {
                   </TableCell>
                   <TableCell>{participant.phone || 'Not provided'}</TableCell>
                   <TableCell>
-                    {participant.is_carpool_driver ? (
-                      <Badge variant="default">
-                        Driver ({participant.available_seats || 0} seats)
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">Passenger</Badge>
-                    )}
+                    {getCarpoolStatus(participant)}
                   </TableCell>
                   <TableCell>
                     {new Date(participant.joined_at).toLocaleDateString()}

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Car, Users, MapPin, UserCheck, UserX } from "lucide-react";
+import { Car, Users, MapPin, UserCheck, UserX, Edit, Save, X } from "lucide-react";
 import { Participant } from "@/types/events";
 
 interface CarpoolCardProps {
@@ -30,6 +30,7 @@ export function CarpoolCard({
   const [seats, setSeats] = useState(currentUserParticipation?.available_seats || 2);
   const [notes, setNotes] = useState(currentUserParticipation?.carpool_driver_notes || "");
   const [needsCarpool, setNeedsCarpool] = useState(currentUserParticipation?.needs_carpool ?? true);
+  const [isEditingDriver, setIsEditingDriver] = useState(false);
 
   const drivers = participants.filter(p => p.is_carpool_driver && p.available_seats && p.available_seats > 0);
   const needingRides = participants.filter(p => 
@@ -41,21 +42,24 @@ export function CarpoolCard({
 
   const handleDriverStatusChange = (checked: boolean) => {
     setIsDriver(checked);
-    onUpdateCarpoolStatus(checked, seats, notes);
-  };
-
-  const handleSeatsChange = (newSeats: number) => {
-    setSeats(newSeats);
-    if (isDriver) {
-      onUpdateCarpoolStatus(true, newSeats, notes);
+    if (checked) {
+      setIsEditingDriver(true);
+    } else {
+      onUpdateCarpoolStatus(false, 0, "");
+      setIsEditingDriver(false);
     }
   };
 
-  const handleNotesChange = (newNotes: string) => {
-    setNotes(newNotes);
-    if (isDriver) {
-      onUpdateCarpoolStatus(true, seats, newNotes);
-    }
+  const handleSaveDriverSettings = () => {
+    onUpdateCarpoolStatus(true, seats, notes);
+    setIsEditingDriver(false);
+  };
+
+  const handleCancelDriverEdit = () => {
+    // Reset to current values
+    setSeats(currentUserParticipation?.available_seats || 2);
+    setNotes(currentUserParticipation?.carpool_driver_notes || "");
+    setIsEditingDriver(false);
   };
 
   const handleCarpoolPreferenceChange = (needsRide: boolean) => {
@@ -114,27 +118,72 @@ export function CarpoolCard({
                   </label>
                   
                   {isDriver && (
-                    <div className="mt-3 space-y-3">
-                      <div>
-                        <label className="text-sm text-stone-600 mb-1 block">Available seats</label>
-                        <Input
-                          type="number"
-                          min="1"
-                          max="8"
-                          value={seats}
-                          onChange={(e) => handleSeatsChange(parseInt(e.target.value) || 1)}
-                          className="w-20"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm text-stone-600 mb-1 block">Pickup location / Notes</label>
-                        <Textarea
-                          placeholder="e.g., Downtown Toronto, prefer highway routes..."
-                          value={notes}
-                          onChange={(e) => handleNotesChange(e.target.value)}
-                          className="min-h-[60px]"
-                        />
-                      </div>
+                    <div className="mt-3">
+                      {!isEditingDriver ? (
+                        // Display mode
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-stone-600">
+                                <span className="font-medium">{seats} seats available</span>
+                              </p>
+                              {notes && (
+                                <p className="text-sm text-stone-600 mt-1">{notes}</p>
+                              )}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setIsEditingDriver(true)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        // Edit mode
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm text-stone-600 mb-1 block">Available seats</label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="8"
+                              value={seats}
+                              onChange={(e) => setSeats(parseInt(e.target.value) || 1)}
+                              className="w-20"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm text-stone-600 mb-1 block">Pickup location / Notes</label>
+                            <Textarea
+                              placeholder="e.g., Downtown Toronto, prefer highway routes..."
+                              value={notes}
+                              onChange={(e) => setNotes(e.target.value)}
+                              className="min-h-[60px]"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={handleSaveDriverSettings}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Save className="h-4 w-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              onClick={handleCancelDriverEdit}
+                              variant="outline"
+                              size="sm"
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

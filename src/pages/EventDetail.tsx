@@ -126,6 +126,7 @@ export default function EventDetail() {
           onBack={() => navigate('/events')}
           onJoinEvent={handleJoinEvent}
           onLeaveEvent={handleLeaveEvent}
+          onEventUpdated={refreshData}
         />
 
         {/* Event Details - Full width */}
