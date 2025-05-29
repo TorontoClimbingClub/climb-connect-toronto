@@ -24,7 +24,18 @@ export const useRouteManagement = () => {
       }
 
       console.log('✅ Routes fetched successfully:', data?.length);
-      setRoutes(data || []);
+      
+      // Transform database results to match ClimbingRoute interface
+      const transformedRoutes: ClimbingRoute[] = (data || []).map(route => ({
+        id: route.id,
+        name: route.name,
+        grade: route.grade,
+        style: route.style as 'Trad' | 'Sport' | 'Top Rope',
+        area: route.area,
+        sector: route.sector,
+      }));
+      
+      setRoutes(transformedRoutes);
     } catch (error) {
       console.error('Error fetching routes:', error);
       toast({
@@ -60,10 +71,13 @@ export const useRouteManagement = () => {
 
       console.log('✅ Route updated in database:', data);
       
-      // Update local state
+      // Update local state with transformed data
       setRoutes(prevRoutes => 
         prevRoutes.map(route => 
-          route.id === routeId ? { ...route, ...routeData } : route
+          route.id === routeId ? { 
+            ...route, 
+            ...routeData 
+          } : route
         )
       );
 
@@ -101,8 +115,17 @@ export const useRouteManagement = () => {
 
       console.log('✅ Route added to database:', data);
       
-      // Update local state
-      setRoutes(prevRoutes => [...prevRoutes, data]);
+      // Transform and update local state
+      const transformedRoute: ClimbingRoute = {
+        id: data.id,
+        name: data.name,
+        grade: data.grade,
+        style: data.style as 'Trad' | 'Sport' | 'Top Rope',
+        area: data.area,
+        sector: data.sector,
+      };
+      
+      setRoutes(prevRoutes => [...prevRoutes, transformedRoute]);
 
       toast({
         title: "Route Added",
