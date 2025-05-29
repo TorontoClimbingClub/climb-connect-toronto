@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,12 +57,23 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-[#E55A2B]">{user.full_name}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-2 border-[#E55A2B] shadow-2xl">
+        <DialogHeader className="relative pb-4 border-b border-gray-200">
+          <DialogTitle className="text-2xl font-bold text-[#E55A2B] pr-8">{user.full_name}</DialogTitle>
+          <DialogDescription className="text-base text-gray-600">
             View {isOwnProfile ? 'your' : `${user.full_name}'s`} climbing profile and achievements
           </DialogDescription>
+          
+          {/* Enhanced close button - positioned prominently */}
+          <Button 
+            onClick={() => onOpenChange(false)}
+            variant="outline"
+            size="sm"
+            className="absolute top-0 right-0 border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 font-medium"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Close
+          </Button>
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
@@ -224,11 +236,11 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             </div>
           </div>
 
-          {/* Close Button */}
+          {/* Bottom Close Button */}
           <div className="pt-4 border-t">
             <Button 
               onClick={() => onOpenChange(false)}
-              className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
+              className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white font-semibold"
               size="lg"
             >
               <X className="h-4 w-4 mr-2" />

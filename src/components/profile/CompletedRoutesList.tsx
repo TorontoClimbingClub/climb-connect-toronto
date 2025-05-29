@@ -8,6 +8,7 @@ import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbCompletion, useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
 
 interface CompletedRoutesListProps {
   completions: ClimbCompletion[];
@@ -18,9 +19,10 @@ export function CompletedRoutesList({ completions, userId }: CompletedRoutesList
   const navigate = useNavigate();
   const { toggleCompletion } = useClimbCompletions();
   const { user } = useAuth();
+  const [localCompletions, setLocalCompletions] = useState(completions);
 
-  // Use the completions passed as props (already filtered for the user)
-  const userCompletions = completions;
+  // Use local state for immediate UI updates
+  const userCompletions = localCompletions;
   
   const completedRoutes = userCompletions.map(completion => {
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
@@ -35,10 +37,20 @@ export function CompletedRoutesList({ completions, userId }: CompletedRoutesList
     navigate(`/routes/${routeId}`);
   };
 
-  const handleToggleCompletion = (routeId: string, event: React.MouseEvent) => {
+  const handleToggleCompletion = async (routeId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    toggleCompletion(routeId);
+    
+    // Optimistically remove from local state for immediate UI update
+    setLocalCompletions(prev => prev.filter(c => c.route_id !== routeId));
+    
+    // Then trigger the actual API call
+    await toggleCompletion(routeId);
   };
+
+  // Update local state when completions prop changes
+  React.useEffect(() => {
+    setLocalCompletions(completions);
+  }, [completions]);
 
   const isOwnProfile = !userId || userId === user?.id;
 

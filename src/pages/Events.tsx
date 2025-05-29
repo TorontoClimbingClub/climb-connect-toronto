@@ -5,12 +5,14 @@ import { EventCard } from "@/components/events/EventCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
 import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
 import { CommunityStats } from "@/components/events/CommunityStats";
+import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { useCommunityData } from "@/hooks/useCommunityData";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { CommunityMember } from "@/types/community";
 
 export default function Events() {
   const { user } = useAuth();
@@ -19,6 +21,8 @@ export default function Events() {
   const { members, loading: membersLoading, fetchCommunityMembers } = useCommunityData();
   const { getUserCompletionStats, loading: completionsLoading } = useClimbCompletions();
   const [membersWithStats, setMembersWithStats] = useState(members);
+  const [selectedUser, setSelectedUser] = useState<CommunityMember | null>(null);
+  const [showProfileOverlay, setShowProfileOverlay] = useState(false);
 
   // Enable real-time updates for events
   useRealtimeEvents();
@@ -40,6 +44,17 @@ export default function Events() {
       setMembersWithStats(members);
     }
   }, [members, membersLoading, completionsLoading]);
+
+  const handleMemberClick = (member: CommunityMember) => {
+    console.log('📱 Events: Member clicked:', member.full_name);
+    setSelectedUser(member);
+    setShowProfileOverlay(true);
+  };
+
+  const handleCloseProfile = () => {
+    setShowProfileOverlay(false);
+    setSelectedUser(null);
+  };
 
   if (accessLoading || loading) {
     return (
@@ -116,9 +131,9 @@ export default function Events() {
                     member={member}
                     userStats={userStats}
                     isCurrentUser={user?.id === member.id}
-                    canViewProfile={true}
+                    canViewProfile={member.allow_profile_viewing ?? true}
                     hiddenStyles={[]}
-                    onClick={() => {}}
+                    onClick={() => handleMemberClick(member)}
                   />
                 );
               })}
@@ -130,6 +145,13 @@ export default function Events() {
           )}
         </div>
       </div>
+
+      <UserProfileOverlay
+        user={selectedUser}
+        open={showProfileOverlay}
+        onOpenChange={handleCloseProfile}
+      />
+
       <Navigation />
     </div>
   );
