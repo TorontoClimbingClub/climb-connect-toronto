@@ -32,6 +32,9 @@ export function useAuthActions() {
       // Clean up any existing state first
       cleanupAuthState();
 
+      // Get the current origin for proper redirect URL
+      const redirectTo = `${window.location.origin}/auth?verified=true`;
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -39,6 +42,7 @@ export function useAuthActions() {
           data: {
             full_name: fullName,
           },
+          emailRedirectTo: redirectTo,
         },
       });
       

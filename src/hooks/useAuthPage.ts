@@ -58,6 +58,13 @@ export function useAuthPage() {
       });
       setLoading(false);
     } else {
+      // Show success message for email verification
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email and click the verification link to complete your registration.",
+        duration: 8000, // Show longer for important message
+      });
+      
       // Wait a moment for the user to be created and trigger to run
       setTimeout(async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -74,8 +81,8 @@ export function useAuthPage() {
             setNewUserId(session.user.id);
             setShowClimbingInfo(true);
             toast({
-              title: "Account created!",
-              description: "Please complete your climbing profile.",
+              title: "Complete your profile",
+              description: "Please complete your climbing profile to continue.",
             });
           } else {
             // Profile is complete, redirect to home
