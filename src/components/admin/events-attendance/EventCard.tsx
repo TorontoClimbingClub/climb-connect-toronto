@@ -5,7 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users, Edit, Trash2, Clock } from "lucide-react";
 import { EditEventDialog } from "../EditEventDialog";
 import { EventParticipantItem } from "./EventParticipantItem";
-import { EventParticipant } from "@/types/eventParticipants";
+
+interface EventParticipant {
+  id: string;
+  user_id: string;
+  full_name: string;
+  profile_photo_url?: string;
+  attendance_status?: 'pending' | 'approved' | 'rejected';
+  approval_id?: string;
+}
 
 interface EventCardProps {
   event: any;
