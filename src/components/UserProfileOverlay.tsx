@@ -36,11 +36,17 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
 
   const getHiddenStyles = () => {
     const hidden: string[] = [];
-    if (user.show_trad_progress === false && !isOwnProfile) hidden.push('Trad');
-    if (user.show_sport_progress === false && !isOwnProfile) hidden.push('Sport');
-    if (user.show_top_rope_progress === false && !isOwnProfile) hidden.push('Top Rope');
+    // Apply privacy settings consistently
+    if (user.show_trad_progress === false) hidden.push('Trad');
+    if (user.show_sport_progress === false) hidden.push('Sport');
+    if (user.show_top_rope_progress === false) hidden.push('Top Rope');
     return hidden;
   };
+
+  // Apply privacy settings consistently
+  const shouldShowClimbingLevel = user.show_climbing_level !== false;
+  const shouldShowClimbingProgress = user.show_climbing_progress !== false;
+  const shouldShowCompletionStats = user.show_completion_stats !== false;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -71,7 +77,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           </div>
 
           {/* Climbing Info */}
-          {(user.show_climbing_level !== false || isOwnProfile) && (user.climbing_level || user.climbing_experience) && (
+          {shouldShowClimbingLevel && (user.climbing_level || user.climbing_experience) && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -100,7 +106,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           )}
 
           {/* Progress */}
-          {(user.show_climbing_progress !== false || isOwnProfile) && (
+          {shouldShowClimbingProgress && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Climbing Progress</CardTitle>
@@ -116,7 +122,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
           )}
 
           {/* Completed Routes */}
-          {(user.show_completion_stats !== false || isOwnProfile) && completedRoutes.length > 0 && (
+          {shouldShowCompletionStats && completedRoutes.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -164,14 +170,14 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               <div className="flex items-center justify-center mb-1">
                 <Package className="h-4 w-4 mr-1" />
               </div>
-              <p className="text-lg font-bold text-[#E55A2B]">{user.equipment_count}</p>
+              <p className="text-lg font-bold text-[#E55A2B]">{user.equipment_count || 0}</p>
               <p className="text-xs text-stone-600">Gear Items</p>
             </div>
             <div className="p-3 bg-stone-50 rounded-lg">
               <div className="flex items-center justify-center mb-1">
                 <Users className="h-4 w-4 mr-1" />
               </div>
-              <p className="text-lg font-bold text-[#E55A2B]">{user.events_count}</p>
+              <p className="text-lg font-bold text-[#E55A2B]">{user.events_count || 0}</p>
               <p className="text-xs text-stone-600">Events Joined</p>
             </div>
           </div>

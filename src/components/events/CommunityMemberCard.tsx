@@ -23,6 +23,32 @@ export function CommunityMemberCard({
   hiddenStyles,
   onClick
 }: CommunityMemberCardProps) {
+  // Ensure member object has all required properties with defaults
+  const safeMemeber = {
+    id: member?.id || '',
+    full_name: member?.full_name || 'Unknown User',
+    phone: member?.phone || null,
+    is_carpool_driver: member?.is_carpool_driver || false,
+    passenger_capacity: member?.passenger_capacity || 0,
+    climbing_level: member?.climbing_level || null,
+    climbing_experience: member?.climbing_experience || [],
+    climbing_description: member?.climbing_description || null,
+    equipment_count: member?.equipment_count || 0,
+    events_count: member?.events_count || 0,
+    show_climbing_level: member?.show_climbing_level !== false,
+    show_climbing_progress: member?.show_climbing_progress !== false,
+    show_completion_stats: member?.show_completion_stats !== false,
+    show_trad_progress: member?.show_trad_progress !== false,
+    show_sport_progress: member?.show_sport_progress !== false,
+    show_top_rope_progress: member?.show_top_rope_progress !== false,
+    allow_profile_viewing: member?.allow_profile_viewing !== false,
+  };
+
+  // For privacy settings, hide from everyone (including the user) if they've disabled it
+  const shouldShowClimbingLevel = safeMemeber.show_climbing_level;
+  const shouldShowClimbingProgress = safeMemeber.show_climbing_progress;
+  const shouldShowCompletionStats = safeMemeber.show_completion_stats;
+
   return (
     <Card 
       className={`${isCurrentUser ? "border-orange-200 bg-orange-50" : ""} ${canViewProfile ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
@@ -32,44 +58,44 @@ export function CommunityMemberCard({
         <div className="flex justify-between items-start mb-3">
           <div>
             <h3 className="font-semibold text-[#E55A2B]">
-              {member.full_name}
+              {safeMemeber.full_name}
               {isCurrentUser && (
                 <Badge variant="outline" className="ml-2 text-xs">You</Badge>
               )}
             </h3>
-            {member.phone && (
+            {safeMemeber.phone && (
               <div className="flex items-center text-sm text-stone-600 mt-1">
                 <Phone className="h-3 w-3 mr-1" />
-                {member.phone}
+                {safeMemeber.phone}
               </div>
             )}
           </div>
           
           <div className="flex flex-col gap-1">
-            {member.is_carpool_driver && (
+            {safeMemeber.is_carpool_driver && (
               <Badge variant="secondary" className="text-xs">
                 <Car className="h-3 w-3 mr-1" />
-                Driver ({member.passenger_capacity} seats)
+                Driver ({safeMemeber.passenger_capacity} seats)
               </Badge>
             )}
           </div>
         </div>
 
         {/* Climbing Level and Experience */}
-        {(member.show_climbing_level !== false || isCurrentUser) && (member.climbing_level || member.climbing_experience) && (
+        {shouldShowClimbingLevel && (safeMemeber.climbing_level || safeMemeber.climbing_experience.length > 0) && (
           <div className="mb-3 p-3 bg-stone-50 rounded-lg">
             <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
                 <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
                 <div>
-                  {member.climbing_level && (
+                  {safeMemeber.climbing_level && (
                     <p className="text-sm font-medium text-stone-700">
-                      {member.climbing_level}
+                      {safeMemeber.climbing_level}
                     </p>
                   )}
-                  {member.climbing_experience && member.climbing_experience.length > 0 && (
+                  {safeMemeber.climbing_experience && safeMemeber.climbing_experience.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {member.climbing_experience.map((exp) => (
+                      {safeMemeber.climbing_experience.map((exp) => (
                         <Badge key={exp} variant="outline" className="text-xs bg-white">
                           {exp}
                         </Badge>
@@ -78,15 +104,15 @@ export function CommunityMemberCard({
                   )}
                 </div>
               </div>
-              {member.climbing_description && (
-                <p className="text-sm text-stone-700 mt-1">{member.climbing_description}</p>
+              {safeMemeber.climbing_description && (
+                <p className="text-sm text-stone-700 mt-1">{safeMemeber.climbing_description}</p>
               )}
             </div>
           </div>
         )}
 
         {/* Climbing Progress */}
-        {(member.show_climbing_progress !== false || isCurrentUser) && (
+        {shouldShowClimbingProgress && userStats?.completions && (
           <div className="mb-3">
             <CompletionProgressBars 
               completions={userStats.completions} 
@@ -100,12 +126,12 @@ export function CommunityMemberCard({
         <div className="flex justify-between text-sm text-stone-600">
           <div className="flex items-center">
             <Package className="h-4 w-4 mr-1" />
-            {member.equipment_count} gear items
+            {safeMemeber.equipment_count} gear items
           </div>
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            {member.events_count} events joined
-            {(member.show_completion_stats !== false || isCurrentUser) && (
+            {safeMemeber.events_count} events joined
+            {shouldShowCompletionStats && userStats?.completions && (
               <>
                 <span className="mx-2">•</span>
                 {userStats.completions.length} routes

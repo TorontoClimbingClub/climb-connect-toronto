@@ -55,10 +55,13 @@ export default function Events() {
   };
 
   const getHiddenStyles = (member: CommunityMember) => {
+    if (!member) return [];
+    
     const hidden: string[] = [];
-    if (member.show_trad_progress === false && member.id !== user?.id) hidden.push('Trad');
-    if (member.show_sport_progress === false && member.id !== user?.id) hidden.push('Sport');
-    if (member.show_top_rope_progress === false && member.id !== user?.id) hidden.push('Top Rope');
+    // Hide styles for everyone if the member has disabled them
+    if (member.show_trad_progress === false) hidden.push('Trad');
+    if (member.show_sport_progress === false) hidden.push('Sport');
+    if (member.show_top_rope_progress === false) hidden.push('Top Rope');
     return hidden;
   };
 
@@ -81,7 +84,7 @@ export default function Events() {
         {/* Events Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Upcoming Events</h2>
-          {upcomingEvents.length > 0 ? (
+          {upcomingEvents && upcomingEvents.length > 0 ? (
             <div className="space-y-4">
               {upcomingEvents.map((event) => (
                 <EventCard
@@ -102,10 +105,12 @@ export default function Events() {
         {/* Community Section */}
         <div>
           <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Active Members</h2>
-          <CommunityStats memberCount={members.length} />
+          <CommunityStats memberCount={members?.length || 0} />
 
           <div className="space-y-4">
-            {members.map((member) => {
+            {members && members.map((member) => {
+              if (!member || !member.id) return null;
+              
               const userStats = getUserCompletionStats(member.id);
               const hiddenStyles = getHiddenStyles(member);
               const isCurrentUser = member.id === user?.id;
