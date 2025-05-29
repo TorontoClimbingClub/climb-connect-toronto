@@ -6,19 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Calendar, MapPin, Users, Edit } from "lucide-react";
 import { CreateEventDialog } from "./CreateEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  max_participants: number | null;
-  difficulty_level: string | null;
-  organizer_id: string;
-  participants_count?: number;
-}
+import type { Event } from "@/types/events";
 
 interface EventsTabProps {
   events: Event[];

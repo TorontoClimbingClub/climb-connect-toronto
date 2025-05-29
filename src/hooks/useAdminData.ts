@@ -97,7 +97,7 @@ export function useAdminData() {
             show_trad_progress: profile.show_trad_progress,
             show_sport_progress: profile.show_sport_progress,
             show_top_rope_progress: profile.show_top_rope_progress,
-          };
+          } as User;
         })
       );
 
