@@ -1,66 +1,53 @@
 
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-
-interface ErrorInfo {
-  error: Error;
-  errorInfo: React.ErrorInfo;
-  userId?: string;
-  route?: string;
-  timestamp: string;
-}
+import { errorLogger } from '@/utils/errorLogger';
 
 export const ErrorMonitor = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      const errorInfo: ErrorInfo = {
-        error: new Error(event.message),
-        errorInfo: { componentStack: event.filename || 'Unknown' } as React.ErrorInfo,
-        userId: user?.id,
-        route: window.location.pathname,
-        timestamp: new Date().toISOString()
-      };
-
-      console.error('🚨 Error Monitor - Caught error:', errorInfo);
+      const errorMessage = event.message || 'Unknown error';
       
-      // Log to console for debugging
-      console.group('🔍 Error Details');
-      console.log('User ID:', user?.id);
-      console.log('User Email:', user?.email);
-      console.log('Route:', window.location.pathname);
-      console.log('Error:', event.message);
-      console.log('Timestamp:', errorInfo.timestamp);
-      console.groupEnd();
-
-      // Only show toasts for critical authentication errors, not access control
-      if (event.message?.includes('JWT') || event.message?.includes('session')) {
-        toast({
-          title: "Session Error",
-          description: "Your session has expired. Please sign in again.",
-          variant: "destructive",
-        });
+      // Determine error type
+      let errorType: 'access_denied' | 'auth_error' | 'general_error' = 'general_error';
+      if (errorMessage.includes('Access') || errorMessage.includes('access')) {
+        errorType = 'access_denied';
+      } else if (errorMessage.includes('JWT') || errorMessage.includes('session') || errorMessage.includes('auth')) {
+        errorType = 'auth_error';
       }
+
+      // Log the error instead of showing toast
+      errorLogger.log({
+        message: errorMessage,
+        userId: user?.id,
+        userEmail: user?.email,
+        route: window.location.pathname,
+        type: errorType,
+        details: event.filename || 'Unknown source'
+      });
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('🚨 Unhandled Promise Rejection:', {
-        reason: event.reason,
-        userId: user?.id,
-        route: window.location.pathname,
-        timestamp: new Date().toISOString()
-      });
-
-      if (event.reason?.message?.includes('JWT') || event.reason?.message?.includes('session')) {
-        toast({
-          title: "Session Error",
-          description: "Your session has expired. Please sign in again.",
-          variant: "destructive",
-        });
+      const errorMessage = event.reason?.message || 'Promise rejection';
+      
+      let errorType: 'access_denied' | 'auth_error' | 'general_error' = 'general_error';
+      if (errorMessage.includes('Access') || errorMessage.includes('access')) {
+        errorType = 'access_denied';
+      } else if (errorMessage.includes('JWT') || errorMessage.includes('session') || errorMessage.includes('auth')) {
+        errorType = 'auth_error';
       }
+
+      // Log the error instead of showing toast
+      errorLogger.log({
+        message: errorMessage,
+        userId: user?.id,
+        userEmail: user?.email,
+        route: window.location.pathname,
+        type: errorType,
+        details: JSON.stringify(event.reason)
+      });
     };
 
     window.addEventListener('error', handleError);
@@ -70,7 +57,7 @@ export const ErrorMonitor = () => {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
-  }, [user, toast]);
+  }, [user]);
 
   return null;
 };
