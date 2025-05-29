@@ -52,14 +52,6 @@ export function Leaderboards() {
       isGrade: true
     },
     {
-      title: "Gear Collectors",
-      icon: Package,
-      data: topGearOwners,
-      metric: "Equipment Items",
-      isGrade: false,
-      isGear: true
-    },
-    {
       title: "Trad Champions",
       icon: Mountain,
       data: topTradClimbers,
@@ -79,6 +71,14 @@ export function Leaderboards() {
       data: topTopRopeClimbers,
       metric: "Top Rope Routes",
       isGrade: false
+    },
+    {
+      title: "Gear Collectors",
+      icon: Package,
+      data: topGearOwners,
+      metric: "Equipment Items",
+      isGrade: false,
+      isGear: true
     }
   ];
 
