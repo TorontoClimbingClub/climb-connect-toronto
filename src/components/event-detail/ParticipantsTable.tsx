@@ -39,7 +39,7 @@ export function ParticipantsTable({ participants }: ParticipantsTableProps) {
           Assigned passenger
         </Badge>
       );
-    } else if (participant.needs_carpool !== false) {
+    } else if (participant.needs_carpool === true) {
       return (
         <Badge variant="secondary">
           Looking for ride
@@ -48,7 +48,7 @@ export function ParticipantsTable({ participants }: ParticipantsTableProps) {
     } else {
       return (
         <Badge variant="outline">
-          Passenger
+          Transport not specified
         </Badge>
       );
     }

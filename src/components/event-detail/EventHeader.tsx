@@ -6,21 +6,7 @@ import { EditEventDialog } from "@/components/admin/EditEventDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  max_participants: number | null;
-  difficulty_level: string | null;
-  organizer_id: string;
-  participants_count?: number;
-  carpool_seats?: number;
-  equipment_count?: number;
-}
+import { Event } from "@/types/events";
 
 interface EventHeaderProps {
   event: Event;
