@@ -92,22 +92,33 @@ export default function Events() {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Community Spotlight
           </h2>
-          <div className="space-y-4">
-            {members.map((member) => {
-              const userStats = getUserCompletionStats(member.id);
-              return (
-                <CommunityMemberCard 
-                  key={member.id} 
-                  member={member}
-                  userStats={userStats}
-                  isCurrentUser={user?.id === member.id}
-                  canViewProfile={true}
-                  hiddenStyles={[]}
-                  onClick={() => {}}
-                />
-              );
-            })}
-          </div>
+          {membersLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#E55A2B]"></div>
+              <span className="ml-2 text-gray-600">Loading members...</span>
+            </div>
+          ) : members.length > 0 ? (
+            <div className="space-y-4">
+              {members.map((member) => {
+                const userStats = getUserCompletionStats(member.id);
+                return (
+                  <CommunityMemberCard 
+                    key={member.id} 
+                    member={member}
+                    userStats={userStats}
+                    isCurrentUser={user?.id === member.id}
+                    canViewProfile={true}
+                    hiddenStyles={[]}
+                    onClick={() => {}}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No community members found.</p>
+            </div>
+          )}
         </div>
       </div>
       <Navigation />
