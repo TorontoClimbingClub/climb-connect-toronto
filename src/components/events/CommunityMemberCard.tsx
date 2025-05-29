@@ -35,19 +35,30 @@ export function CommunityMemberCard({
     climbing_description: member?.climbing_description || null,
     equipment_count: member?.equipment_count || 0,
     events_count: member?.events_count || 0,
-    show_climbing_level: member?.show_climbing_level !== false,
-    show_climbing_progress: member?.show_climbing_progress !== false,
-    show_completion_stats: member?.show_completion_stats !== false,
-    show_trad_progress: member?.show_trad_progress !== false,
-    show_sport_progress: member?.show_sport_progress !== false,
-    show_top_rope_progress: member?.show_top_rope_progress !== false,
-    allow_profile_viewing: member?.allow_profile_viewing !== false,
+    show_climbing_level: member?.show_climbing_level ?? true,
+    show_climbing_progress: member?.show_climbing_progress ?? true,
+    show_completion_stats: member?.show_completion_stats ?? true,
+    show_trad_progress: member?.show_trad_progress ?? true,
+    show_sport_progress: member?.show_sport_progress ?? true,
+    show_top_rope_progress: member?.show_top_rope_progress ?? true,
+    allow_profile_viewing: member?.allow_profile_viewing ?? true,
   };
 
-  // For privacy settings, hide from everyone (including the user) if they've disabled it
-  const shouldShowClimbingLevel = safeMember.show_climbing_level;
-  const shouldShowClimbingProgress = safeMember.show_climbing_progress;
-  const shouldShowCompletionStats = safeMember.show_completion_stats;
+  // Apply privacy settings - if user has set privacy to false, don't show the content
+  const shouldShowClimbingLevel = isCurrentUser || safeMember.show_climbing_level;
+  const shouldShowClimbingProgress = isCurrentUser || safeMember.show_climbing_progress;
+  const shouldShowCompletionStats = isCurrentUser || safeMember.show_completion_stats;
+
+  // Calculate hidden styles based on privacy settings
+  const getPrivacyFilteredHiddenStyles = () => {
+    const filtered = [...hiddenStyles];
+    if (!isCurrentUser) {
+      if (!safeMember.show_trad_progress) filtered.push('Trad');
+      if (!safeMember.show_sport_progress) filtered.push('Sport');
+      if (!safeMember.show_top_rope_progress) filtered.push('Top Rope');
+    }
+    return filtered;
+  };
 
   return (
     <Card 
@@ -81,7 +92,7 @@ export function CommunityMemberCard({
           </div>
         </div>
 
-        {/* Climbing Level and Experience */}
+        {/* Climbing Level and Experience - respect privacy settings */}
         {shouldShowClimbingLevel && (safeMember.climbing_level || safeMember.climbing_experience.length > 0) && (
           <div className="mb-3 p-3 bg-stone-50 rounded-lg">
             <div className="flex flex-col gap-2">
@@ -111,14 +122,14 @@ export function CommunityMemberCard({
           </div>
         )}
 
-        {/* Climbing Progress */}
+        {/* Climbing Progress - respect privacy settings */}
         {shouldShowClimbingProgress && userStats?.completions && (
           <div className="mb-3">
             <CompletionProgressBars 
               completions={userStats.completions} 
               compact={true}
               areaName="Rattlesnake Point"
-              hiddenStyles={hiddenStyles}
+              hiddenStyles={getPrivacyFilteredHiddenStyles()}
             />
           </div>
         )}

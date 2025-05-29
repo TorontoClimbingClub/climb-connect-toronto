@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,17 +39,17 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
 
   const getHiddenStyles = () => {
     const hidden: string[] = [];
-    // Apply privacy settings consistently
-    if (user.show_trad_progress === false) hidden.push('Trad');
-    if (user.show_sport_progress === false) hidden.push('Sport');
-    if (user.show_top_rope_progress === false) hidden.push('Top Rope');
+    // Apply privacy settings - only hide if user has specifically set to false AND it's not their own profile
+    if (!isOwnProfile && user.show_trad_progress === false) hidden.push('Trad');
+    if (!isOwnProfile && user.show_sport_progress === false) hidden.push('Sport');
+    if (!isOwnProfile && user.show_top_rope_progress === false) hidden.push('Top Rope');
     return hidden;
   };
 
-  // Apply privacy settings consistently
-  const shouldShowClimbingLevel = user.show_climbing_level !== false;
-  const shouldShowClimbingProgress = user.show_climbing_progress !== false;
-  const shouldShowCompletionStats = user.show_completion_stats !== false;
+  // Apply privacy settings - show content if it's own profile OR if privacy setting allows it
+  const shouldShowClimbingLevel = isOwnProfile || (user.show_climbing_level ?? true);
+  const shouldShowClimbingProgress = isOwnProfile || (user.show_climbing_progress ?? true);
+  const shouldShowCompletionStats = isOwnProfile || (user.show_completion_stats ?? true);
 
   // Get equipment for this user (only show for own profile for now)
   const equipmentToShow = isOwnProfile ? userEquipment : [];
@@ -92,7 +91,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             )}
           </div>
 
-          {/* Climbing Info */}
+          {/* Climbing Info - respect privacy settings */}
           {shouldShowClimbingLevel && (user.climbing_level || user.climbing_experience) && (
             <Card>
               <CardHeader>
@@ -148,7 +147,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             </Card>
           )}
 
-          {/* Progress */}
+          {/* Progress - respect privacy settings */}
           {shouldShowClimbingProgress && (
             <Card>
               <CardHeader>
@@ -164,7 +163,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             </Card>
           )}
 
-          {/* Completed Routes */}
+          {/* Completed Routes - respect privacy settings */}
           {shouldShowCompletionStats && completedRoutes.length > 0 && (
             <Card>
               <CardHeader>

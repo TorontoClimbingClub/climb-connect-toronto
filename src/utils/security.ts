@@ -22,9 +22,9 @@ export const validateInput = {
     return nameRegex.test(input.trim());
   },
 
-  // Validate phone numbers
+  // Validate phone numbers - allow any digits up to 12 characters
   phone: (input: string): boolean => {
-    const phoneRegex = /^[\+]?[\d\s\-\(\)]{10,15}$/;
+    const phoneRegex = /^[\d\s\-\(\)\+]{1,12}$/;
     return phoneRegex.test(input.trim());
   },
 
