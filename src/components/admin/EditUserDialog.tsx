@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface User {
@@ -41,7 +43,7 @@ export function EditUserDialog({ user, isOpen, onOpenChange, onSave }: EditUserD
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Full Name</label>
+            <Label className="text-sm font-medium">Full Name</Label>
             <Input
               value={editingUser.full_name}
               onChange={(e) => setEditingUser({
@@ -51,7 +53,7 @@ export function EditUserDialog({ user, isOpen, onOpenChange, onSave }: EditUserD
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Phone</label>
+            <Label className="text-sm font-medium">Phone</Label>
             <Input
               value={editingUser.phone || ''}
               onChange={(e) => setEditingUser({
@@ -61,19 +63,18 @@ export function EditUserDialog({ user, isOpen, onOpenChange, onSave }: EditUserD
             />
           </div>
           <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={editingUser.is_carpool_driver || false}
-              onChange={(e) => setEditingUser({
+              onCheckedChange={(checked) => setEditingUser({
                 ...editingUser,
-                is_carpool_driver: e.target.checked
+                is_carpool_driver: Boolean(checked)
               })}
             />
-            <label className="text-sm font-medium">Carpool Driver</label>
+            <Label className="text-sm font-medium">Carpool Driver</Label>
           </div>
           {editingUser.is_carpool_driver && (
             <div>
-              <label className="text-sm font-medium">Passenger Capacity</label>
+              <Label className="text-sm font-medium">Passenger Capacity</Label>
               <Input
                 type="number"
                 value={editingUser.passenger_capacity || 0}

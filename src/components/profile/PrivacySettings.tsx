@@ -59,7 +59,7 @@ export function PrivacySettings({
           <Checkbox
             checked={formData.allow_profile_viewing ?? true}
             onCheckedChange={(checked) => 
-              handleInputChange('allow_profile_viewing', checked as boolean)
+              handleInputChange('allow_profile_viewing', Boolean(checked))
             }
             disabled={!editing}
           />
@@ -75,7 +75,7 @@ export function PrivacySettings({
           <Checkbox
             checked={formData.show_climbing_level ?? true}
             onCheckedChange={(checked) => 
-              handleInputChange('show_climbing_level', checked as boolean)
+              handleInputChange('show_climbing_level', Boolean(checked))
             }
             disabled={!editing}
           />
@@ -91,7 +91,7 @@ export function PrivacySettings({
           <Checkbox
             checked={formData.show_climbing_progress ?? false}
             onCheckedChange={(checked) => 
-              handleInputChange('show_climbing_progress', checked as boolean)
+              handleInputChange('show_climbing_progress', Boolean(checked))
             }
             disabled={!editing}
           />
@@ -109,7 +109,7 @@ export function PrivacySettings({
             <Checkbox
               checked={formData.show_trad_progress ?? false}
               onCheckedChange={(checked) => 
-                handleInputChange('show_trad_progress', checked as boolean)
+                handleInputChange('show_trad_progress', Boolean(checked))
               }
               disabled={!editing}
             />
@@ -123,7 +123,7 @@ export function PrivacySettings({
             <Checkbox
               checked={formData.show_sport_progress ?? false}
               onCheckedChange={(checked) => 
-                handleInputChange('show_sport_progress', checked as boolean)
+                handleInputChange('show_sport_progress', Boolean(checked))
               }
               disabled={!editing}
             />
@@ -137,7 +137,7 @@ export function PrivacySettings({
             <Checkbox
               checked={formData.show_top_rope_progress ?? false}
               onCheckedChange={(checked) => 
-                handleInputChange('show_top_rope_progress', checked as boolean)
+                handleInputChange('show_top_rope_progress', Boolean(checked))
               }
               disabled={!editing}
             />
@@ -154,7 +154,7 @@ export function PrivacySettings({
           <Checkbox
             checked={formData.show_completion_stats ?? false}
             onCheckedChange={(checked) => 
-              handleInputChange('show_completion_stats', checked as boolean)
+              handleInputChange('show_completion_stats', Boolean(checked))
             }
             disabled={!editing}
           />
