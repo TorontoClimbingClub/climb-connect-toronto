@@ -41,37 +41,43 @@ export function Leaderboards() {
       title: "Top Grade Climbers",
       icon: Mountain,
       data: topGradeClimbers,
-      metric: "Highest Grade"
+      metric: "Highest Grade",
+      isGrade: true
     },
     {
       title: "Trad Champions",
       icon: Mountain,
       data: topTradClimbers,
-      metric: "Trad Routes"
+      metric: "Trad Routes",
+      isGrade: false
     },
     {
       title: "Sport Leaders",
       icon: Mountain,
       data: topSportClimbers,
-      metric: "Sport Routes"
+      metric: "Sport Routes",
+      isGrade: false
     },
     {
       title: "Top Rope Masters",
       icon: Mountain,
       data: topTopRopeClimbers,
-      metric: "Top Rope Routes"
+      metric: "Top Rope Routes",
+      isGrade: false
     },
     {
       title: "Gear Collectors",
       icon: Package,
       data: topGearOwners,
-      metric: "Equipment Items"
+      metric: "Equipment Items",
+      isGrade: false
     },
     {
       title: "Event Enthusiasts",
       icon: Users,
       data: topEventAttendees,
-      metric: "Events Attended"
+      metric: "Events Attended",
+      isGrade: false
     }
   ];
 
@@ -113,7 +119,7 @@ export function Leaderboards() {
                         <span className="text-sm font-medium truncate">{user.full_name}</span>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {user.metric_value} {section.metric === "Highest Grade" ? "" : section.metric.toLowerCase()}
+                        {section.isGrade ? user.metric_value : `${user.metric_value} ${section.metric.toLowerCase()}`}
                       </Badge>
                     </div>
                   ))
