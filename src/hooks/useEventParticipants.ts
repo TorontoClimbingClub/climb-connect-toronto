@@ -91,7 +91,7 @@ export const useEventParticipants = () => {
       const eventsWithParticipantsData = await Promise.all(
         events.map(async (event) => {
           try {
-            // Fetch participants and their profiles separately to avoid join issues
+            // Fetch participants separately to avoid join issues
             const { data: participants, error: participantsError } = await supabase
               .from('event_participants')
               .select('id, user_id')
@@ -201,8 +201,10 @@ export const useEventParticipants = () => {
       );
 
       if (existingApproval) {
+        // Update existing approval to approved status
         await approveAttendance(existingApproval.id);
       } else {
+        // Create new approval
         const { error } = await supabase
           .from('event_attendance_approvals')
           .insert({
@@ -238,8 +240,10 @@ export const useEventParticipants = () => {
       );
 
       if (existingApproval) {
+        // Update existing approval to rejected status
         await rejectAttendance(existingApproval.id);
       } else {
+        // Create new rejection
         const { error } = await supabase
           .from('event_attendance_approvals')
           .insert({
@@ -274,6 +278,7 @@ export const useEventParticipants = () => {
       );
 
       if (existingApproval) {
+        // Delete the approval record to reset to pending
         const { error } = await supabase
           .from('event_attendance_approvals')
           .delete()

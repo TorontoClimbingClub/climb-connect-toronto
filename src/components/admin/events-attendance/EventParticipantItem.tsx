@@ -57,8 +57,8 @@ export function EventParticipantItem({
     }
   };
 
-  // Show attendance buttons for both ongoing and ended events
-  const showAttendanceButtons = eventStatus === 'ended' || eventStatus === 'ongoing';
+  // Show attendance buttons for all events - admins can manage attendance anytime
+  const showAttendanceButtons = true;
   const isPending = participant.attendance_status === 'pending';
   const isApproved = participant.attendance_status === 'approved';
   const isRejected = participant.attendance_status === 'rejected';
