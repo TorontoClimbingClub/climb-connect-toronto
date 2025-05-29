@@ -38,7 +38,7 @@ export const useAccessControl = (requiredAccess: 'authenticated' | 'public' = 'p
           setHasAccess(true);
         }
       } else {
-        // Public access - always allow
+        // Public access - always allow, no toast needed
         console.log('✅ Access Granted: Public route');
         setHasAccess(true);
       }
