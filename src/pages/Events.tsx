@@ -19,7 +19,7 @@ import { CommunityMember } from "@/types/community";
 
 export default function Events() {
   const { user } = useAuth();
-  const { events, loading: eventsLoading } = useEvents();
+  const { upcomingEvents, loading: eventsLoading } = useEvents();
   const { members, loading: communityLoading } = useCommunity();
   const { getUserCompletionStats } = useClimbCompletions();
   const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
@@ -37,8 +37,7 @@ export default function Events() {
 
   const getHiddenStyles = (member: CommunityMember, isCurrentUser: boolean) => {
     const hidden: string[] = [];
-    // For the current user, respect their privacy settings
-    // For other users, only hide if they've disabled it AND we're not the current user
+    // Always hide based on user's privacy settings, regardless of current user
     if (member.show_trad_progress === false) hidden.push('Trad');
     if (member.show_sport_progress === false) hidden.push('Sport');
     if (member.show_top_rope_progress === false) hidden.push('Top Rope');
@@ -74,11 +73,11 @@ export default function Events() {
           </TabsList>
 
           <TabsContent value="events" className="space-y-6">
-            {events.length === 0 ? (
+            {upcomingEvents.length === 0 ? (
               <EmptyEventsState />
             ) : (
               <div className="grid gap-4">
-                {events.map((event) => (
+                {upcomingEvents.map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>
@@ -86,7 +85,7 @@ export default function Events() {
           </TabsContent>
 
           <TabsContent value="community" className="space-y-6">
-            <CommunityStats members={members} />
+            <CommunityStats memberCount={members.length} />
             
             <div className="grid gap-4 md:grid-cols-2">
               {members.map((member) => {
