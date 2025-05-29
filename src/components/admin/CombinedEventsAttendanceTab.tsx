@@ -42,10 +42,20 @@ export function CombinedEventsAttendanceTab({
       }));
       fetchEventsWithParticipants(eventsWithStatus);
     }
-  }, [events, getEventStatus]);
+  }, [events, getEventStatus, fetchEventsWithParticipants]);
 
-  const handleRefreshAfterUpdate = () => {
-    onRefreshEvents();
+  const handleRefreshAfterUpdate = async () => {
+    // First refresh the events from the database
+    await onRefreshEvents();
+    
+    // Then refresh the participants data if we have events
+    if (events.length > 0) {
+      const eventsWithStatus = events.map(event => ({
+        ...event,
+        event_status: getEventStatus(event)
+      }));
+      await fetchEventsWithParticipants(eventsWithStatus);
+    }
   };
 
   return (
@@ -59,24 +69,28 @@ export function CombinedEventsAttendanceTab({
       <CreateEventForm
         showForm={showCreateForm}
         onToggleForm={setShowCreateForm}
-        onEventCreated={onRefreshEvents}
+        onEventCreated={handleRefreshAfterUpdate}
       />
 
       {!showCreateForm && (
         <div className="space-y-4">
-          {eventsWithParticipants.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              canManageUsers={canManageUsers}
-              onDeleteEvent={onDeleteEvent}
-              onRefreshEvents={handleRefreshAfterUpdate}
-              onConfirmAttendance={handleConfirmAttendance}
-              onRejectAttendance={handleRejectAttendance}
-            />
-          ))}
+          {loading ? (
+            <div className="text-center text-stone-600">Loading events...</div>
+          ) : (
+            eventsWithParticipants.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                canManageUsers={canManageUsers}
+                onDeleteEvent={onDeleteEvent}
+                onRefreshEvents={handleRefreshAfterUpdate}
+                onConfirmAttendance={handleConfirmAttendance}
+                onRejectAttendance={handleRejectAttendance}
+              />
+            ))
+          )}
           
-          {events.length === 0 && <EmptyEventsState />}
+          {events.length === 0 && !loading && <EmptyEventsState />}
         </div>
       )}
     </div>

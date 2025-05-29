@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
@@ -19,6 +19,63 @@ export const useEventParticipants = () => {
   const [loading, setLoading] = useState(false);
   const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
   const { toast } = useToast();
+
+  // Set up real-time subscriptions for participants and approvals
+  useEffect(() => {
+    const participantsChannel = supabase
+      .channel('admin-participants-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_participants'
+        },
+        (payload) => {
+          console.log('🔄 Event participants updated:', payload);
+          // Refresh the current events data
+          if (eventsWithParticipants.length > 0) {
+            const currentEvents = eventsWithParticipants.map(e => ({
+              id: e.id,
+              title: e.title,
+              description: e.description,
+              details: e.details,
+              date: e.date,
+              time: e.time,
+              end_time: e.end_time,
+              location: e.location,
+              max_participants: e.max_participants,
+              difficulty_level: e.difficulty_level,
+              organizer_id: e.organizer_id,
+              required_climbing_level: e.required_climbing_level,
+              required_climbing_experience: e.required_climbing_experience,
+              capacity_limit: e.capacity_limit,
+              created_at: e.created_at,
+              updated_at: e.updated_at,
+              event_status: e.event_status
+            }));
+            fetchEventsWithParticipants(currentEvents);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_attendance_approvals'
+        },
+        (payload) => {
+          console.log('🔄 Attendance approvals updated:', payload);
+          refreshApprovals();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(participantsChannel);
+    };
+  }, [eventsWithParticipants.length]);
 
   const fetchEventsWithParticipants = async (events: Event[]) => {
     setLoading(true);

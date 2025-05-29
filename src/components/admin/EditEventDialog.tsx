@@ -55,12 +55,17 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
         updated_at: new Date().toISOString()
       };
 
+      console.log('Updating event with data:', updateData);
+
       const { error } = await supabase
         .from('events')
         .update(updateData)
         .eq('id', event.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
@@ -68,6 +73,8 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
       });
 
       setOpen(false);
+      
+      // Call the refresh callback to update the parent component
       onEventUpdated();
     } catch (error) {
       console.error('Error updating event:', error);

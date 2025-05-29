@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,31 @@ export function useAdminData() {
       checkAdminAccess();
     }
   }, [user]);
+
+  // Set up real-time subscriptions for events
+  useEffect(() => {
+    if (!canCreateEvents) return;
+
+    const eventsChannel = supabase
+      .channel('admin-events-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'events'
+        },
+        (payload) => {
+          console.log('🔄 Events table updated:', payload);
+          fetchEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(eventsChannel);
+    };
+  }, [canCreateEvents]);
 
   const checkAdminAccess = async () => {
     if (!user?.id) return;
@@ -102,8 +128,9 @@ export function useAdminData() {
 
   const fetchEvents = async () => {
     try {
+      // Fetch directly from events table instead of the view
       const { data, error } = await supabase
-        .from('events_with_participants')
+        .from('events')
         .select('*')
         .order('date', { ascending: true });
 
