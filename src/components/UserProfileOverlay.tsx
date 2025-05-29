@@ -1,7 +1,8 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Car, Phone, Mountain, Package, Users, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Car, Phone, Mountain, Package, Users, CheckCircle2, X } from "lucide-react";
 import { CommunityMember } from "@/types/community";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
@@ -50,7 +51,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-w-md overflow-y-auto">
+      <SheetContent className="w-full max-w-md overflow-y-auto pb-20">
         <SheetHeader>
           <SheetTitle className="text-[#E55A2B]">{user.full_name}</SheetTitle>
           <SheetDescription>
@@ -59,6 +60,15 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
         </SheetHeader>
 
         <div className="space-y-6 mt-6">
+          {/* Bio */}
+          {user.bio && (
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-sm text-stone-700">{user.bio}</p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Contact & Transport */}
           <div className="space-y-3">
             {user.phone && (
@@ -181,6 +191,18 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               <p className="text-xs text-stone-600">Events Joined</p>
             </div>
           </div>
+        </div>
+
+        {/* Prominent Close Button at Bottom */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+          <Button 
+            onClick={() => onOpenChange(false)}
+            className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white"
+            size="lg"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Close Profile
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

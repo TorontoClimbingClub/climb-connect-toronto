@@ -22,17 +22,18 @@ export function useProfileManagement() {
     climbing_experience: [],
     bio: '',
     allow_profile_viewing: true,
-    show_climbing_progress: true,
-    show_completion_stats: true,
+    show_climbing_progress: false,
+    show_completion_stats: false,
     show_climbing_level: true,
-    show_trad_progress: true,
-    show_sport_progress: true,
-    show_top_rope_progress: true,
+    show_trad_progress: false,
+    show_sport_progress: false,
+    show_top_rope_progress: false,
     created_at: '',
   });
   const { user } = useAuth();
   const { toast } = useToast();
   const mountedRef = useRef(true);
+  const [hasShownProfileToast, setHasShownProfileToast] = useState(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -49,6 +50,18 @@ export function useProfileManagement() {
       console.log('No user found');
     }
   }, [user]);
+
+  // Show privacy settings toast when user first visits profile
+  useEffect(() => {
+    if (profile && !editing && !hasShownProfileToast && mountedRef.current) {
+      setHasShownProfileToast(true);
+      toast({
+        title: "Set Your Privacy Settings",
+        description: "Don't forget to configure your privacy settings to control what other members can see about you.",
+        duration: 8000,
+      });
+    }
+  }, [profile, editing, hasShownProfileToast, toast]);
 
   const fetchProfile = async () => {
     if (!user || !mountedRef.current) {
@@ -97,6 +110,20 @@ export function useProfileManagement() {
         console.log('Profile data loaded successfully:', data);
         setProfile(data);
         setFormData(data);
+
+        // Check if this is a new user (profile created recently and basic info not filled)
+        const isNewUser = !data.phone && 
+                          !data.climbing_description && 
+                          !data.bio &&
+                          (!data.climbing_experience || data.climbing_experience.length === 0);
+
+        if (isNewUser) {
+          toast({
+            title: "Welcome to the Community!",
+            description: "Please fill out your profile information so other members can get to know you better.",
+            duration: 10000,
+          });
+        }
       }
     } catch (error: any) {
       if (mountedRef.current) {

@@ -270,7 +270,7 @@ export function ProfileInformation({
               </p>
             </div>
             <Checkbox
-              checked={formData.show_climbing_progress ?? true}
+              checked={formData.show_climbing_progress ?? false}
               onCheckedChange={(checked) => 
                 handleInputChange('show_climbing_progress', checked as boolean)
               }
@@ -279,7 +279,7 @@ export function ProfileInformation({
           </div>
 
           {/* Individual Progress Settings - always show when progress bars are enabled */}
-          {(formData.show_climbing_progress ?? true) && (
+          {(formData.show_climbing_progress ?? false) && (
             <div className="ml-6 space-y-3 p-3 bg-stone-50 rounded-lg">
               <p className="text-sm font-medium text-stone-700">Individual Progress Bars:</p>
               
@@ -289,7 +289,7 @@ export function ProfileInformation({
                   <p className="text-xs text-muted-foreground">Traditional climbing routes</p>
                 </div>
                 <Checkbox
-                  checked={formData.show_trad_progress ?? true}
+                  checked={formData.show_trad_progress ?? false}
                   onCheckedChange={(checked) => 
                     handleInputChange('show_trad_progress', checked as boolean)
                   }
@@ -303,7 +303,7 @@ export function ProfileInformation({
                   <p className="text-xs text-muted-foreground">Sport climbing routes</p>
                 </div>
                 <Checkbox
-                  checked={formData.show_sport_progress ?? true}
+                  checked={formData.show_sport_progress ?? false}
                   onCheckedChange={(checked) => 
                     handleInputChange('show_sport_progress', checked as boolean)
                   }
@@ -317,7 +317,7 @@ export function ProfileInformation({
                   <p className="text-xs text-muted-foreground">Top rope climbing routes</p>
                 </div>
                 <Checkbox
-                  checked={formData.show_top_rope_progress ?? true}
+                  checked={formData.show_top_rope_progress ?? false}
                   onCheckedChange={(checked) => 
                     handleInputChange('show_top_rope_progress', checked as boolean)
                   }
@@ -335,7 +335,7 @@ export function ProfileInformation({
               </p>
             </div>
             <Checkbox
-              checked={formData.show_completion_stats ?? true}
+              checked={formData.show_completion_stats ?? false}
               onCheckedChange={(checked) => 
                 handleInputChange('show_completion_stats', checked as boolean)
               }
