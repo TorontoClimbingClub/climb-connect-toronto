@@ -40,18 +40,40 @@ export function useLeaderboards() {
   const fetchLeaderboards = async () => {
     try {
       setLoading(true);
+      console.log('Starting leaderboards fetch...');
 
-      // Get all climb completions with user profiles
-      const { data: completionsData } = await supabase
+      // First, get all profiles that allow profile viewing
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, allow_profile_viewing')
+        .eq('allow_profile_viewing', true);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('Profiles data:', profilesData);
+
+      if (!profilesData || profilesData.length === 0) {
+        console.log('No profiles found with public viewing enabled');
+        setLoading(false);
+        return;
+      }
+
+      // Get all climb completions
+      const { data: completionsData, error: completionsError } = await supabase
         .from('climb_completions')
-        .select(`
-          user_id,
-          route_id,
-          profiles!inner(full_name, allow_profile_viewing)
-        `)
-        .eq('profiles.allow_profile_viewing', true);
+        .select('user_id, route_id');
 
-      if (completionsData) {
+      if (completionsError) {
+        console.error('Error fetching completions:', completionsError);
+        throw completionsError;
+      }
+
+      console.log('Completions data:', completionsData);
+
+      if (completionsData && completionsData.length > 0) {
         // Process climbing data
         const userClimbingStats: { [userId: string]: {
           full_name: string;
@@ -62,42 +84,43 @@ export function useLeaderboards() {
           top_rope_count: number;
         }} = {};
 
+        // Initialize stats for all public profiles
+        profilesData.forEach(profile => {
+          userClimbingStats[profile.id] = {
+            full_name: profile.full_name,
+            highest_grade_numeric: 0,
+            highest_grade_display: '5.0',
+            trad_count: 0,
+            sport_count: 0,
+            top_rope_count: 0
+          };
+        });
+
         completionsData.forEach(completion => {
           const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
-          if (!route) return;
-
-          const userId = completion.user_id;
-          const fullName = (completion.profiles as any).full_name;
-
-          if (!userClimbingStats[userId]) {
-            userClimbingStats[userId] = {
-              full_name: fullName,
-              highest_grade_numeric: 0,
-              highest_grade_display: '5.0',
-              trad_count: 0,
-              sport_count: 0,
-              top_rope_count: 0
-            };
-          }
+          if (!route || !userClimbingStats[completion.user_id]) return;
 
           const gradeNumeric = gradeToNumber(route.grade);
-          if (gradeNumeric > userClimbingStats[userId].highest_grade_numeric) {
-            userClimbingStats[userId].highest_grade_numeric = gradeNumeric;
-            userClimbingStats[userId].highest_grade_display = route.grade;
+          if (gradeNumeric > userClimbingStats[completion.user_id].highest_grade_numeric) {
+            userClimbingStats[completion.user_id].highest_grade_numeric = gradeNumeric;
+            userClimbingStats[completion.user_id].highest_grade_display = route.grade;
           }
 
           // Count by climbing style
           if (route.style === 'Trad') {
-            userClimbingStats[userId].trad_count++;
+            userClimbingStats[completion.user_id].trad_count++;
           } else if (route.style === 'Sport') {
-            userClimbingStats[userId].sport_count++;
+            userClimbingStats[completion.user_id].sport_count++;
           } else if (route.style === 'Top Rope') {
-            userClimbingStats[userId].top_rope_count++;
+            userClimbingStats[completion.user_id].top_rope_count++;
           }
         });
 
-        // Top grade climbers
+        console.log('User climbing stats:', userClimbingStats);
+
+        // Top grade climbers (only those who have climbed something)
         const topGrades = Object.entries(userClimbingStats)
+          .filter(([,stats]) => stats.highest_grade_numeric > 0)
           .sort(([,a], [,b]) => b.highest_grade_numeric - a.highest_grade_numeric)
           .slice(0, 5)
           .map(([userId, stats]) => ({
@@ -139,6 +162,8 @@ export function useLeaderboards() {
             metric_value: stats.top_rope_count
           }));
 
+        console.log('Setting climbing leaderboards:', { topGrades, topTrad, topSport, topTopRope });
+
         setTopGradeClimbers(topGrades);
         setTopTradClimbers(topTrad);
         setTopSportClimbers(topSport);
@@ -146,77 +171,80 @@ export function useLeaderboards() {
       }
 
       // Get top gear owners
-      const { data: gearData } = await supabase
+      const { data: gearData, error: gearError } = await supabase
         .from('user_equipment')
-        .select(`
-          user_id,
-          quantity,
-          profiles!inner(full_name, allow_profile_viewing)
-        `)
-        .eq('profiles.allow_profile_viewing', true);
+        .select('user_id, quantity');
 
-      if (gearData) {
+      if (gearError) {
+        console.error('Error fetching gear data:', gearError);
+      } else if (gearData) {
+        console.log('Gear data:', gearData);
+        
         const gearStats = gearData.reduce((acc: any, item) => {
           if (!acc[item.user_id]) {
-            acc[item.user_id] = {
-              user_id: item.user_id,
-              full_name: (item.profiles as any).full_name,
-              total_gear: 0
-            };
+            acc[item.user_id] = { total_gear: 0 };
           }
           acc[item.user_id].total_gear += item.quantity;
           return acc;
         }, {});
 
-        const topGear = Object.values(gearStats)
-          .filter((user: any) => user.total_gear > 0)
-          .sort((a: any, b: any) => b.total_gear - a.total_gear)
-          .slice(0, 5)
-          .map((user: any) => ({
-            id: user.user_id,
-            full_name: user.full_name,
-            metric_value: user.total_gear
-          }));
+        const topGear = Object.entries(gearStats)
+          .map(([userId, stats]: [string, any]) => {
+            const profile = profilesData.find(p => p.id === userId);
+            return profile ? {
+              id: userId,
+              full_name: profile.full_name,
+              metric_value: stats.total_gear
+            } : null;
+          })
+          .filter(Boolean)
+          .filter((user: any) => user.metric_value > 0)
+          .sort((a: any, b: any) => b.metric_value - a.metric_value)
+          .slice(0, 5);
 
+        console.log('Setting gear leaderboard:', topGear);
         setTopGearOwners(topGear);
       }
 
       // Get top event attendees (only count events that have already happened)
       const today = new Date().toISOString().split('T')[0];
       
-      const { data: eventData } = await supabase
+      const { data: eventData, error: eventError } = await supabase
         .from('event_participants')
         .select(`
           user_id,
-          events!inner(date),
-          profiles!inner(full_name, allow_profile_viewing)
+          events!inner(date)
         `)
-        .eq('profiles.allow_profile_viewing', true)
         .lt('events.date', today);
 
-      if (eventData) {
+      if (eventError) {
+        console.error('Error fetching event data:', eventError);
+      } else if (eventData) {
+        console.log('Event data:', eventData);
+        
         const eventStats = eventData.reduce((acc: any, participation) => {
           if (!acc[participation.user_id]) {
-            acc[participation.user_id] = {
-              user_id: participation.user_id,
-              full_name: (participation.profiles as any).full_name,
-              event_count: 0
-            };
+            acc[participation.user_id] = { event_count: 0 };
           }
           acc[participation.user_id].event_count += 1;
           return acc;
         }, {});
 
-        const topEvents = Object.values(eventStats)
-          .filter((user: any) => user.event_count > 0)
-          .sort((a: any, b: any) => b.event_count - a.event_count)
-          .slice(0, 5)
-          .map((user: any) => ({
-            id: user.user_id,
-            full_name: user.full_name,
-            metric_value: user.event_count
-          }));
+        const topEvents = Object.entries(eventStats)
+          .map(([userId, stats]: [string, any]) => {
+            const profile = profilesData.find(p => p.id === userId);
+            return profile ? {
+              id: userId,
+              full_name: profile.full_name,
+              metric_value: stats.event_count
+            } : null;
+          })
+          .filter(Boolean)
+          .filter((user: any) => user.metric_value > 0)
+          .sort((a: any, b: any) => b.metric_value - a.metric_value)
+          .slice(0, 5);
 
+        console.log('Setting events leaderboard:', topEvents);
         setTopEventAttendees(topEvents);
       }
 
