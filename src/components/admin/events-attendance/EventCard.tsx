@@ -22,6 +22,7 @@ interface EventCardProps {
   onRefreshEvents: () => void;
   onConfirmAttendance: (userId: string, eventId: string) => void;
   onRejectAttendance: (userId: string, eventId: string) => void;
+  onResetAttendance?: (userId: string, eventId: string) => void;
 }
 
 export function EventCard({ 
@@ -30,7 +31,8 @@ export function EventCard({
   onDeleteEvent, 
   onRefreshEvents, 
   onConfirmAttendance, 
-  onRejectAttendance 
+  onRejectAttendance,
+  onResetAttendance
 }: EventCardProps) {
   return (
     <Card className={`w-full border-${event.event_status.color}-200`}>
@@ -95,7 +97,7 @@ export function EventCard({
               Participants ({event.participants_count})
             </h4>
             
-            {event.participants.length > 0 ? (
+            {event.participants && event.participants.length > 0 ? (
               <div className="space-y-2">
                 {event.participants.map((participant: EventParticipant) => (
                   <EventParticipantItem
@@ -105,6 +107,7 @@ export function EventCard({
                     eventStatus={event.event_status.status}
                     onConfirmAttendance={onConfirmAttendance}
                     onRejectAttendance={onRejectAttendance}
+                    onResetAttendance={onResetAttendance}
                   />
                 ))}
               </div>

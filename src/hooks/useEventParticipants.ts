@@ -38,7 +38,6 @@ export const useEventParticipants = () => {
           // Debounce to prevent rapid updates
           setTimeout(() => {
             if (!fetchingRef.current) {
-              // Trigger a refresh only if we're not already fetching
               refreshApprovals();
             }
           }, 500);
@@ -71,9 +70,15 @@ export const useEventParticipants = () => {
       return;
     }
 
-    // Prevent concurrent fetches and unnecessary re-fetches
+    // Prevent concurrent fetches
+    if (fetchingRef.current) {
+      console.log('Already fetching, skipping...');
+      return;
+    }
+
     const eventIds = events.map(e => e.id).sort().join(',');
-    if (fetchingRef.current || eventIds === lastEventIdsRef.current) {
+    if (eventIds === lastEventIdsRef.current && eventsWithParticipants.length > 0) {
+      console.log('Same events already loaded, skipping...');
       return;
     }
 
@@ -86,12 +91,13 @@ export const useEventParticipants = () => {
       const eventsWithParticipantsData = await Promise.all(
         events.map(async (event) => {
           try {
+            // Fetch participants with proper join
             const { data: participants, error: participantsError } = await supabase
               .from('event_participants')
               .select(`
                 id,
                 user_id,
-                profiles!inner(
+                profiles!event_participants_user_id_fkey(
                   full_name,
                   profile_photo_url
                 )
@@ -100,7 +106,6 @@ export const useEventParticipants = () => {
 
             if (participantsError) {
               console.error('Error fetching participants for event', event.id, participantsError);
-              // Continue with empty participants instead of failing
               return {
                 ...event,
                 participants: [],
@@ -109,9 +114,23 @@ export const useEventParticipants = () => {
               };
             }
 
+            console.log(`Fetched ${participants?.length || 0} participants for event ${event.id}`);
+
             const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
 
             const participantsWithStatus = participants?.map(participant => {
+              if (!participant.profiles) {
+                console.warn('Missing profile data for participant:', participant);
+                return {
+                  id: participant.id,
+                  user_id: participant.user_id,
+                  full_name: 'Unknown User',
+                  profile_photo_url: null,
+                  attendance_status: 'pending' as const,
+                  approval_id: undefined
+                };
+              }
+
               const approval = eventApprovals.find(a => a.user_id === participant.user_id);
               return {
                 id: participant.id,
@@ -131,7 +150,6 @@ export const useEventParticipants = () => {
             };
           } catch (eventError) {
             console.error('Error processing event', event.id, eventError);
-            // Return event with empty participants on error
             return {
               ...event,
               participants: [],
@@ -142,11 +160,15 @@ export const useEventParticipants = () => {
         })
       );
 
-      console.log('Successfully fetched events with participants:', eventsWithParticipantsData.length);
+      console.log('Successfully fetched events with participants:', eventsWithParticipantsData.map(e => ({
+        id: e.id,
+        title: e.title,
+        participantCount: e.participants.length
+      })));
+      
       setEventsWithParticipants(eventsWithParticipantsData);
     } catch (error: any) {
       console.error('Error fetching events with participants:', error);
-      // Show events without participants data instead of failing completely
       const eventsWithoutParticipants = events.map(event => ({
         ...event,
         participants: [],
@@ -239,11 +261,43 @@ export const useEventParticipants = () => {
     }
   };
 
+  const handleResetAttendance = async (participantUserId: string, eventId: string) => {
+    try {
+      const existingApproval = approvals.find(
+        a => a.user_id === participantUserId && a.event_id === eventId
+      );
+
+      if (existingApproval) {
+        const { error } = await supabase
+          .from('event_attendance_approvals')
+          .delete()
+          .eq('id', existingApproval.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Attendance status reset to pending",
+        });
+
+        await refreshApprovals();
+      }
+    } catch (error: any) {
+      console.error('Error resetting attendance:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset attendance status",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     eventsWithParticipants,
     loading,
     fetchEventsWithParticipants,
     handleConfirmAttendance,
-    handleRejectAttendance
+    handleRejectAttendance,
+    handleResetAttendance
   };
 };

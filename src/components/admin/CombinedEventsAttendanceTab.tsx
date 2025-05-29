@@ -30,7 +30,8 @@ export function CombinedEventsAttendanceTab({
     loading: participantsLoading, 
     fetchEventsWithParticipants, 
     handleConfirmAttendance, 
-    handleRejectAttendance 
+    handleRejectAttendance,
+    handleResetAttendance
   } = useEventParticipants();
 
   // Memoize events with status to prevent unnecessary recalculations
@@ -47,17 +48,15 @@ export function CombinedEventsAttendanceTab({
     if (events.length > 0) {
       console.log('Calling fetchEventsWithParticipants with events:', eventsWithStatus.length);
       fetchEventsWithParticipants(eventsWithStatus);
-    } else {
-      fetchEventsWithParticipants([]);
     }
-  }, [eventsWithStatus.length, fetchEventsWithParticipants]); // Only depend on length to prevent loops
+  }, [events.length, fetchEventsWithParticipants]); // Only depend on length to prevent loops
 
   const handleRefreshAfterUpdate = async () => {
     console.log('Refreshing after update...');
     await onRefreshEvents();
   };
 
-  // Use eventsWithParticipants if available, otherwise fall back to events with basic structure
+  // Use eventsWithParticipants if available and has data, otherwise fall back to events with basic structure
   const displayEvents = eventsWithParticipants.length > 0 
     ? eventsWithParticipants 
     : eventsWithStatus.map(event => ({
@@ -91,9 +90,9 @@ export function CombinedEventsAttendanceTab({
 
       {!showCreateForm && (
         <div className="space-y-4">
-          {participantsLoading && events.length > 0 && eventsWithParticipants.length === 0 && (
-            <div className="text-center text-stone-600">
-              Loading participants for {events.length} events...
+          {participantsLoading && events.length > 0 && (
+            <div className="text-center text-stone-600 py-4">
+              Loading participant data for {events.length} events...
             </div>
           )}
           
@@ -107,6 +106,7 @@ export function CombinedEventsAttendanceTab({
                 onRefreshEvents={handleRefreshAfterUpdate}
                 onConfirmAttendance={handleConfirmAttendance}
                 onRejectAttendance={handleRejectAttendance}
+                onResetAttendance={handleResetAttendance}
               />
             ))
           ) : (
