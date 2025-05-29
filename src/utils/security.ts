@@ -1,4 +1,3 @@
-
 import DOMPurify from 'dompurify';
 
 // HTML sanitization for user content
@@ -11,7 +10,6 @@ export const sanitizeHtml = (input: string): string => {
   return DOMPurify.sanitize(input, {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
     ALLOWED_ATTR: [],
-    FORBID_SCRIPT: true,
     FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
   });
 };
