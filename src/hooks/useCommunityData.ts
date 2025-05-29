@@ -28,102 +28,81 @@ export function useCommunityData() {
 
       console.log('✅ fetchCommunityMembers: Profiles fetched', profiles?.length);
 
-      // Get additional stats for each member with better error handling and stable counts
-      const membersWithStats = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          // Check if component is still mounted before proceeding
-          if (!mountedRef.current) return null;
+      if (!profiles || profiles.length === 0) {
+        if (mountedRef.current) {
+          setMembers([]);
+        }
+        return;
+      }
 
-          let equipmentCount = 0;
-          let eventsCount = 0;
+      // Fetch all equipment counts in a single query
+      const { data: equipmentData, error: equipmentError } = await supabase
+        .from('user_equipment')
+        .select('user_id, quantity')
+        .abortSignal(abortController.signal);
 
-          try {
-            // Get equipment count with better error handling
-            const { count: fetchedEquipmentCount, error: equipmentError } = await supabase
-              .from('user_equipment')
-              .select('*', { count: 'exact' })
-              .eq('user_id', profile.id)
-              .abortSignal(abortController.signal);
+      // Fetch all event participations in a single query
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('event_participants')
+        .select('user_id')
+        .abortSignal(abortController.signal);
 
-            if (equipmentError) {
-              console.error('❌ Equipment count error for user', profile.id, equipmentError);
-              errorLogger.log({
-                message: `Equipment count fetch failed for user ${profile.id}: ${equipmentError.message}`,
-                userId: profile.id,
-                route: '/community',
-                type: 'network_error',
-                details: `Equipment fetch error - count flickering issue: ${JSON.stringify(equipmentError)}`,
-                source: 'community_data_equipment'
-              });
-              equipmentCount = 0; // Set stable fallback
-            } else {
-              equipmentCount = fetchedEquipmentCount || 0;
-            }
-          } catch (error: any) {
-            console.error('❌ Equipment fetch exception for user', profile.id, error);
-            errorLogger.log({
-              message: `Equipment fetch exception for user ${profile.id}: ${error.message}`,
-              userId: profile.id,
-              route: '/community',
-              type: 'network_error',
-              details: `Equipment fetch exception - flickering issue: ${JSON.stringify(error)}`,
-              source: 'community_data_equipment'
-            });
-            equipmentCount = 0; // Set stable fallback
-          }
+      // Create lookup maps for better performance
+      const equipmentCounts = new Map<string, number>();
+      const eventCounts = new Map<string, number>();
 
-          try {
-            // Get events count with better error handling
-            const { count: fetchedEventsCount, error: eventsError } = await supabase
-              .from('event_participants')
-              .select('*', { count: 'exact' })
-              .eq('user_id', profile.id)
-              .abortSignal(abortController.signal);
+      // Process equipment data with error handling
+      if (equipmentError) {
+        console.error('❌ Equipment fetch error:', equipmentError);
+        errorLogger.log({
+          message: `Equipment fetch failed: ${equipmentError.message}`,
+          route: '/community',
+          type: 'network_error',
+          details: `Equipment bulk fetch error: ${JSON.stringify(equipmentError)}`,
+          source: 'community_data_equipment_bulk'
+        });
+      } else if (equipmentData) {
+        equipmentData.forEach(item => {
+          const currentCount = equipmentCounts.get(item.user_id) || 0;
+          equipmentCounts.set(item.user_id, currentCount + (item.quantity || 0));
+        });
+      }
 
-            if (eventsError) {
-              console.error('❌ Events count error for user', profile.id, eventsError);
-              errorLogger.log({
-                message: `Events count fetch failed for user ${profile.id}: ${eventsError.message}`,
-                userId: profile.id,
-                route: '/community',
-                type: 'network_error',
-                details: `Events fetch error - count flickering issue: ${JSON.stringify(eventsError)}`,
-                source: 'community_data_events'
-              });
-              eventsCount = 0; // Set stable fallback
-            } else {
-              eventsCount = fetchedEventsCount || 0;
-            }
-          } catch (error: any) {
-            console.error('❌ Events fetch exception for user', profile.id, error);
-            errorLogger.log({
-              message: `Events fetch exception for user ${profile.id}: ${error.message}`,
-              userId: profile.id,
-              route: '/community',
-              type: 'network_error',
-              details: `Events fetch exception - flickering issue: ${JSON.stringify(error)}`,
-              source: 'community_data_events'
-            });
-            eventsCount = 0; // Set stable fallback
-          }
+      // Process events data with error handling
+      if (eventsError) {
+        console.error('❌ Events fetch error:', eventsError);
+        errorLogger.log({
+          message: `Events fetch failed: ${eventsError.message}`,
+          route: '/community',
+          type: 'network_error',
+          details: `Events bulk fetch error: ${JSON.stringify(eventsError)}`,
+          source: 'community_data_events_bulk'
+        });
+      } else if (eventsData) {
+        eventsData.forEach(participation => {
+          const currentCount = eventCounts.get(participation.user_id) || 0;
+          eventCounts.set(participation.user_id, currentCount + 1);
+        });
+      }
 
-          console.log(`📊 User ${profile.full_name}: equipment=${equipmentCount}, events=${eventsCount}`);
+      // Combine profile data with stats
+      const membersWithStats = profiles.map(profile => {
+        const equipmentCount = equipmentCounts.get(profile.id) || 0;
+        const eventsCount = eventCounts.get(profile.id) || 0;
 
-          return {
-            ...profile,
-            equipment_count: equipmentCount,
-            events_count: eventsCount,
-          };
-        })
-      );
+        console.log(`📊 User ${profile.full_name}: equipment=${equipmentCount}, events=${eventsCount}`);
 
-      // Filter out null values from unmounted component checks
-      const validMembers = membersWithStats.filter(Boolean) as CommunityMember[];
+        return {
+          ...profile,
+          equipment_count: equipmentCount,
+          events_count: eventsCount,
+        };
+      });
 
-      console.log('✅ fetchCommunityMembers: Final members with stats', validMembers.length);
+      console.log('✅ fetchCommunityMembers: Final members with stats', membersWithStats.length);
 
       if (mountedRef.current) {
-        setMembers(validMembers);
+        setMembers(membersWithStats);
       }
     } catch (error: any) {
       if (error.name !== 'AbortError' && mountedRef.current) {
@@ -136,7 +115,7 @@ export function useCommunityData() {
           message: `Community members fetch failed: ${error.message}`,
           route: '/community',
           type: 'network_error',
-          details: `Main fetch error - flickering counts issue: ${JSON.stringify(error)}`,
+          details: `Main fetch error: ${JSON.stringify(error)}`,
           source: 'community_data_main'
         });
         
