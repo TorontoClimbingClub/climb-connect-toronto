@@ -16,9 +16,6 @@ interface EventComment {
   created_at: string;
   parent_id: string | null;
   user_name: string;
-  profiles?: {
-    full_name: string;
-  };
 }
 
 interface EventCommentsSectionProps {
@@ -36,23 +33,37 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
 
   const fetchComments = async () => {
     try {
-      const { data, error } = await supabase
+      // First, fetch all comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('event_comments')
-        .select(`
-          *,
-          profiles!event_comments_user_id_fkey(full_name)
-        `)
+        .select('*')
         .eq('event_id', eventId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      
-      const commentsWithNames = data?.map(comment => ({
-        ...comment,
-        user_name: comment.profiles?.full_name || comment.user_name || "Anonymous"
-      })) || [];
-      
-      setComments(commentsWithNames);
+      if (commentsError) throw commentsError;
+
+      if (commentsData && commentsData.length > 0) {
+        // Get unique user IDs
+        const userIds = [...new Set(commentsData.map(comment => comment.user_id))];
+        
+        // Fetch profiles for these users
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Map comments with user names
+        const commentsWithNames = commentsData.map(comment => ({
+          ...comment,
+          user_name: profilesData?.find(profile => profile.id === comment.user_id)?.full_name || comment.user_name || "Anonymous"
+        }));
+        
+        setComments(commentsWithNames);
+      } else {
+        setComments([]);
+      }
     } catch (error) {
       console.error('Error fetching comments:', error);
     }

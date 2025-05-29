@@ -104,6 +104,13 @@ export type Database = {
             referencedRelation: "event_comments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       event_equipment: {
