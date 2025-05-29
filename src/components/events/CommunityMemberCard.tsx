@@ -56,7 +56,7 @@ export function CommunityMemberCard({
         </div>
 
         {/* Climbing Level and Experience */}
-        {(member.show_climbing_level !== false || isCurrentUser) && (member.climbing_level || member.climbing_experience) && (
+        {(member.show_climbing_level !== false) && (member.climbing_level || member.climbing_experience) && (
           <div className="mb-3 p-3 bg-stone-50 rounded-lg">
             <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
@@ -85,8 +85,8 @@ export function CommunityMemberCard({
           </div>
         )}
 
-        {/* Climbing Progress */}
-        {(member.show_climbing_progress !== false || isCurrentUser) && (
+        {/* Climbing Progress - hide if user has disabled it */}
+        {(member.show_climbing_progress !== false) && (
           <div className="mb-3">
             <CompletionProgressBars 
               completions={userStats.completions} 
@@ -105,7 +105,7 @@ export function CommunityMemberCard({
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1" />
             {member.events_count} events joined
-            {(member.show_completion_stats !== false || isCurrentUser) && (
+            {(member.show_completion_stats !== false) && (
               <>
                 <span className="mx-2">•</span>
                 {userStats.completions.length} routes

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { User, Phone, Edit, Check, X, Mountain, Eye, EyeOff } from "lucide-react";
+import { useCallback } from "react";
 
 interface UserProfile {
   id: string;
@@ -48,6 +49,7 @@ const CLIMBING_EXPERIENCES = [
   'Trad Second',
   'Trad First',
   'Trad Anchor Building',
+  'Multi Pitch',
   'Rappelling'
 ];
 
@@ -60,7 +62,7 @@ export function ProfileInformation({
   onCancel,
   onFormDataChange,
 }: ProfileInformationProps) {
-  const handleExperienceChange = (experience: string, checked: boolean) => {
+  const handleExperienceChange = useCallback((experience: string, checked: boolean) => {
     const currentExperience = formData.climbing_experience || [];
     if (checked) {
       onFormDataChange({ 
@@ -73,7 +75,11 @@ export function ProfileInformation({
         climbing_experience: currentExperience.filter(exp => exp !== experience) 
       });
     }
-  };
+  }, [formData, onFormDataChange]);
+
+  const handleInputChange = useCallback((field: keyof UserProfile, value: any) => {
+    onFormDataChange({ ...formData, [field]: value });
+  }, [formData, onFormDataChange]);
 
   return (
     <div className="space-y-6">
@@ -112,7 +118,7 @@ export function ProfileInformation({
             <Input
               id="full_name"
               value={formData.full_name}
-              onChange={(e) => onFormDataChange({ ...formData, full_name: e.target.value })}
+              onChange={(e) => handleInputChange('full_name', e.target.value)}
               disabled={!editing}
             />
           </div>
@@ -126,7 +132,7 @@ export function ProfileInformation({
                 type="tel"
                 placeholder="(555) 123-4567"
                 value={formData.phone || ''}
-                onChange={(e) => onFormDataChange({ ...formData, phone: e.target.value })}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
                 disabled={!editing}
                 className="pl-10"
               />
@@ -139,7 +145,7 @@ export function ProfileInformation({
               id="bio"
               placeholder="Tell other members about yourself, your interests, availability, etc."
               value={formData.bio || ''}
-              onChange={(e) => onFormDataChange({ ...formData, bio: e.target.value })}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
               disabled={!editing}
               rows={3}
             />
@@ -156,7 +162,7 @@ export function ProfileInformation({
               <Label htmlFor="climbing_level">Climbing Level</Label>
               <Select 
                 value={formData.climbing_level || ''} 
-                onValueChange={(value) => onFormDataChange({ ...formData, climbing_level: value })}
+                onValueChange={(value) => handleInputChange('climbing_level', value)}
                 disabled={!editing}
               >
                 <SelectTrigger>
@@ -203,7 +209,7 @@ export function ProfileInformation({
               id="climbing_description"
               placeholder="Tell other members about your climbing experience, preferred styles, goals, etc."
               value={formData.climbing_description || ''}
-              onChange={(e) => onFormDataChange({ ...formData, climbing_description: e.target.value })}
+              onChange={(e) => handleInputChange('climbing_description', e.target.value)}
               disabled={!editing}
               rows={4}
             />
@@ -231,7 +237,7 @@ export function ProfileInformation({
             <Checkbox
               checked={formData.allow_profile_viewing ?? true}
               onCheckedChange={(checked) => 
-                onFormDataChange({ ...formData, allow_profile_viewing: checked as boolean })
+                handleInputChange('allow_profile_viewing', checked as boolean)
               }
               disabled={!editing}
             />
@@ -247,7 +253,7 @@ export function ProfileInformation({
             <Checkbox
               checked={formData.show_climbing_level ?? true}
               onCheckedChange={(checked) => 
-                onFormDataChange({ ...formData, show_climbing_level: checked as boolean })
+                handleInputChange('show_climbing_level', checked as boolean)
               }
               disabled={!editing}
             />
@@ -263,14 +269,14 @@ export function ProfileInformation({
             <Checkbox
               checked={formData.show_climbing_progress ?? true}
               onCheckedChange={(checked) => 
-                onFormDataChange({ ...formData, show_climbing_progress: checked as boolean })
+                handleInputChange('show_climbing_progress', checked as boolean)
               }
               disabled={!editing}
             />
           </div>
 
-          {/* Granular Progress Settings - only show when editing */}
-          {formData.show_climbing_progress && editing && (
+          {/* Granular Progress Settings - always show when progress bars are enabled */}
+          {formData.show_climbing_progress && (
             <div className="ml-6 space-y-3 p-3 bg-stone-50 rounded-lg">
               <p className="text-sm font-medium text-stone-700">Individual Progress Bars:</p>
               
@@ -282,7 +288,7 @@ export function ProfileInformation({
                 <Checkbox
                   checked={formData.show_trad_progress ?? true}
                   onCheckedChange={(checked) => 
-                    onFormDataChange({ ...formData, show_trad_progress: checked as boolean })
+                    handleInputChange('show_trad_progress', checked as boolean)
                   }
                   disabled={!editing}
                 />
@@ -296,7 +302,7 @@ export function ProfileInformation({
                 <Checkbox
                   checked={formData.show_sport_progress ?? true}
                   onCheckedChange={(checked) => 
-                    onFormDataChange({ ...formData, show_sport_progress: checked as boolean })
+                    handleInputChange('show_sport_progress', checked as boolean)
                   }
                   disabled={!editing}
                 />
@@ -310,7 +316,7 @@ export function ProfileInformation({
                 <Checkbox
                   checked={formData.show_top_rope_progress ?? true}
                   onCheckedChange={(checked) => 
-                    onFormDataChange({ ...formData, show_top_rope_progress: checked as boolean })
+                    handleInputChange('show_top_rope_progress', checked as boolean)
                   }
                   disabled={!editing}
                 />
@@ -328,7 +334,7 @@ export function ProfileInformation({
             <Checkbox
               checked={formData.show_completion_stats ?? true}
               onCheckedChange={(checked) => 
-                onFormDataChange({ ...formData, show_completion_stats: checked as boolean })
+                handleInputChange('show_completion_stats', checked as boolean)
               }
               disabled={!editing}
             />
