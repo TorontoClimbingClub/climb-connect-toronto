@@ -5,13 +5,18 @@ export const processGearData = (
   profilesData: any[],
   gearData: any[]
 ): LeaderboardUser[] => {
+  console.log('Processing gear data:', gearData);
+  
   const gearStats = gearData.reduce((acc: any, item) => {
     if (!acc[item.user_id]) {
       acc[item.user_id] = { total_gear: 0 };
     }
     acc[item.user_id].total_gear += item.quantity;
+    console.log(`User ${item.user_id}: adding ${item.quantity}, new total: ${acc[item.user_id].total_gear}`);
     return acc;
   }, {});
+
+  console.log('Final gear stats:', gearStats);
 
   const topGearOwners = Object.entries(gearStats)
     .map(([userId, stats]: [string, any]) => {

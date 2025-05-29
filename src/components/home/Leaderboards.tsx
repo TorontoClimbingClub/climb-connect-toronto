@@ -70,7 +70,8 @@ export function Leaderboards() {
       icon: Package,
       data: topGearOwners,
       metric: "Equipment Items",
-      isGrade: false
+      isGrade: false,
+      isGear: true
     },
     {
       title: "Event Enthusiasts",
@@ -119,7 +120,7 @@ export function Leaderboards() {
                         <span className="text-sm font-medium truncate">{user.full_name}</span>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {section.isGrade ? user.metric_value : `${user.metric_value} ${section.metric.toLowerCase()}`}
+                        {section.isGrade ? user.metric_value : section.isGear ? `${user.metric_value} items` : `${user.metric_value} ${section.metric.toLowerCase()}`}
                       </Badge>
                     </div>
                   ))

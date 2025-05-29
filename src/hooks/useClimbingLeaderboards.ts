@@ -35,14 +35,30 @@ export const processClimbingData = (
     };
   });
 
+  console.log('Processing completions:', completionsData);
+  console.log('Available routes count:', rattlesnakeRoutes.length);
+
   completionsData.forEach(completion => {
-    const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
-    if (!route || !userClimbingStats[completion.user_id]) return;
+    // Convert route_id to string to ensure proper matching
+    const routeId = String(completion.route_id);
+    const route = rattlesnakeRoutes.find(r => String(r.id) === routeId);
+    
+    console.log(`Looking for route ID: ${routeId}, found:`, route?.name, route?.grade, route?.style);
+    
+    if (!route || !userClimbingStats[completion.user_id]) {
+      if (!route) {
+        console.log(`Route not found for ID: ${routeId}`);
+      }
+      return;
+    }
 
     const gradeNumeric = gradeToNumber(route.grade);
+    console.log(`User ${completion.user_id}: Route ${route.name} (${route.grade}) = ${gradeNumeric} numeric`);
+    
     if (gradeNumeric > userClimbingStats[completion.user_id].highest_grade_numeric) {
       userClimbingStats[completion.user_id].highest_grade_numeric = gradeNumeric;
       userClimbingStats[completion.user_id].highest_grade_display = route.grade;
+      console.log(`Updated highest grade for user ${completion.user_id}: ${route.grade} (${gradeNumeric})`);
     }
 
     // Count by climbing style
@@ -55,18 +71,23 @@ export const processClimbingData = (
     }
   });
 
-  console.log('User climbing stats:', userClimbingStats);
+  console.log('Final user climbing stats:', userClimbingStats);
 
   // Top grade climbers (only those who have climbed something)
   const topGradeClimbers = Object.entries(userClimbingStats)
     .filter(([,stats]) => stats.highest_grade_numeric > 0)
-    .sort(([,a], [,b]) => b.highest_grade_numeric - a.highest_grade_numeric)
+    .sort(([,a], [,b]) => {
+      console.log(`Comparing grades: ${a.full_name} (${a.highest_grade_display}=${a.highest_grade_numeric}) vs ${b.full_name} (${b.highest_grade_display}=${b.highest_grade_numeric})`);
+      return b.highest_grade_numeric - a.highest_grade_numeric;
+    })
     .slice(0, 5)
     .map(([userId, stats]) => ({
       id: userId,
       full_name: stats.full_name,
       metric_value: stats.highest_grade_display
     }));
+
+  console.log('Top grade climbers result:', topGradeClimbers);
 
   // Top trad climbers
   const topTradClimbers = Object.entries(userClimbingStats)
