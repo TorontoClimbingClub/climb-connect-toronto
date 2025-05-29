@@ -1,10 +1,10 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +21,12 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 200, height: 200 });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [showCropper, setShowCropper] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -29,14 +34,65 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
       setSelectedFile(file);
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
+      setShowCropper(true);
     }
   };
 
+  const handleImageLoad = useCallback(() => {
+    if (imageRef.current) {
+      const { naturalWidth, naturalHeight } = imageRef.current;
+      setImageSize({ width: naturalWidth, height: naturalHeight });
+      
+      // Set initial crop area to center square
+      const size = Math.min(naturalWidth, naturalHeight);
+      setCropArea({
+        x: (naturalWidth - size) / 2,
+        y: (naturalHeight - size) / 2,
+        width: size,
+        height: size
+      });
+    }
+  }, []);
+
+  const getCroppedImage = (): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const canvas = canvasRef.current!;
+      const ctx = canvas.getContext('2d')!;
+      const image = imageRef.current!;
+
+      // Set canvas size to desired output size (square)
+      canvas.width = 300;
+      canvas.height = 300;
+
+      // Calculate scale factors
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+
+      // Draw cropped image
+      ctx.drawImage(
+        image,
+        cropArea.x * scaleX,
+        cropArea.y * scaleY,
+        cropArea.width * scaleX,
+        cropArea.height * scaleY,
+        0,
+        0,
+        300,
+        300
+      );
+
+      canvas.toBlob(resolve!, 'image/jpeg', 0.9);
+    });
+  };
+
   const handleUpload = async () => {
-    if (!selectedFile || !user) return;
+    if (!selectedFile || !user || !showCropper) return;
 
     setUploading(true);
     try {
+      // Get cropped image
+      const croppedBlob = await getCroppedImage();
+      
       // Delete existing photo if it exists
       if (currentPhotoUrl) {
         const oldPath = currentPhotoUrl.split('/').pop();
@@ -48,13 +104,12 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
       }
 
       // Upload new photo
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      const fileName = `${Date.now()}.jpg`;
       const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('profile-photos')
-        .upload(filePath, selectedFile);
+        .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
@@ -74,6 +129,7 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
       onPhotoUpdate(data.publicUrl);
       setSelectedFile(null);
       setPreview(null);
+      setShowCropper(false);
       
       toast({
         title: "Success",
@@ -132,6 +188,7 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
 
   const handleCancel = () => {
     setSelectedFile(null);
+    setShowCropper(false);
     if (preview) {
       URL.revokeObjectURL(preview);
       setPreview(null);
@@ -141,11 +198,22 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
     }
   };
 
+  const handleCropChange = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current || !showCropper) return;
+    
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * imageSize.width;
+    const y = ((e.clientY - rect.top) / rect.height) * imageSize.height;
+    
+    const size = Math.min(imageSize.width - x, imageSize.height - y, 200);
+    setCropArea({ x, y, width: size, height: size });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={preview || currentPhotoUrl || undefined} />
+          <AvatarImage src={currentPhotoUrl || undefined} />
           <AvatarFallback className="text-lg">{userInitials}</AvatarFallback>
         </Avatar>
         
@@ -185,7 +253,7 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
             <div className="flex gap-2">
               <Button
                 onClick={handleUpload}
-                disabled={uploading}
+                disabled={uploading || !showCropper}
                 size="sm"
                 className="bg-[#E55A2B] hover:bg-orange-700"
               >
@@ -204,6 +272,36 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
           )}
         </div>
       </div>
+
+      {showCropper && preview && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium">Adjust your photo:</h4>
+          <div className="relative inline-block border rounded-lg overflow-hidden">
+            <img
+              ref={imageRef}
+              src={preview}
+              alt="Preview"
+              className="max-w-md max-h-64 object-contain cursor-crosshair"
+              onLoad={handleImageLoad}
+              onClick={handleCropChange}
+            />
+            {imageSize.width > 0 && (
+              <div
+                className="absolute border-2 border-[#E55A2B] bg-black bg-opacity-30"
+                style={{
+                  left: `${(cropArea.x / imageSize.width) * 100}%`,
+                  top: `${(cropArea.y / imageSize.height) * 100}%`,
+                  width: `${(cropArea.width / imageSize.width) * 100}%`,
+                  height: `${(cropArea.height / imageSize.height) * 100}%`,
+                }}
+              />
+            )}
+          </div>
+          <p className="text-xs text-stone-600">Click on the image to position the crop area</p>
+        </div>
+      )}
+
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }

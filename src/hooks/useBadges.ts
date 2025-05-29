@@ -10,8 +10,31 @@ export function useBadges() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const createDefaultBadges = async () => {
+    const defaultBadges = [
+      { name: 'Event Newcomer', description: 'Attended your first TCC event', icon: 'Award', color: '#10B981' },
+      { name: 'Regular Climber', description: 'Attended 5 TCC events', icon: 'Mountain', color: '#3B82F6' },
+      { name: 'Dedicated Member', description: 'Attended 10 TCC events', icon: 'Trophy', color: '#8B5CF6' },
+      { name: 'Event Enthusiast', description: 'Attended 20 TCC events', icon: 'Crown', color: '#F59E0B' },
+      { name: 'TCC Legend', description: 'Attended 50+ TCC events', icon: 'Star', color: '#EF4444' }
+    ];
+
+    for (const badge of defaultBadges) {
+      try {
+        await supabase
+          .from('badges')
+          .upsert(badge, { onConflict: 'name' });
+      } catch (error) {
+        console.log('Badge may already exist:', badge.name);
+      }
+    }
+  };
+
   const fetchBadges = async () => {
     try {
+      // First try to create default badges
+      await createDefaultBadges();
+      
       const { data, error } = await supabase
         .from('badges')
         .select('*')
