@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
@@ -68,13 +69,13 @@ export default function Routes() {
     );
   }
 
-  // Get unique sectors and areas from filtered routes
-  const sectors = [...new Set(filteredRoutes.map(route => route.sector))];
+  // Get unique sectors and areas from filtered routes (sorted alphabetically)
+  const sectors = [...new Set(filteredRoutes.map(route => route.sector))].sort();
   const areas = selectedSector 
-    ? [...new Set(filteredRoutes.filter(route => route.sector === selectedSector).map(route => route.area))]
+    ? [...new Set(filteredRoutes.filter(route => route.sector === selectedSector).map(route => route.area))].sort()
     : [];
 
-  // Group routes by area within selected sector
+  // Group routes by area within selected sector (sort routes alphabetically within each area)
   const routesByArea = selectedSector ? filteredRoutes
     .filter(route => route.sector === selectedSector)
     .reduce((acc, route) => {
@@ -84,6 +85,11 @@ export default function Routes() {
       acc[route.area].push(route);
       return acc;
     }, {} as Record<string, typeof filteredRoutes>) : {};
+
+  // Sort routes within each area alphabetically
+  Object.keys(routesByArea).forEach(area => {
+    routesByArea[area].sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   const toggleArea = (area: string) => {
     const newExpanded = new Set(expandedAreas);
@@ -189,11 +195,12 @@ export default function Routes() {
           )}
 
           {selectedSector && (
-            Object.entries(routesByArea).map(([area, routes]) => (
+            // Sort areas alphabetically when displaying
+            areas.map((area) => (
               <AreaCard
                 key={area}
                 area={area}
-                routes={routes}
+                routes={routesByArea[area] || []}
                 isExpanded={expandedAreas.has(area)}
                 onToggle={() => toggleArea(area)}
                 onRouteClick={handleRouteClick}

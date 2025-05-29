@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -226,7 +225,7 @@ export function BasicInformation({
                   Carpool Driver
                 </Badge>
               )}
-              {profile.passenger_capacity && profile.passenger_capacity > 0 && (
+              {profile.is_carpool_driver && profile.passenger_capacity && profile.passenger_capacity > 0 && (
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                   {profile.passenger_capacity} seats available
                 </Badge>

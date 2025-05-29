@@ -11,12 +11,8 @@ interface ClimbingStatsCardProps {
 }
 
 export function ClimbingStatsCard({ userId, completions }: ClimbingStatsCardProps) {
-  console.log('ClimbingStatsCard - userId:', userId);
-  console.log('ClimbingStatsCard - completions:', completions);
-
   // Filter completions for this user
   const userCompletions = completions.filter(c => c.user_id === userId);
-  console.log('ClimbingStatsCard - userCompletions:', userCompletions);
 
   if (userCompletions.length === 0) {
     return (
@@ -29,9 +25,6 @@ export function ClimbingStatsCard({ userId, completions }: ClimbingStatsCardProp
         </CardHeader>
         <CardContent>
           <p className="text-gray-600">No completed climbs yet. Start logging your sends!</p>
-          <p className="text-xs mt-2 text-stone-400">
-            Debug: {completions.length} total completions, {userCompletions.length} for this user
-          </p>
         </CardContent>
       </Card>
     );
@@ -48,8 +41,6 @@ export function ClimbingStatsCard({ userId, completions }: ClimbingStatsCardProp
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
     return route ? { ...route, completedAt: completion.completed_at } : null;
   }).filter(Boolean);
-
-  console.log('ClimbingStatsCard - completedRoutes:', completedRoutes);
 
   // Count completions by style
   const tradCompletions = completedRoutes.filter(route => route?.style === 'Trad').length;
@@ -75,8 +66,6 @@ export function ClimbingStatsCard({ userId, completions }: ClimbingStatsCardProp
     hardest_grade: hardestGrade,
     recent_completions: recentCompletions
   };
-
-  console.log('ClimbingStatsCard - calculated stats:', stats);
 
   return (
     <Card>
