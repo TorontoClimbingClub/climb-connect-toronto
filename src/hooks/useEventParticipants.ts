@@ -91,17 +91,10 @@ export const useEventParticipants = () => {
       const eventsWithParticipantsData = await Promise.all(
         events.map(async (event) => {
           try {
-            // Fetch participants with proper join
+            // Fetch participants and their profiles separately to avoid join issues
             const { data: participants, error: participantsError } = await supabase
               .from('event_participants')
-              .select(`
-                id,
-                user_id,
-                profiles!event_participants_user_id_fkey(
-                  full_name,
-                  profile_photo_url
-                )
-              `)
+              .select('id, user_id')
               .eq('event_id', event.id);
 
             if (participantsError) {
@@ -116,31 +109,44 @@ export const useEventParticipants = () => {
 
             console.log(`Fetched ${participants?.length || 0} participants for event ${event.id}`);
 
-            const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
+            // Fetch profile data for each participant
+            const participantsWithProfiles = await Promise.all(
+              (participants || []).map(async (participant) => {
+                const { data: profile, error: profileError } = await supabase
+                  .from('profiles')
+                  .select('full_name, profile_photo_url')
+                  .eq('id', participant.user_id)
+                  .single();
 
-            const participantsWithStatus = participants?.map(participant => {
-              if (!participant.profiles) {
-                console.warn('Missing profile data for participant:', participant);
+                if (profileError || !profile) {
+                  console.warn('Could not fetch profile for user:', participant.user_id, profileError);
+                  return {
+                    id: participant.id,
+                    user_id: participant.user_id,
+                    full_name: 'Unknown User',
+                    profile_photo_url: null,
+                  };
+                }
+
                 return {
                   id: participant.id,
                   user_id: participant.user_id,
-                  full_name: 'Unknown User',
-                  profile_photo_url: null,
-                  attendance_status: 'pending' as const,
-                  approval_id: undefined
+                  full_name: profile.full_name || 'Unknown User',
+                  profile_photo_url: profile.profile_photo_url,
                 };
-              }
+              })
+            );
 
+            const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
+
+            const participantsWithStatus = participantsWithProfiles.map(participant => {
               const approval = eventApprovals.find(a => a.user_id === participant.user_id);
               return {
-                id: participant.id,
-                user_id: participant.user_id,
-                full_name: participant.profiles.full_name,
-                profile_photo_url: participant.profiles.profile_photo_url,
+                ...participant,
                 attendance_status: approval?.status || 'pending',
                 approval_id: approval?.id
               };
-            }) || [];
+            });
 
             return {
               ...event,
