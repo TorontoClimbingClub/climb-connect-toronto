@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +17,7 @@ import { useState } from "react";
 const eventSchema = z.object({
   title: z.string().min(1, "Event title is required"),
   description: z.string().optional(),
+  details: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
   location: z.string().min(1, "Location is required"),
@@ -54,6 +54,7 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
     defaultValues: {
       title: "",
       description: "",
+      details: "",
       date: "",
       time: "",
       location: "",
@@ -72,6 +73,7 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
         .insert({
           title: values.title,
           description: values.description || null,
+          details: values.details || null,
           date: values.date,
           time: values.time,
           location: values.location,
@@ -136,7 +138,25 @@ export function CreateEventDialog({ showForm, onToggleForm, onEventCreated, hide
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Event details, what to bring, meeting instructions..." 
+                  placeholder="Brief event summary..." 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="details"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Details</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Additional event details, what to bring, meeting instructions..." 
+                  className="min-h-[100px]"
                   {...field} 
                 />
               </FormControl>

@@ -17,6 +17,7 @@ interface Event {
   organizer_id: string;
   participants_count?: number;
   carpool_seats?: number;
+  available_carpool_seats?: number;
   equipment_count?: number;
 }
 
@@ -40,6 +41,11 @@ export function EventCard({
   const handleViewDetails = () => {
     navigate(`/events/${event.id}`);
   };
+
+  // Use available_carpool_seats if provided, otherwise fallback to carpool_seats
+  const displaySeats = event.available_carpool_seats !== undefined 
+    ? event.available_carpool_seats 
+    : event.carpool_seats || 0;
 
   return (
     <Card className="w-full">
@@ -81,7 +87,7 @@ export function EventCard({
         <div className="flex gap-2">
           <div className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs">
             <Car className="h-3 w-3 mr-1" />
-            {event.carpool_seats || 0} seats
+            {displaySeats} available seats
           </div>
           <div className="flex items-center bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs">
             <Package className="h-3 w-3 mr-1" />

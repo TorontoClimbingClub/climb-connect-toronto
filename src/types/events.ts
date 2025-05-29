@@ -1,8 +1,8 @@
-
 export interface Event {
   id: string;
   title: string;
   description: string | null;
+  details?: string | null;
   date: string;
   time: string;
   location: string;

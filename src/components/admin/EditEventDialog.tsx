@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
   const [formData, setFormData] = useState({
     title: event.title,
     description: event.description || "",
+    details: (event as any).details || "",
     date: event.date,
     time: event.time,
     location: event.location,
@@ -112,7 +112,18 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Event description..."
+                placeholder="Brief event summary..."
+                className="min-h-[80px]"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="details">Details</Label>
+              <Textarea
+                id="details"
+                value={formData.details}
+                onChange={(e) => setFormData(prev => ({ ...prev, details: e.target.value }))}
+                placeholder="Additional event details, what to bring, meeting instructions..."
                 className="min-h-[100px]"
               />
             </div>

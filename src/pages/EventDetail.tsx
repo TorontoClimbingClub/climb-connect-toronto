@@ -133,6 +133,18 @@ export default function EventDetail() {
           <EventDetailsCard event={event} participantsCount={participants.length} />
         </div>
 
+        {/* Event Details Section */}
+        {(event as any).details && (
+          <div className="mb-6">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-stone-900 mb-3">Details</h3>
+              <div className="text-stone-700 whitespace-pre-wrap">
+                {(event as any).details}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Carpool Section */}
         <div className="mb-6">
           <CarpoolCard 
