@@ -27,7 +27,7 @@ export function CombinedEventsAttendanceTab({
   const { getEventStatus } = useEventStatus();
   const { 
     eventsWithParticipants, 
-    loading, 
+    loading: participantsLoading, 
     fetchEventsWithParticipants, 
     handleConfirmAttendance, 
     handleRejectAttendance 
@@ -35,28 +35,50 @@ export function CombinedEventsAttendanceTab({
 
   // Load events with participants when component mounts or events change
   useEffect(() => {
+    console.log('Events changed, total:', events.length);
     if (events.length > 0) {
       const eventsWithStatus = events.map(event => ({
         ...event,
         event_status: getEventStatus(event)
       }));
+      console.log('Calling fetchEventsWithParticipants with events:', eventsWithStatus.length);
       fetchEventsWithParticipants(eventsWithStatus);
+    } else {
+      // Clear events if no events provided
+      fetchEventsWithParticipants([]);
     }
   }, [events, getEventStatus, fetchEventsWithParticipants]);
 
   const handleRefreshAfterUpdate = async () => {
+    console.log('Refreshing after update...');
     // First refresh the events from the database
     await onRefreshEvents();
     
-    // Then refresh the participants data if we have events
-    if (events.length > 0) {
-      const eventsWithStatus = events.map(event => ({
-        ...event,
-        event_status: getEventStatus(event)
-      }));
-      await fetchEventsWithParticipants(eventsWithStatus);
-    }
+    // The useEffect above will automatically trigger fetchEventsWithParticipants
+    // when events change, so we don't need to call it manually here
   };
+
+  // Show loading state while fetching participants, but also show events count
+  const isLoading = participantsLoading;
+  
+  // Use eventsWithParticipants if available, otherwise fall back to events with basic structure
+  const displayEvents = eventsWithParticipants.length > 0 
+    ? eventsWithParticipants 
+    : events.map(event => ({
+        ...event,
+        event_status: getEventStatus(event),
+        participants: [],
+        participants_count: 0,
+        event_date_time: new Date(`${event.date}T${event.time}`)
+      }));
+
+  console.log('Rendering CombinedEventsAttendanceTab:', {
+    eventsCount: events.length,
+    eventsWithParticipantsCount: eventsWithParticipants.length,
+    displayEventsCount: displayEvents.length,
+    isLoading,
+    showCreateForm
+  });
 
   return (
     <div className="space-y-6">
@@ -74,10 +96,14 @@ export function CombinedEventsAttendanceTab({
 
       {!showCreateForm && (
         <div className="space-y-4">
-          {loading ? (
-            <div className="text-center text-stone-600">Loading events...</div>
-          ) : (
-            eventsWithParticipants.map((event) => (
+          {isLoading && events.length > 0 && (
+            <div className="text-center text-stone-600">
+              Loading participants for {events.length} events...
+            </div>
+          )}
+          
+          {displayEvents.length > 0 ? (
+            displayEvents.map((event) => (
               <EventCard
                 key={event.id}
                 event={event}
@@ -88,9 +114,9 @@ export function CombinedEventsAttendanceTab({
                 onRejectAttendance={handleRejectAttendance}
               />
             ))
+          ) : (
+            !isLoading && <EmptyEventsState />
           )}
-          
-          {events.length === 0 && !loading && <EmptyEventsState />}
         </div>
       )}
     </div>

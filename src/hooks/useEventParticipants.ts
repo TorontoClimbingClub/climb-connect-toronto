@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
@@ -33,29 +33,7 @@ export const useEventParticipants = () => {
         },
         (payload) => {
           console.log('🔄 Event participants updated:', payload);
-          // Refresh the current events data
-          if (eventsWithParticipants.length > 0) {
-            const currentEvents = eventsWithParticipants.map(e => ({
-              id: e.id,
-              title: e.title,
-              description: e.description,
-              details: e.details,
-              date: e.date,
-              time: e.time,
-              end_time: e.end_time,
-              location: e.location,
-              max_participants: e.max_participants,
-              difficulty_level: e.difficulty_level,
-              organizer_id: e.organizer_id,
-              required_climbing_level: e.required_climbing_level,
-              required_climbing_experience: e.required_climbing_experience,
-              capacity_limit: e.capacity_limit,
-              created_at: e.created_at,
-              updated_at: e.updated_at,
-              event_status: e.event_status
-            }));
-            fetchEventsWithParticipants(currentEvents);
-          }
+          // Don't auto-refresh here to avoid infinite loops
         }
       )
       .on(
@@ -75,62 +53,101 @@ export const useEventParticipants = () => {
     return () => {
       supabase.removeChannel(participantsChannel);
     };
-  }, [eventsWithParticipants.length]);
+  }, [refreshApprovals]);
 
-  const fetchEventsWithParticipants = async (events: Event[]) => {
+  const fetchEventsWithParticipants = useCallback(async (events: Event[]) => {
+    if (!events || events.length === 0) {
+      console.log('No events provided to fetchEventsWithParticipants');
+      setEventsWithParticipants([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    console.log('Fetching participants for events:', events.length);
+    
     try {
       const eventsWithParticipantsData = await Promise.all(
         events.map(async (event) => {
-          const { data: participants, error: participantsError } = await supabase
-            .from('event_participants')
-            .select(`
-              id,
-              user_id,
-              profiles!inner(
-                full_name,
-                profile_photo_url
-              )
-            `)
-            .eq('event_id', event.id);
+          try {
+            const { data: participants, error: participantsError } = await supabase
+              .from('event_participants')
+              .select(`
+                id,
+                user_id,
+                profiles!inner(
+                  full_name,
+                  profile_photo_url
+                )
+              `)
+              .eq('event_id', event.id);
 
-          if (participantsError) throw participantsError;
+            if (participantsError) {
+              console.error('Error fetching participants for event', event.id, participantsError);
+              // Continue with empty participants instead of failing
+              return {
+                ...event,
+                participants: [],
+                participants_count: 0,
+                event_date_time: new Date(`${event.date}T${event.time}`)
+              };
+            }
 
-          const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
+            const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
 
-          const participantsWithStatus = participants?.map(participant => {
-            const approval = eventApprovals.find(a => a.user_id === participant.user_id);
+            const participantsWithStatus = participants?.map(participant => {
+              const approval = eventApprovals.find(a => a.user_id === participant.user_id);
+              return {
+                id: participant.id,
+                user_id: participant.user_id,
+                full_name: participant.profiles.full_name,
+                profile_photo_url: participant.profiles.profile_photo_url,
+                attendance_status: approval?.status || 'pending',
+                approval_id: approval?.id
+              };
+            }) || [];
+
             return {
-              id: participant.id,
-              user_id: participant.user_id,
-              full_name: participant.profiles.full_name,
-              profile_photo_url: participant.profiles.profile_photo_url,
-              attendance_status: approval?.status || 'pending',
-              approval_id: approval?.id
+              ...event,
+              participants: participantsWithStatus,
+              participants_count: participantsWithStatus.length,
+              event_date_time: new Date(`${event.date}T${event.time}`)
             };
-          }) || [];
-
-          return {
-            ...event,
-            participants: participantsWithStatus,
-            participants_count: participantsWithStatus.length,
-            event_date_time: new Date(`${event.date}T${event.time}`)
-          };
+          } catch (eventError) {
+            console.error('Error processing event', event.id, eventError);
+            // Return event with empty participants on error
+            return {
+              ...event,
+              participants: [],
+              participants_count: 0,
+              event_date_time: new Date(`${event.date}T${event.time}`)
+            };
+          }
         })
       );
 
+      console.log('Successfully fetched events with participants:', eventsWithParticipantsData.length);
       setEventsWithParticipants(eventsWithParticipantsData);
     } catch (error: any) {
       console.error('Error fetching events with participants:', error);
+      // Show events without participants data instead of failing completely
+      const eventsWithoutParticipants = events.map(event => ({
+        ...event,
+        participants: [],
+        participants_count: 0,
+        event_date_time: new Date(`${event.date}T${event.time}`)
+      }));
+      setEventsWithParticipants(eventsWithoutParticipants);
+      
       toast({
-        title: "Error",
-        description: "Failed to load events and participants",
+        title: "Warning",
+        description: "Events loaded but participant data may be incomplete",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [approvals, toast]);
 
   const handleConfirmAttendance = async (participantUserId: string, eventId: string) => {
     try {
