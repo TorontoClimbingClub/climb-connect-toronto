@@ -10,13 +10,12 @@ import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
-import { Loader2 } from "lucide-react";
 
 export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { routes, loading } = useRouteManagement();
+  const { routes } = useRouteManagement();
   
   // Use try-catch to handle auth context issues gracefully
   let user = null;
@@ -35,9 +34,7 @@ export default function RouteDetail() {
     userId: user?.id,
     userEmail: user?.email,
     route: location.pathname,
-    authError,
-    routesLoaded: routes.length,
-    loading
+    authError
   });
 
   const route = routes.find(r => r.id === routeId);
@@ -45,7 +42,7 @@ export default function RouteDetail() {
   const {
     comments,
     photos,
-    loading: dataLoading,
+    loading,
     addComment,
     deleteComment,
     uploadPhoto,
@@ -59,17 +56,6 @@ export default function RouteDetail() {
     isCompleted: () => false 
   };
   const completed = user ? isCompleted(routeId || "") : false;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-[#E55A2B]">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading route...</span>
-        </div>
-      </div>
-    );
-  }
 
   if (!route) {
     console.error('❌ Route not found:', routeId);
@@ -135,7 +121,7 @@ export default function RouteDetail() {
 
         <PhotosSection
           photos={photos}
-          loading={dataLoading}
+          loading={loading}
           onUploadPhoto={user ? uploadPhoto : undefined}
           onDeletePhoto={user ? deletePhoto : undefined}
           onUpdateCaption={user ? updatePhotoCaption : undefined}
@@ -143,7 +129,7 @@ export default function RouteDetail() {
 
         <CommentsSection
           comments={comments}
-          loading={dataLoading}
+          loading={loading}
           onAddComment={handleAddComment}
           onDeleteComment={user ? deleteComment : undefined}
         />

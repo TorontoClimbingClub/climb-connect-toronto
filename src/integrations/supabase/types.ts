@@ -420,39 +420,6 @@ export type Database = {
           },
         ]
       }
-      routes: {
-        Row: {
-          area: string
-          created_at: string
-          grade: string
-          id: string
-          name: string
-          sector: string
-          style: string
-          updated_at: string
-        }
-        Insert: {
-          area: string
-          created_at?: string
-          grade: string
-          id: string
-          name: string
-          sector: string
-          style: string
-          updated_at?: string
-        }
-        Update: {
-          area?: string
-          created_at?: string
-          grade?: string
-          id?: string
-          name?: string
-          sector?: string
-          style?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       user_equipment: {
         Row: {
           category_id: string

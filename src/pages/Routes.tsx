@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { EnhancedRouteFilters } from "@/components/filters/EnhancedRouteFilters";
@@ -10,12 +11,11 @@ import { MapWidget } from "@/components/routes/MapWidget";
 import { ClimbingRoute } from "@/types/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
-import { Loader2 } from "lucide-react";
 
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { routes, loading } = useRouteManagement();
+  const { routes } = useRouteManagement();
   
   // Use try-catch to handle auth context issues gracefully
   let user = null;
@@ -39,14 +39,8 @@ export default function Routes() {
     userEmail: user?.email,
     route: location.pathname,
     authError,
-    totalRoutes: routes.length,
-    loading
+    totalRoutes: routes.length
   });
-
-  // Update filtered routes when routes change
-  React.useEffect(() => {
-    setFilteredRoutes(routes);
-  }, [routes]);
 
   // Get unique sectors and areas from filtered routes
   const sectors = [...new Set(filteredRoutes.map(route => route.sector))];
@@ -131,17 +125,6 @@ export default function Routes() {
     setFilteredRoutes(newFilteredRoutes);
     // Don't reset selections when filters change - keep user on same page
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="flex items-center gap-2 text-[#E55A2B]">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading routes...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
