@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +53,7 @@ export function useAdminData() {
 
   const fetchUsers = async () => {
     try {
+      // Get profiles data
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -59,14 +61,24 @@ export function useAdminData() {
 
       if (profilesError) throw profilesError;
 
+      // Get auth users data (email) - only admins can access this
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) {
+        console.warn('Could not fetch auth users:', authError);
+      }
+
       // Get user roles for each profile
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (profile: ProfileData) => {
           const { data: role } = await supabase.rpc('get_user_role', { _user_id: profile.id });
           
+          // Find corresponding auth user for email
+          const authUser = authUsers?.users?.find(u => u.id === profile.id);
+          
           return {
             id: profile.id,
-            email: `${profile.full_name.toLowerCase().replace(/\s+/g, '')}@example.com`, // Placeholder since we can't access auth.users
+            email: authUser?.email || 'Email not available',
             full_name: profile.full_name,
             phone: profile.phone,
             is_carpool_driver: profile.is_carpool_driver,
@@ -75,7 +87,16 @@ export function useAdminData() {
             updated_at: profile.updated_at,
             user_role: role || 'member',
             climbing_level: profile.climbing_level,
-            climbing_experience: profile.climbing_experience
+            climbing_experience: profile.climbing_experience,
+            bio: profile.bio,
+            climbing_description: profile.climbing_description,
+            allow_profile_viewing: profile.allow_profile_viewing,
+            show_climbing_progress: profile.show_climbing_progress,
+            show_completion_stats: profile.show_completion_stats,
+            show_climbing_level: profile.show_climbing_level,
+            show_trad_progress: profile.show_trad_progress,
+            show_sport_progress: profile.show_sport_progress,
+            show_top_rope_progress: profile.show_top_rope_progress,
           };
         })
       );

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -6,11 +7,14 @@ import { Navigation } from "@/components/Navigation";
 import { useEvents } from "@/hooks/useEvents";
 import { useCommunity } from "@/hooks/useCommunity";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { useCommunitySort } from "@/hooks/useCommunitySort";
 import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { CommunityMember } from "@/types/community";
 import { EventCard } from "@/components/events/EventCard";
 import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export default function Events() {
   const { upcomingEvents, userParticipations, loading: eventsLoading, fetchEvents, fetchUserParticipations, updateUserParticipation } = useEvents();
@@ -21,6 +25,8 @@ export default function Events() {
   const { joinEvent, loading: actionLoading } = useEventActions();
   const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
   const [profileOverlayOpen, setProfileOverlayOpen] = useState(false);
+
+  const { sortedMembers, sortBy, setSortBy } = useCommunitySort(members || [], getUserCompletionStats);
 
   useEffect(() => {
     if (user) {
@@ -102,10 +108,26 @@ export default function Events() {
 
         {/* Community Section */}
         <div>
-          <h2 className="text-xl font-semibold text-[#E55A2B] mb-4">Members</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-[#E55A2B]">Members</h2>
+            
+            <div className="flex items-center gap-2">
+              <Label htmlFor="sort-select" className="text-sm text-stone-600">Sort by:</Label>
+              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <SelectTrigger className="w-40" id="sort-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="climbing-progress">Climbing Progress</SelectItem>
+                  <SelectItem value="gear-count">Gear Count</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div className="space-y-4">
-            {members && members.map((member) => {
+            {sortedMembers && sortedMembers.map((member) => {
               if (!member || !member.id) return null;
               
               const userStats = getUserCompletionStats(member.id);

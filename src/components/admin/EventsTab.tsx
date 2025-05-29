@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Calendar, MapPin, Users } from "lucide-react";
+import { Plus, Trash2, Calendar, MapPin, Users, Edit } from "lucide-react";
 import { CreateEventDialog } from "./CreateEventDialog";
+import { EditEventDialog } from "./EditEventDialog";
 
 interface Event {
   id: string;
@@ -86,14 +87,20 @@ export function EventsTab({
                       )}
                     </div>
                     {canManageUsers && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDeleteEvent(event.id)}
-                        className="text-red-600 hover:text-red-700 flex-shrink-0 ml-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2 flex-shrink-0 ml-2">
+                        <EditEventDialog 
+                          event={event} 
+                          onEventUpdated={onRefreshEvents}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onDeleteEvent(event.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
 
@@ -113,6 +120,9 @@ export function EventsTab({
                       <div className="flex items-center text-sm text-stone-600">
                         <Users className="h-4 w-4 mr-2 flex-shrink-0" />
                         <span>{event.participants_count || 0} joined</span>
+                        {event.max_participants && (
+                          <span className="text-gray-400"> / {event.max_participants}</span>
+                        )}
                       </div>
                       
                       {event.difficulty_level && (

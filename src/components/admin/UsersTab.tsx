@@ -21,6 +21,15 @@ interface User {
   user_role?: 'member' | 'organizer' | 'admin';
   climbing_level?: string;
   climbing_experience?: string[];
+  bio?: string;
+  climbing_description?: string;
+  allow_profile_viewing?: boolean;
+  show_climbing_progress?: boolean;
+  show_completion_stats?: boolean;
+  show_climbing_level?: boolean;
+  show_trad_progress?: boolean;
+  show_sport_progress?: boolean;
+  show_top_rope_progress?: boolean;
 }
 
 interface UsersTabProps {
@@ -46,7 +55,7 @@ export function UsersTab({
       
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>All Users ({users.length})</CardTitle>
           <CardDescription>Manage TCC member accounts and permissions</CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,9 +63,11 @@ export function UsersTab({
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Carpool Driver</TableHead>
+                <TableHead>Climbing Level</TableHead>
+                <TableHead>Driver</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -66,6 +77,9 @@ export function UsersTab({
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="font-medium">{user.full_name}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm text-gray-600">{user.email}</div>
                   </TableCell>
                   <TableCell>{user.phone || 'Not provided'}</TableCell>
                   <TableCell>
@@ -84,8 +98,13 @@ export function UsersTab({
                     </Select>
                   </TableCell>
                   <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {user.climbing_level || 'Not set'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={user.is_carpool_driver ? 'default' : 'secondary'}>
-                      {user.is_carpool_driver ? 'Yes' : 'No'}
+                      {user.is_carpool_driver ? `Yes (${user.passenger_capacity})` : 'No'}
                     </Badge>
                   </TableCell>
                   <TableCell>
