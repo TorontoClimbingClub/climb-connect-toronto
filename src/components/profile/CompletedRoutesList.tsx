@@ -19,24 +19,16 @@ export function CompletedRoutesList({ completions, userId }: CompletedRoutesList
   const { toggleCompletion } = useClimbCompletions();
   const { user } = useAuth();
 
-  console.log('CompletedRoutesList - received completions:', completions);
-  console.log('CompletedRoutesList - userId:', userId);
-  console.log('CompletedRoutesList - current user id:', user?.id);
-
   // Use the completions passed as props (already filtered for the user)
   const userCompletions = completions;
   
   const completedRoutes = userCompletions.map(completion => {
-    console.log('Processing completion:', completion);
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
-    console.log('Found route for completion:', route);
     return route ? { ...route, completedAt: completion.completed_at } : null;
   }).filter(Boolean).sort((a, b) => {
     if (!a || !b) return 0;
     return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
   });
-
-  console.log('CompletedRoutesList - final completedRoutes:', completedRoutes);
 
   const handleRouteClick = (routeId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -63,9 +55,6 @@ export function CompletedRoutesList({ completions, userId }: CompletedRoutesList
           <div className="text-center py-8 text-stone-500">
             <Mountain className="h-12 w-12 mx-auto mb-4 text-stone-400" />
             <p>{isOwnProfile ? "No routes completed yet. Start climbing to see your progress!" : "No completed routes to display."}</p>
-            <p className="text-xs mt-2 text-stone-400">
-              Debug: {userCompletions.length} completions found
-            </p>
           </div>
         </CardContent>
       </Card>
