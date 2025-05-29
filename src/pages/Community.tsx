@@ -14,7 +14,10 @@ export default function Community() {
   const [selectedUser, setSelectedUser] = useState<CommunityMember | null>(null);
   const [profileOverlayOpen, setProfileOverlayOpen] = useState(false);
 
+  console.log('Community page render - members:', members, 'loading:', loading);
+
   const handleUserClick = (member: CommunityMember) => {
+    console.log('User clicked:', member);
     setSelectedUser(member);
     setProfileOverlayOpen(true);
   };
@@ -23,6 +26,10 @@ export default function Community() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
         <div className="max-w-md mx-auto p-4">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Community</h1>
+            <p className="text-stone-600">Connect with fellow climbers</p>
+          </div>
           <div className="text-center py-8">
             <div className="text-[#E55A2B]">Loading community members...</div>
           </div>
@@ -40,7 +47,7 @@ export default function Community() {
           <p className="text-stone-600">Connect with fellow climbers</p>
         </div>
 
-        {members.length === 0 ? (
+        {!members || members.length === 0 ? (
           <div className="text-center py-8 text-stone-500">
             <Users className="h-12 w-12 mx-auto mb-4 text-stone-400" />
             <p>No community members found.</p>

@@ -13,16 +13,17 @@ export function useCommunity() {
 
   const fetchCommunityMembers = async () => {
     console.log('🔄 Fetching community members...');
-    const abortController = new AbortController();
     
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
-        .order('full_name')
-        .abortSignal(abortController.signal);
+        .order('full_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching profiles:', error);
+        throw error;
+      }
 
       console.log('📊 Fetched profiles count:', profiles?.length || 0);
       console.log('📋 Sample profile data:', profiles?.[0]);
@@ -31,6 +32,7 @@ export function useCommunity() {
         console.log('⚠️ No profiles found in database');
         if (mountedRef.current) {
           setMembers([]);
+          setLoading(false);
         }
         return;
       }
@@ -46,15 +48,13 @@ export function useCommunity() {
             const { count: equipmentCount } = await supabase
               .from('user_equipment')
               .select('*', { count: 'exact' })
-              .eq('user_id', profile.id)
-              .abortSignal(abortController.signal);
+              .eq('user_id', profile.id);
 
             // Get events count
             const { count: eventsCount } = await supabase
               .from('event_participants')
               .select('*', { count: 'exact' })
-              .eq('user_id', profile.id)
-              .abortSignal(abortController.signal);
+              .eq('user_id', profile.id);
 
             return {
               ...profile,
@@ -81,10 +81,11 @@ export function useCommunity() {
 
       if (mountedRef.current) {
         setMembers(validMembers);
+        setLoading(false);
         console.log('🎯 Members state updated successfully');
       }
     } catch (error: any) {
-      if (error.name !== 'AbortError' && mountedRef.current) {
+      if (mountedRef.current) {
         const apiError = handleSupabaseError(error);
         logError('fetchCommunityMembers', error);
         console.error('❌ Community fetch error:', error);
@@ -94,28 +95,20 @@ export function useCommunity() {
           description: apiError.message || "Failed to load community members",
           variant: "destructive",
         });
-      }
-    } finally {
-      if (mountedRef.current) {
-        console.log('🏁 Setting loading to false');
+        
         setLoading(false);
       }
     }
-
-    return () => {
-      abortController.abort();
-    };
   };
 
   useEffect(() => {
     mountedRef.current = true;
     console.log('🚀 Community hook initialized');
     
-    const cleanup = fetchCommunityMembers();
+    fetchCommunityMembers();
 
     return () => {
       mountedRef.current = false;
-      cleanup.then(cleanupFn => cleanupFn?.());
     };
   }, []);
 
