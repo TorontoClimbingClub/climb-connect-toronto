@@ -27,6 +27,8 @@ export interface Participant {
   joined_at: string;
   full_name: string;
   phone: string | null;
+  carpool_driver_notes?: string | null;
+  assigned_driver_id?: string | null;
 }
 
 export interface EventEquipment {

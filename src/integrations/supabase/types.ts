@@ -102,7 +102,9 @@ export type Database = {
       }
       event_participants: {
         Row: {
+          assigned_driver_id: string | null
           available_seats: number | null
+          carpool_driver_notes: string | null
           event_id: string
           id: string
           is_carpool_driver: boolean | null
@@ -110,7 +112,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assigned_driver_id?: string | null
           available_seats?: number | null
+          carpool_driver_notes?: string | null
           event_id: string
           id?: string
           is_carpool_driver?: boolean | null
@@ -118,7 +122,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assigned_driver_id?: string | null
           available_seats?: number | null
+          carpool_driver_notes?: string | null
           event_id?: string
           id?: string
           is_carpool_driver?: boolean | null
