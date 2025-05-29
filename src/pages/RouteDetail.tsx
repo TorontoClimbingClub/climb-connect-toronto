@@ -43,13 +43,9 @@ export default function RouteDetail() {
   
   const {
     comments,
-    photos,
     loading: dataLoading,
     addComment,
-    deleteComment,
-    uploadPhoto,
-    deletePhoto,
-    updatePhotoCaption
+    deleteComment
   } = useRouteData(routeId || "");
 
   // Only use climb completions if user is available
@@ -133,13 +129,7 @@ export default function RouteDetail() {
           onToggleCompletion={handleToggleCompletion}
         />
 
-        <PhotosSection
-          photos={photos}
-          loading={dataLoading}
-          onUploadPhoto={user ? uploadPhoto : undefined}
-          onDeletePhoto={user ? deletePhoto : undefined}
-          onUpdateCaption={user ? updatePhotoCaption : undefined}
-        />
+        <PhotosSection routeId={routeId || ""} />
 
         <CommentsSection
           comments={comments}
