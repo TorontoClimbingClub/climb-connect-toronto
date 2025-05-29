@@ -35,22 +35,25 @@ export function EventParticipantItem({
   };
 
   const getAttendanceBadge = () => {
+    console.log(`🏷️ [BADGE] User ${participant.full_name} status: ${participant.attendance_status}`);
+    
     switch (participant.attendance_status) {
       case 'approved':
         return (
-          <Badge variant="default" className="text-xs bg-green-600">
+          <Badge variant="default" className="text-xs bg-green-600 text-white">
             Confirmed
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge variant="destructive" className="text-xs">
+          <Badge variant="destructive" className="text-xs bg-red-600 text-white">
             Not Present
           </Badge>
         );
+      case 'pending':
       default:
         return (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs bg-gray-500 text-white">
             Pending
           </Badge>
         );
@@ -59,9 +62,11 @@ export function EventParticipantItem({
 
   // Show attendance buttons for all events - admins can manage attendance anytime
   const showAttendanceButtons = true;
-  const isPending = participant.attendance_status === 'pending';
+  const isPending = participant.attendance_status === 'pending' || !participant.attendance_status;
   const isApproved = participant.attendance_status === 'approved';
   const isRejected = participant.attendance_status === 'rejected';
+
+  console.log(`🔘 [BUTTONS] User ${participant.full_name} - Pending: ${isPending}, Approved: ${isApproved}, Rejected: ${isRejected}`);
 
   return (
     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
