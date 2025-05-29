@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Car, Users, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Participant {
   id: string;
@@ -40,6 +40,13 @@ export function CarpoolCard({
   const [availableSeats, setAvailableSeats] = useState(currentUserParticipation?.available_seats || 1);
   const [driverNotes, setDriverNotes] = useState(currentUserParticipation?.carpool_driver_notes || '');
 
+  // Update local state when participation changes
+  useEffect(() => {
+    setIsDriver(currentUserParticipation?.is_carpool_driver || false);
+    setAvailableSeats(currentUserParticipation?.available_seats || 1);
+    setDriverNotes(currentUserParticipation?.carpool_driver_notes || '');
+  }, [currentUserParticipation]);
+
   const drivers = participants.filter(p => p.is_carpool_driver);
   const passengers = participants.filter(p => !p.is_carpool_driver && p.assigned_driver_id);
   const unassignedPassengers = participants.filter(p => !p.is_carpool_driver && !p.assigned_driver_id);
@@ -55,6 +62,18 @@ export function CarpoolCard({
 
   const getDriverSeatsUsed = (driver: Participant) => {
     return getPassengersForDriver(driver.user_id).length;
+  };
+
+  const handleJoinCarpool = (driverId: string) => {
+    onAssignToDriver?.(driverId);
+  };
+
+  const handleLeaveCarpool = () => {
+    onAssignToDriver?.(''); // Pass empty string to remove assignment
+  };
+
+  const isAssignedToDriver = (driverId: string) => {
+    return currentUserParticipation?.assigned_driver_id === driverId;
   };
 
   return (
@@ -111,12 +130,12 @@ export function CarpoolCard({
 
               {!isDriver && drivers.length > 0 && (
                 <div>
-                  <Label className="text-sm font-medium">Request ride from:</Label>
+                  <Label className="text-sm font-medium">Join a carpool:</Label>
                   <div className="mt-2 space-y-2">
                     {drivers.map(driver => {
                       const seatsUsed = getDriverSeatsUsed(driver);
                       const seatsAvailable = (driver.available_seats || 0) - seatsUsed;
-                      const isAssigned = currentUserParticipation?.assigned_driver_id === driver.user_id;
+                      const isAssigned = isAssignedToDriver(driver.user_id);
                       
                       return (
                         <div key={driver.id} className="flex items-center justify-between p-2 bg-white rounded border">
@@ -132,14 +151,24 @@ export function CarpoolCard({
                               {seatsAvailable} of {driver.available_seats} seats available
                             </p>
                           </div>
-                          <Button
-                            size="sm"
-                            variant={isAssigned ? "default" : "outline"}
-                            onClick={() => onAssignToDriver?.(driver.user_id)}
-                            disabled={seatsAvailable === 0 && !isAssigned}
-                          >
-                            {isAssigned ? "Assigned" : seatsAvailable > 0 ? "Request" : "Full"}
-                          </Button>
+                          {isAssigned ? (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={handleLeaveCarpool}
+                            >
+                              Leave
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleJoinCarpool(driver.user_id)}
+                              disabled={seatsAvailable === 0}
+                            >
+                              {seatsAvailable > 0 ? "Join" : "Full"}
+                            </Button>
+                          )}
                         </div>
                       );
                     })}
@@ -172,7 +201,7 @@ export function CarpoolCard({
                   return (
                     <div key={driver.id} className="p-3 bg-stone-50 rounded-lg">
                       <div className="flex justify-between items-start mb-2">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-[#E55A2B]">{driver.full_name}</p>
                           {driver.carpool_driver_notes && (
                             <p className="text-sm text-stone-600 mt-1">

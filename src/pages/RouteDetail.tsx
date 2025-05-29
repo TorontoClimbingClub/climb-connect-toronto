@@ -52,14 +52,22 @@ export default function RouteDetail() {
   }
 
   const handleCommentSubmit = async () => {
-    if (!newComment.trim() || !user) return;
-    await addComment(newComment);
-    setNewComment("");
+    if (!newComment.trim()) return;
+    
+    try {
+      await addComment(newComment);
+      setNewComment("");
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   };
 
   const handleReply = async (comment: string, parentId: string) => {
-    if (!user) return;
-    await addComment(comment, parentId);
+    try {
+      await addComment(comment, parentId);
+    } catch (error) {
+      console.error('Error adding reply:', error);
+    }
   };
 
   const handleToggleCompletion = () => {
@@ -105,13 +113,13 @@ export default function RouteDetail() {
               loading={loading}
             />
             
-            {photos.length > 0 && (
+            {photos.length > 0 && user && (
               <div className="border-t pt-4">
                 <PhotoUpload onUpload={uploadPhoto} loading={loading} />
               </div>
             )}
             
-            {photos.length === 0 && (
+            {photos.length === 0 && user && (
               <PhotoUpload onUpload={uploadPhoto} loading={loading} />
             )}
           </CardContent>

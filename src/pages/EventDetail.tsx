@@ -1,6 +1,7 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
 import { EventHeader } from "@/components/event-detail/EventHeader";
 import { EventDetailsCard } from "@/components/event-detail/EventDetailsCard";
@@ -51,16 +52,29 @@ export default function EventDetail() {
 
   const handleUpdateCarpoolStatus = async (isDriver: boolean, seats: number, notes?: string) => {
     if (!currentUserParticipation) return;
-    const result = await updateCarpoolStatus(currentUserParticipation.id, isDriver, seats);
+    const result = await updateCarpoolStatus(currentUserParticipation.id, isDriver, seats, notes);
     if (result.success) {
       refreshData();
     }
   };
 
   const handleAssignToDriver = async (driverId: string) => {
-    // This would need to be implemented in useEventActions
-    console.log('Assign to driver:', driverId);
-    // For now, just log - you'd need to add this functionality to the backend
+    if (!currentUserParticipation) return;
+    
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .update({
+          assigned_driver_id: driverId || null
+        })
+        .eq('id', currentUserParticipation.id);
+
+      if (error) throw error;
+
+      refreshData();
+    } catch (error) {
+      console.error('Error updating carpool assignment:', error);
+    }
   };
 
   if (loading) {
@@ -96,6 +110,9 @@ export default function EventDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <EventDetailsCard event={event} participantsCount={participants.length} />
+        </div>
+
+        <div className="mb-6">
           <CarpoolCard 
             participants={participants}
             currentUserId={user?.id}

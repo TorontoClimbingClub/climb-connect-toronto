@@ -27,6 +27,8 @@ interface Participant {
   joined_at: string;
   full_name: string;
   phone: string | null;
+  carpool_driver_notes?: string | null;
+  assigned_driver_id?: string | null;
 }
 
 interface Equipment {
@@ -105,7 +107,7 @@ export function useEventData(eventId: string | undefined) {
       
       const { data: participation, error } = await supabase
         .from('event_participants')
-        .select('*')
+        .select('*, carpool_driver_notes, assigned_driver_id')
         .eq('event_id', eventId)
         .eq('user_id', user.id)
         .maybeSingle();
@@ -135,7 +137,9 @@ export function useEventData(eventId: string | undefined) {
             available_seats: participation.available_seats,
             joined_at: participation.joined_at,
             full_name: profile.full_name,
-            phone: profile.phone
+            phone: profile.phone,
+            carpool_driver_notes: participation.carpool_driver_notes,
+            assigned_driver_id: participation.assigned_driver_id
           };
           setCurrentUserParticipation(participantData);
         }
@@ -152,7 +156,7 @@ export function useEventData(eventId: string | undefined) {
     try {
       const { data: participantsData, error: participantsError } = await supabase
         .from('event_participants')
-        .select('*')
+        .select('*, carpool_driver_notes, assigned_driver_id')
         .eq('event_id', eventId);
 
       if (participantsError) throw participantsError;

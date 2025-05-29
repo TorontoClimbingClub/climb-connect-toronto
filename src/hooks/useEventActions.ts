@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -158,15 +157,37 @@ export const useEventActions = () => {
     }
   };
 
-  const updateCarpoolStatus = async (participationId: string, isDriver: boolean, seats: number) => {
+  const updateCarpoolStatus = async (participationId: string, isDriver: boolean, seats: number, notes?: string) => {
     setLoading(true);
     try {
+      const updateData: any = {
+        is_carpool_driver: isDriver,
+        available_seats: isDriver ? seats : null,
+        carpool_driver_notes: isDriver ? notes : null,
+      };
+
+      // If user is no longer a driver, clear their assignment and reset assigned passengers
+      if (!isDriver) {
+        updateData.assigned_driver_id = null;
+        
+        // Also clear any passengers assigned to this user
+        const { data: participation } = await supabase
+          .from('event_participants')
+          .select('user_id')
+          .eq('id', participationId)
+          .single();
+
+        if (participation) {
+          await supabase
+            .from('event_participants')
+            .update({ assigned_driver_id: null })
+            .eq('assigned_driver_id', participation.user_id);
+        }
+      }
+
       const { error } = await supabase
         .from('event_participants')
-        .update({
-          is_carpool_driver: isDriver,
-          available_seats: isDriver ? seats : null,
-        })
+        .update(updateData)
         .eq('id', participationId);
 
       if (error) throw error;
