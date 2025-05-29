@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getGenericErrorMessage } from "@/utils/security";
 
 export function useAuthPage() {
   const [email, setEmail] = useState("");
@@ -26,18 +27,26 @@ export function useAuthPage() {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(email, password);
-    
-    if (error) {
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast({
+          title: "Sign in failed",
+          description: getGenericErrorMessage(error),
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in to TCC.",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Sign in failed",
-        description: error.message,
+        description: getGenericErrorMessage(error),
         variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Welcome back!",
-        description: "Successfully signed in to TCC.",
       });
     }
     
@@ -48,49 +57,53 @@ export function useAuthPage() {
     e.preventDefault();
     setLoading(true);
     
-    const result = await signUp(email, password, fullName);
-    
-    if (result.error) {
+    try {
+      const result = await signUp(email, password, fullName);
+      
+      if (result.error) {
+        toast({
+          title: "Sign up failed",
+          description: getGenericErrorMessage(result.error),
+          variant: "destructive",
+        });
+        setLoading(false);
+      } else {
+        toast({
+          title: "Account created successfully!",
+          description: "Please check your email and click the verification link to complete your registration.",
+          duration: 8000,
+        });
+        
+        setTimeout(async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('climbing_level, phone')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (!profile?.climbing_level || !profile?.phone) {
+              setNewUserId(session.user.id);
+              setShowClimbingInfo(true);
+              toast({
+                title: "Complete your profile",
+                description: "Please complete your climbing profile to continue.",
+              });
+            } else {
+              navigate("/");
+            }
+          }
+          setLoading(false);
+        }, 500);
+      }
+    } catch (error) {
       toast({
         title: "Sign up failed",
-        description: result.error.message,
+        description: getGenericErrorMessage(error),
         variant: "destructive",
       });
       setLoading(false);
-    } else {
-      // Show success message for email verification
-      toast({
-        title: "Account created successfully!",
-        description: "Please check your email and click the verification link to complete your registration.",
-        duration: 8000, // Show longer for important message
-      });
-      
-      // Wait a moment for the user to be created and trigger to run
-      setTimeout(async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          // Check if profile needs completion
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('climbing_level, phone')
-            .eq('id', session.user.id)
-            .single();
-          
-          // If climbing_level is empty or phone is missing, show the form
-          if (!profile?.climbing_level || !profile?.phone) {
-            setNewUserId(session.user.id);
-            setShowClimbingInfo(true);
-            toast({
-              title: "Complete your profile",
-              description: "Please complete your climbing profile to continue.",
-            });
-          } else {
-            // Profile is complete, redirect to home
-            navigate("/");
-          }
-        }
-        setLoading(false);
-      }, 500);
     }
   };
 
@@ -125,7 +138,7 @@ export function useAuthPage() {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to complete profile",
+        description: getGenericErrorMessage(error),
         variant: "destructive",
       });
     } finally {

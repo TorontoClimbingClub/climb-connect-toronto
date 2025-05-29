@@ -1,11 +1,14 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { User, Phone, Edit, Check, X } from "lucide-react";
-import { useCallback } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Edit2, Save, X, User, Phone, FileText } from "lucide-react";
+import { validateInput, sanitizeHtml, getGenericErrorMessage } from "@/utils/security";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfile {
   id: string;
@@ -45,78 +48,192 @@ export function BasicInformation({
   onCancel,
   onFormDataChange,
 }: BasicInformationProps) {
-  const handleInputChange = useCallback((field: string, value: any) => {
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const { toast } = useToast();
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!validateInput.name(formData.full_name)) {
+      errors.full_name = "Please enter a valid name (2-50 characters, letters only)";
+    }
+
+    if (formData.phone && !validateInput.phone(formData.phone)) {
+      errors.phone = "Please enter a valid phone number";
+    }
+
+    if (formData.bio && !validateInput.bio(formData.bio)) {
+      errors.bio = "Bio must be 500 characters or less";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSave = () => {
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors below and try again",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Sanitize text inputs before saving
+      const sanitizedData = {
+        ...formData,
+        full_name: sanitizeHtml(formData.full_name.trim()),
+        bio: formData.bio ? sanitizeHtml(formData.bio.trim()) : formData.bio,
+      };
+      onFormDataChange(sanitizedData);
+      onSave();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: getGenericErrorMessage(error),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleInputChange = (field: keyof UserProfile, value: any) => {
     onFormDataChange({ ...formData, [field]: value });
-  }, [formData, onFormDataChange]);
+    // Clear validation error when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  if (!profile) return null;
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Information
-            </CardTitle>
-            <CardDescription>Your personal details and preferences</CardDescription>
-          </div>
-          {!editing ? (
-            <Button onClick={onEdit} variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button onClick={onSave} size="sm" className="bg-[#E55A2B] hover:bg-[#D14B20] text-white">
-                <Check className="h-4 w-4 mr-2" />
-                Save
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <User className="h-5 w-5" />
+          Basic Information
+        </CardTitle>
+        {!editing && (
+          <Button onClick={onEdit} variant="outline" size="sm">
+            <Edit2 className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {editing ? (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Full Name</Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
+                placeholder="Enter your full name"
+                className={validationErrors.full_name ? 'border-red-500' : ''}
+                maxLength={50}
+              />
+              {validationErrors.full_name && (
+                <p className="text-sm text-red-600">{validationErrors.full_name}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                <Input
+                  id="phone"
+                  value={formData.phone || ""}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="Enter your phone number"
+                  className={`pl-10 ${validationErrors.phone ? 'border-red-500' : ''}`}
+                  maxLength={15}
+                />
+              </div>
+              {validationErrors.phone && (
+                <p className="text-sm text-red-600">{validationErrors.phone}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                <Textarea
+                  id="bio"
+                  value={formData.bio || ""}
+                  onChange={(e) => handleInputChange('bio', e.target.value)}
+                  placeholder="Tell us about yourself..."
+                  className={`pl-10 min-h-[100px] ${validationErrors.bio ? 'border-red-500' : ''}`}
+                  maxLength={500}
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                {validationErrors.bio && (
+                  <p className="text-sm text-red-600">{validationErrors.bio}</p>
+                )}
+                <span className="text-xs text-gray-500 ml-auto">
+                  {(formData.bio || "").length}/500 characters
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button 
+                onClick={handleSave} 
+                className="bg-[#E55A2B] hover:bg-orange-700"
+                disabled={!validateInput.name(formData.full_name)}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
               </Button>
-              <Button onClick={onCancel} variant="outline" size="sm">
+              <Button onClick={onCancel} variant="outline">
                 <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
             </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="full_name">Full Name</Label>
-          <Input
-            id="full_name"
-            value={formData.full_name || ''}
-            onChange={(e) => handleInputChange('full_name', e.target.value)}
-            disabled={!editing}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="phone">Phone Number</Label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="(555) 123-4567"
-              value={formData.phone || ''}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              disabled={!editing}
-              className="pl-10"
-            />
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <Label className="text-sm font-medium text-stone-500">Full Name</Label>
+              <p className="text-stone-900 font-medium">{sanitizeHtml(profile.full_name)}</p>
+            </div>
 
-        <div>
-          <Label htmlFor="bio">Bio</Label>
-          <Textarea
-            id="bio"
-            placeholder="Tell other members about yourself, your interests, availability, etc."
-            value={formData.bio || ''}
-            onChange={(e) => handleInputChange('bio', e.target.value)}
-            disabled={!editing}
-            rows={3}
-          />
-        </div>
+            {profile.phone && (
+              <div>
+                <Label className="text-sm font-medium text-stone-500">Phone</Label>
+                <p className="text-stone-900">{sanitizeHtml(profile.phone)}</p>
+              </div>
+            )}
+
+            {profile.bio && (
+              <div>
+                <Label className="text-sm font-medium text-stone-500">Bio</Label>
+                <div 
+                  className="text-stone-700 whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(profile.bio) }}
+                />
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              {profile.is_carpool_driver && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  Carpool Driver
+                </Badge>
+              )}
+              {profile.passenger_capacity && profile.passenger_capacity > 0 && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  {profile.passenger_capacity} seats available
+                </Badge>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { MessageSquare, Send, Reply, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeHtml, validateInput, RateLimiter, getGenericErrorMessage } from "@/utils/security";
 
 interface EventComment {
   id: string;
@@ -22,6 +23,8 @@ interface EventCommentsSectionProps {
   eventId: string;
 }
 
+const commentRateLimiter = new RateLimiter();
+
 export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -30,10 +33,10 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const fetchComments = async () => {
     try {
-      // First, fetch all comments
       const { data: commentsData, error: commentsError } = await supabase
         .from('event_comments')
         .select('*')
@@ -43,10 +46,8 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
       if (commentsError) throw commentsError;
 
       if (commentsData && commentsData.length > 0) {
-        // Get unique user IDs
         const userIds = [...new Set(commentsData.map(comment => comment.user_id))];
         
-        // Fetch profiles for these users
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, full_name')
@@ -54,10 +55,11 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
 
         if (profilesError) throw profilesError;
 
-        // Map comments with user names
         const commentsWithNames = commentsData.map(comment => ({
           ...comment,
-          user_name: profilesData?.find(profile => profile.id === comment.user_id)?.full_name || comment.user_name || "Anonymous"
+          user_name: profilesData?.find(profile => profile.id === comment.user_id)?.full_name || comment.user_name || "Anonymous",
+          // Sanitize comment content when displaying
+          comment: sanitizeHtml(comment.comment)
         }));
         
         setComments(commentsWithNames);
@@ -66,6 +68,11 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
       }
     } catch (error) {
       console.error('Error fetching comments:', error);
+      toast({
+        title: "Error",
+        description: getGenericErrorMessage(error),
+        variant: "destructive",
+      });
     }
   };
 
@@ -73,17 +80,48 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
     fetchComments();
   }, [eventId]);
 
+  const validateComment = (comment: string): boolean => {
+    const errors: Record<string, string> = {};
+    
+    if (!validateInput.comment(comment)) {
+      errors.comment = "Comment must be between 3 and 1000 characters";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const addComment = async (comment: string, parentId?: string) => {
     if (!user || !comment.trim()) return;
 
+    // Validate input
+    if (!validateComment(comment)) {
+      return;
+    }
+
+    // Rate limiting
+    const rateLimitKey = `comment_${user.id}`;
+    if (!commentRateLimiter.isAllowed(rateLimitKey, 10, 60000)) { // 10 comments per minute
+      const remainingTime = Math.ceil(commentRateLimiter.getRemainingTime(rateLimitKey, 60000) / 1000);
+      toast({
+        title: "Too many comments",
+        description: `Please wait ${remainingTime} seconds before commenting again`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      // Sanitize the comment before storing
+      const sanitizedComment = sanitizeHtml(comment.trim());
+      
       const { error } = await supabase
         .from('event_comments')
         .insert({
           event_id: eventId,
           user_id: user.id,
-          comment: comment.trim(),
+          comment: sanitizedComment,
           user_name: user.email || "Anonymous",
           parent_id: parentId || null
         });
@@ -101,13 +139,14 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
       } else {
         setNewComment("");
       }
+      setValidationErrors({});
 
       fetchComments();
     } catch (error) {
       console.error('Error adding comment:', error);
       toast({
         title: "Error",
-        description: parentId ? "Failed to add reply" : "Failed to add comment",
+        description: getGenericErrorMessage(error),
         variant: "destructive",
       });
     }
@@ -136,7 +175,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
       console.error('Error deleting comment:', error);
       toast({
         title: "Error",
-        description: "Failed to delete comment",
+        description: getGenericErrorMessage(error),
         variant: "destructive",
       });
     }
@@ -161,17 +200,31 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
             <Textarea
               placeholder="Add a comment to coordinate with other participants..."
               value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[80px]"
+              onChange={(e) => {
+                setNewComment(e.target.value);
+                if (validationErrors.comment) {
+                  setValidationErrors(prev => ({ ...prev, comment: "" }));
+                }
+              }}
+              className={`min-h-[80px] ${validationErrors.comment ? 'border-red-500' : ''}`}
+              maxLength={1000}
             />
-            <Button 
-              onClick={() => addComment(newComment)}
-              disabled={!newComment.trim() || loading}
-              className="bg-[#E55A2B] hover:bg-[#D14B20]"
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Add Comment
-            </Button>
+            {validationErrors.comment && (
+              <p className="text-sm text-red-600">{validationErrors.comment}</p>
+            )}
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-gray-500">
+                {newComment.length}/1000 characters
+              </span>
+              <Button 
+                onClick={() => addComment(newComment)}
+                disabled={!newComment.trim() || loading || !validateInput.comment(newComment)}
+                className="bg-[#E55A2B] hover:bg-[#D14B20]"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Add Comment
+              </Button>
+            </div>
           </div>
         )}
 
@@ -187,7 +240,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
               <div key={comment.id} className="border rounded-lg p-4 bg-stone-50">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-stone-900">{comment.user_name}</span>
+                    <span className="font-medium text-stone-900">{sanitizeHtml(comment.user_name)}</span>
                     <span className="text-xs text-stone-500">
                       {new Date(comment.created_at).toLocaleDateString()} at{' '}
                       {new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -216,7 +269,10 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                     )}
                   </div>
                 </div>
-                <p className="text-stone-700 mb-3 whitespace-pre-wrap">{comment.comment}</p>
+                <div 
+                  className="text-stone-700 mb-3 whitespace-pre-wrap" 
+                  dangerouslySetInnerHTML={{ __html: comment.comment }}
+                />
 
                 {/* Reply form */}
                 {replyingTo === comment.id && (
@@ -226,11 +282,12 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
                       className="min-h-[60px]"
+                      maxLength={1000}
                     />
                     <div className="flex gap-2">
                       <Button 
                         onClick={() => addComment(replyText, comment.id)}
-                        disabled={!replyText.trim() || loading}
+                        disabled={!replyText.trim() || loading || !validateInput.comment(replyText)}
                         size="sm"
                         className="bg-[#E55A2B] hover:bg-[#D14B20]"
                       >
@@ -256,7 +313,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                   <div key={reply.id} className="ml-6 mt-3 border-l-2 border-stone-200 pl-4">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-stone-900">{reply.user_name}</span>
+                        <span className="font-medium text-stone-900">{sanitizeHtml(reply.user_name)}</span>
                         <span className="text-xs text-stone-500">
                           {new Date(reply.created_at).toLocaleDateString()} at{' '}
                           {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -273,7 +330,10 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                         </Button>
                       )}
                     </div>
-                    <p className="text-stone-700 whitespace-pre-wrap">{reply.comment}</p>
+                    <div 
+                      className="text-stone-700 whitespace-pre-wrap"
+                      dangerouslySetInnerHTML={{ __html: reply.comment }}
+                    />
                   </div>
                 ))}
               </div>
