@@ -36,11 +36,6 @@ export const ErrorMonitor = () => {
       console.log('Timestamp:', errorInfo.timestamp);
       console.groupEnd();
 
-      // Don't show toasts on the home page
-      if (window.location.pathname === '/') {
-        return;
-      }
-
       // Show user-friendly toast for access errors
       if (event.message?.includes('Access Denied') || event.message?.includes('permission')) {
         toast({
@@ -58,11 +53,6 @@ export const ErrorMonitor = () => {
         route: window.location.pathname,
         timestamp: new Date().toISOString()
       });
-
-      // Don't show toasts on the home page
-      if (window.location.pathname === '/') {
-        return;
-      }
 
       if (event.reason?.message?.includes('JWT') || event.reason?.message?.includes('session')) {
         toast({
