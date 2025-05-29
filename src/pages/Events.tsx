@@ -17,7 +17,7 @@ export default function Events() {
   const { hasAccess, accessLoading } = useAccessControl('authenticated');
   const { upcomingEvents, userParticipations, loading, fetchUserParticipations } = useOptimizedEvents();
   const { members, loading: membersLoading, fetchCommunityMembers } = useCommunityData();
-  const { getUserCompletionStats } = useClimbCompletions();
+  const { getUserCompletionStats, loading: completionsLoading } = useClimbCompletions();
 
   // Enable real-time updates for events
   useRealtimeEvents();
@@ -92,7 +92,7 @@ export default function Events() {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Community Spotlight
           </h2>
-          {membersLoading ? (
+          {(membersLoading || completionsLoading) ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#E55A2B]"></div>
               <span className="ml-2 text-gray-600">Loading members...</span>

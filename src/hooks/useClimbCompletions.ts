@@ -14,7 +14,7 @@ export interface ClimbCompletion {
 
 export function useClimbCompletions() {
   const [completions, setCompletions] = useState<ClimbCompletion[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -109,8 +109,9 @@ export function useClimbCompletions() {
   };
 
   useEffect(() => {
+    // Fetch all completions for all users to avoid flickering when viewing community stats
     fetchCompletions();
-  }, [user]);
+  }, []);
 
   return {
     completions,
