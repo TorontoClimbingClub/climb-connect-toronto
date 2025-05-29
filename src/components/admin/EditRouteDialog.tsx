@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -44,15 +44,65 @@ const generateAidGradeOptions = () => {
 
 export function EditRouteDialog({ route, open, onOpenChange, onSave }: EditRouteDialogProps) {
   const [formData, setFormData] = useState({
-    name: route?.name || '',
-    grade: route?.grade || '',
-    style: route?.style || 'Trad' as 'Trad' | 'Sport' | 'Top Rope',
-    area: route?.area || '',
-    sector: route?.sector || '',
+    name: '',
+    grade: '',
+    style: 'Trad' as 'Trad' | 'Sport' | 'Top Rope',
+    area: '',
+    sector: '',
   });
   const [riskRating, setRiskRating] = useState('none');
   const [aidGrade, setAidGrade] = useState('none');
   const { toast } = useToast();
+
+  // Reset form data when route changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      if (route) {
+        // Parse existing grade to extract base grade, risk rating, and aid grade
+        const gradeStr = route.grade;
+        let baseGrade = gradeStr;
+        let extractedRiskRating = 'none';
+        let extractedAidGrade = 'none';
+
+        // Extract risk rating (R or X)
+        if (gradeStr.includes('R') && !gradeStr.includes('A')) {
+          baseGrade = gradeStr.replace('R', '').trim();
+          extractedRiskRating = 'R';
+        } else if (gradeStr.includes('X') && !gradeStr.includes('A')) {
+          baseGrade = gradeStr.replace('X', '').trim();
+          extractedRiskRating = 'X';
+        }
+
+        // Extract aid grade (A0-A5)
+        const aidMatch = gradeStr.match(/A[0-5]/);
+        if (aidMatch) {
+          extractedAidGrade = aidMatch[0];
+          baseGrade = baseGrade.replace(aidMatch[0], '').trim();
+        }
+
+        setFormData({
+          name: route.name,
+          grade: baseGrade,
+          style: route.style,
+          area: route.area,
+          sector: route.sector,
+        });
+        setRiskRating(extractedRiskRating);
+        setAidGrade(extractedAidGrade);
+      } else {
+        // Reset for new route
+        setFormData({
+          name: '',
+          grade: '',
+          style: 'Trad',
+          area: '',
+          sector: '',
+        });
+        setRiskRating('none');
+        setAidGrade('none');
+      }
+    }
+  }, [route, open]);
 
   const handleSave = () => {
     if (!formData.name.trim() || !formData.grade || !formData.area.trim() || !formData.sector.trim()) {

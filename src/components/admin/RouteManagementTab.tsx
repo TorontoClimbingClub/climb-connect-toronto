@@ -25,6 +25,7 @@ export function RouteManagementTab() {
   );
 
   const handleEditRoute = (route: ClimbingRoute) => {
+    console.log('Editing route:', route);
     setSelectedRoute(route);
     setIsEditDialogOpen(true);
   };
@@ -35,13 +36,19 @@ export function RouteManagementTab() {
   };
 
   const handleSaveRoute = (routeData: Partial<ClimbingRoute>) => {
+    console.log('Saving route data:', routeData);
+    
     if (selectedRoute) {
       // Edit existing route
-      setRoutes(prev => prev.map(route => 
-        route.id === selectedRoute.id 
-          ? { ...route, ...routeData }
-          : route
-      ));
+      setRoutes(prev => {
+        const updatedRoutes = prev.map(route => 
+          route.id === selectedRoute.id 
+            ? { ...route, ...routeData }
+            : route
+        );
+        console.log('Updated routes:', updatedRoutes);
+        return updatedRoutes;
+      });
       toast({
         title: "Route Updated",
         description: `${routeData.name} has been updated successfully`,
@@ -56,12 +63,19 @@ export function RouteManagementTab() {
         area: routeData.area!,
         sector: routeData.sector!,
       };
-      setRoutes(prev => [...prev, newRoute]);
+      setRoutes(prev => {
+        const updatedRoutes = [...prev, newRoute];
+        console.log('Added new route:', newRoute);
+        return updatedRoutes;
+      });
       toast({
         title: "Route Added",
         description: `${routeData.name} has been added successfully`,
       });
     }
+    
+    setIsEditDialogOpen(false);
+    setSelectedRoute(null);
   };
 
   const handleDeleteRoute = (routeId: string) => {
