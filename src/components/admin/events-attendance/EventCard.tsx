@@ -97,21 +97,16 @@ export function EventCard({
             
             {event.participants.length > 0 ? (
               <div className="space-y-2">
-                {event.participants
-                  .filter((participant: EventParticipant) => 
-                    event.event_status.status === 'ended' ? 
-                    participant.attendance_status === 'pending' : true
-                  )
-                  .map((participant: EventParticipant) => (
-                    <EventParticipantItem
-                      key={participant.id}
-                      participant={participant}
-                      eventId={event.id}
-                      eventStatus={event.event_status.status}
-                      onConfirmAttendance={onConfirmAttendance}
-                      onRejectAttendance={onRejectAttendance}
-                    />
-                  ))}
+                {event.participants.map((participant: EventParticipant) => (
+                  <EventParticipantItem
+                    key={participant.id}
+                    participant={participant}
+                    eventId={event.id}
+                    eventStatus={event.event_status.status}
+                    onConfirmAttendance={onConfirmAttendance}
+                    onRejectAttendance={onRejectAttendance}
+                  />
+                ))}
               </div>
             ) : (
               <p className="text-stone-500 text-sm">No participants registered for this event</p>

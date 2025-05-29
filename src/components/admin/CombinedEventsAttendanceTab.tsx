@@ -42,7 +42,11 @@ export function CombinedEventsAttendanceTab({
       }));
       fetchEventsWithParticipants(eventsWithStatus);
     }
-  }, [events]);
+  }, [events, getEventStatus]);
+
+  const handleRefreshAfterUpdate = () => {
+    onRefreshEvents();
+  };
 
   return (
     <div className="space-y-6">
@@ -66,7 +70,7 @@ export function CombinedEventsAttendanceTab({
               event={event}
               canManageUsers={canManageUsers}
               onDeleteEvent={onDeleteEvent}
-              onRefreshEvents={onRefreshEvents}
+              onRefreshEvents={handleRefreshAfterUpdate}
               onConfirmAttendance={handleConfirmAttendance}
               onRejectAttendance={handleRejectAttendance}
             />

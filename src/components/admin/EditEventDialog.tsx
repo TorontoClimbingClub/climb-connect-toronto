@@ -27,7 +27,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
     details: (event as any).details || "",
     date: event.date,
     time: event.time,
-    end_time: (event as any).end_time || "",
+    end_time: event.end_time || "",
     location: event.location,
     max_participants: event.max_participants || "",
     difficulty_level: event.difficulty_level || "",
