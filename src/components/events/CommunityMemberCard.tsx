@@ -6,6 +6,8 @@ import { Car, Phone, Mountain, Package, Users } from "lucide-react";
 import { CommunityMember } from "@/types/community";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { ClimbCompletion } from "@/hooks/useClimbCompletions";
+import { BadgeIcon } from "@/components/badges/BadgeIcon";
+import { useBadges } from "@/hooks/useBadges";
 
 interface CommunityMemberCardProps {
   member: CommunityMember;
@@ -24,6 +26,8 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
   hiddenStyles,
   onClick
 }: CommunityMemberCardProps) {
+  const { getUserBadges } = useBadges();
+  
   // Ensure member object has all required properties with defaults
   const safeMember = {
     id: member?.id || '',
@@ -44,6 +48,9 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     show_top_rope_progress: member?.show_top_rope_progress ?? true,
     allow_profile_viewing: member?.allow_profile_viewing ?? true,
   };
+
+  // Get user badges
+  const userBadges = getUserBadges(safeMember.id);
 
   // Apply privacy settings consistently for all users
   const shouldShowClimbingLevel = safeMember.show_climbing_level;
@@ -108,6 +115,26 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
             </div>
           )}
         </div>
+
+        {/* User Badges */}
+        {userBadges.length > 0 && (
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-1">
+              {userBadges.slice(0, 3).map((userBadge) => (
+                <BadgeIcon 
+                  key={userBadge.id} 
+                  badge={userBadge.badge} 
+                  size="sm" 
+                />
+              ))}
+              {userBadges.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{userBadges.length - 3} more
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Climbing Level and Experience - respect privacy settings */}
         {shouldShowClimbingLevel && (safeMember.climbing_level || safeMember.climbing_experience.length > 0) && (

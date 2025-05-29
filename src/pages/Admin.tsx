@@ -5,6 +5,7 @@ import { UsersTab } from "@/components/admin/UsersTab";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { RouteManagementTab } from "@/components/admin/RouteManagementTab";
 import { ConsoleLogTab } from "@/components/admin/ConsoleLogTab";
+import { AttendanceApprovalsTab } from "@/components/admin/AttendanceApprovalsTab";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useUserHandlers, useEventHandlers } from "@/utils/admin";
 
@@ -47,16 +48,21 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Admin Panel</h1>
-          <p className="text-stone-600">Manage TCC users, events, routes, and view console logs</p>
+          <p className="text-stone-600">Manage TCC users, events, routes, attendance, and view console logs</p>
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="attendance" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="attendance">Attendance</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="routes">Routes</TabsTrigger>
             <TabsTrigger value="console">Console</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="attendance">
+            <AttendanceApprovalsTab />
+          </TabsContent>
 
           <TabsContent value="users">
             <UsersTab 

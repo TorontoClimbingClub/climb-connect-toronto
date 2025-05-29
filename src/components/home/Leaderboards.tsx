@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Mountain, Users, Package } from "lucide-react";
+import { Trophy, Mountain, Users, Package, Star } from "lucide-react";
 import { useLeaderboards } from "@/hooks/useLeaderboards";
 
 export function Leaderboards() {
@@ -38,6 +37,14 @@ export function Leaderboards() {
 
   const leaderboardSections = [
     {
+      title: "🏆 Event Enthusiasts",
+      icon: Star,
+      data: topEventAttendees,
+      metric: "Events Attended",
+      isGrade: false,
+      isProminent: true
+    },
+    {
       title: "Top Grade Climbers",
       icon: Mountain,
       data: topGradeClimbers,
@@ -72,13 +79,6 @@ export function Leaderboards() {
       metric: "Equipment Items",
       isGrade: false,
       isGear: true
-    },
-    {
-      title: "Event Enthusiasts",
-      icon: Users,
-      data: topEventAttendees,
-      metric: "Events Attended",
-      isGrade: false
     }
   ];
 
@@ -92,8 +92,52 @@ export function Leaderboards() {
         <p className="text-stone-600">Celebrating our most active climbers</p>
       </div>
 
+      {/* Event Enthusiasts - Prominent Display */}
+      <div className="mb-8">
+        <Card className="border-2 border-[#E55A2B] bg-gradient-to-r from-orange-50 to-red-50 shadow-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-[#E55A2B] p-3 rounded-lg">
+                <Star className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-bold text-[#E55A2B]">🏆 Event Enthusiasts</CardTitle>
+                <p className="text-sm text-stone-600">Most dedicated event attendees</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {topEventAttendees.length > 0 ? (
+                topEventAttendees.map((user, index) => (
+                  <div key={user.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className={`text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center ${
+                        index === 0 ? 'bg-yellow-100 text-yellow-600' :
+                        index === 1 ? 'bg-gray-100 text-gray-600' :
+                        index === 2 ? 'bg-orange-100 text-orange-600' :
+                        'bg-stone-100 text-stone-600'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <span className="font-medium text-[#E55A2B]">{user.full_name}</span>
+                    </div>
+                    <Badge variant="outline" className="bg-[#E55A2B] text-white border-[#E55A2B]">
+                      {user.metric_value} events
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-stone-500 text-center py-4">No data available</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Other Leaderboards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {leaderboardSections.map((section) => (
+        {leaderboardSections.slice(1).map((section) => (
           <Card key={section.title} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
