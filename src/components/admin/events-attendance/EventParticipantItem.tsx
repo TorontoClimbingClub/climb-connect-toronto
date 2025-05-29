@@ -17,9 +17,9 @@ interface EventParticipantItemProps {
   participant: EventParticipant;
   eventId: string;
   eventStatus: string;
-  onConfirmAttendance: (userId: string, eventId: string) => void;
-  onRejectAttendance: (userId: string, eventId: string) => void;
-  onResetAttendance?: (userId: string, eventId: string) => void;
+  onConfirmAttendance: (userId: string, eventId: string) => Promise<void>;
+  onRejectAttendance: (userId: string, eventId: string) => Promise<void>;
+  onResetAttendance?: (userId: string, eventId: string) => Promise<void>;
 }
 
 export function EventParticipantItem({ 
@@ -40,20 +40,20 @@ export function EventParticipantItem({
     switch (participant.attendance_status) {
       case 'approved':
         return (
-          <Badge variant="default" className="text-xs bg-green-600 text-white">
+          <Badge key={`${participant.user_id}-approved`} variant="default" className="text-xs bg-green-600 text-white">
             Confirmed
           </Badge>
         );
       case 'rejected':
         return (
-          <Badge variant="destructive" className="text-xs bg-red-600 text-white">
+          <Badge key={`${participant.user_id}-rejected`} variant="destructive" className="text-xs bg-red-600 text-white">
             Not Present
           </Badge>
         );
       case 'pending':
       default:
         return (
-          <Badge variant="secondary" className="text-xs bg-gray-500 text-white">
+          <Badge key={`${participant.user_id}-pending`} variant="secondary" className="text-xs bg-gray-500 text-white">
             Pending
           </Badge>
         );
@@ -67,6 +67,32 @@ export function EventParticipantItem({
   const isRejected = participant.attendance_status === 'rejected';
 
   console.log(`🔘 [BUTTONS] User ${participant.full_name} - Pending: ${isPending}, Approved: ${isApproved}, Rejected: ${isRejected}`);
+
+  const handleConfirm = async () => {
+    try {
+      await onConfirmAttendance(participant.user_id, eventId);
+    } catch (error) {
+      console.error('Error confirming attendance:', error);
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await onRejectAttendance(participant.user_id, eventId);
+    } catch (error) {
+      console.error('Error rejecting attendance:', error);
+    }
+  };
+
+  const handleReset = async () => {
+    if (onResetAttendance) {
+      try {
+        await onResetAttendance(participant.user_id, eventId);
+      } catch (error) {
+        console.error('Error resetting attendance:', error);
+      }
+    }
+  };
 
   return (
     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -87,7 +113,7 @@ export function EventParticipantItem({
             <>
               <Button
                 size="sm"
-                onClick={() => onConfirmAttendance(participant.user_id, eventId)}
+                onClick={handleConfirm}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Check className="h-4 w-4 mr-1" />
@@ -96,7 +122,7 @@ export function EventParticipantItem({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onRejectAttendance(participant.user_id, eventId)}
+                onClick={handleReject}
                 className="text-red-600 hover:text-red-700"
               >
                 <X className="h-4 w-4 mr-1" />
@@ -109,7 +135,7 @@ export function EventParticipantItem({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onResetAttendance(participant.user_id, eventId)}
+              onClick={handleReset}
               className="text-gray-600 hover:text-gray-700"
             >
               <RotateCcw className="h-4 w-4 mr-1" />
@@ -120,7 +146,7 @@ export function EventParticipantItem({
           {isRejected && (
             <Button
               size="sm"
-              onClick={() => onConfirmAttendance(participant.user_id, eventId)}
+              onClick={handleConfirm}
               className="bg-green-600 hover:bg-green-700"
             >
               <Check className="h-4 w-4 mr-1" />
@@ -132,7 +158,7 @@ export function EventParticipantItem({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onRejectAttendance(participant.user_id, eventId)}
+              onClick={handleReject}
               className="text-red-600 hover:text-red-700"
             >
               <X className="h-4 w-4 mr-1" />
