@@ -2,34 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  max_participants: number | null;
-  difficulty_level: string | null;
-  organizer_id: string;
-  participants_count?: number;
-  carpool_seats?: number;
-  equipment_count?: number;
-}
-
-interface Participant {
-  id: string;
-  user_id: string;
-  is_carpool_driver: boolean | null;
-  available_seats: number | null;
-  joined_at: string;
-  full_name: string;
-  phone: string | null;
-  carpool_driver_notes?: string | null;
-  assigned_driver_id?: string | null;
-  needs_carpool?: boolean | null;
-}
+import { Event, Participant } from "@/types/events";
 
 interface Equipment {
   id: string;
