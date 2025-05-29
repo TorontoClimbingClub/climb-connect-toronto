@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
@@ -64,7 +65,6 @@ export default function Events() {
       <div className="max-w-md mx-auto p-4">
         <CommunityStats
           memberCount={members.length}
-          loading={membersLoading}
         />
 
         <div className="mt-8">
@@ -92,7 +92,15 @@ export default function Events() {
           </h2>
           <div className="space-y-4">
             {members.slice(0, 3).map((member) => (
-              <CommunityMemberCard key={member.id} member={member} />
+              <CommunityMemberCard 
+                key={member.id} 
+                member={member}
+                userStats={{ completions: 0, avgGrade: "N/A" }}
+                isCurrentUser={false}
+                canViewProfile={true}
+                hiddenStyles={[]}
+                onClick={() => {}}
+              />
             ))}
           </div>
         </div>

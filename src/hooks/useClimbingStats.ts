@@ -25,14 +25,42 @@ export const useClimbingStats = (userId: string | undefined) => {
 
     const fetchStats = async () => {
       try {
-        const { data, error } = await supabase.rpc('get_user_climbing_stats', {
-          user_id_param: userId
-        });
+        // Get all completions for the user with route information
+        const { data: completions, error } = await supabase
+          .from('climb_completions')
+          .select(`
+            *,
+            routes!inner(*)
+          `)
+          .eq('user_id', userId);
 
         if (error) throw error;
 
-        if (data && data.length > 0) {
-          setStats(data[0]);
+        if (completions && completions.length > 0) {
+          // Calculate stats from the completions data
+          const now = new Date();
+          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+          const totalCompletions = completions.length;
+          const tradCompletions = completions.filter(c => c.routes.style === 'Trad').length;
+          const sportCompletions = completions.filter(c => c.routes.style === 'Sport').length;
+          const topRopeCompletions = completions.filter(c => c.routes.style === 'Top Rope').length;
+          const recentCompletions = completions.filter(c => 
+            new Date(c.completed_at) >= thirtyDaysAgo
+          ).length;
+
+          // Find hardest grade (simplified - just get the highest grade string)
+          const grades = completions.map(c => c.routes.grade).sort();
+          const hardestGrade = grades.length > 0 ? grades[grades.length - 1] : null;
+
+          setStats({
+            total_completions: totalCompletions,
+            trad_completions: tradCompletions,
+            sport_completions: sportCompletions,
+            top_rope_completions: topRopeCompletions,
+            hardest_grade: hardestGrade,
+            recent_completions: recentCompletions
+          });
         } else {
           setStats({
             total_completions: 0,

@@ -18,9 +18,9 @@ export function useOptimizedEvents() {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Use the new events_with_stats view for better performance
+      // Use the existing events table and manually calculate stats
       const { data: events, error } = await supabase
-        .from('events_with_stats')
+        .from('events')
         .select('*')
         .gte('date', today)
         .order('date', { ascending: true })
@@ -28,8 +28,46 @@ export function useOptimizedEvents() {
 
       if (error) throw error;
 
+      // Fetch additional stats for each event
+      const eventsWithStats = await Promise.all(
+        (events || []).map(async (event) => {
+          if (!mountedRef.current) return null;
+
+          const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
+            supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', event.id).abortSignal(abortController.signal),
+            supabase.from('event_participants').select('available_seats, assigned_driver_id, user_id').eq('event_id', event.id).not('available_seats', 'is', null).abortSignal(abortController.signal),
+            supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', event.id).abortSignal(abortController.signal)
+          ]);
+
+          // Calculate available seats by subtracting assigned passengers from total seats
+          let totalAvailableSeats = 0;
+          if (carpoolResult.data) {
+            for (const driver of carpoolResult.data) {
+              if (driver.available_seats) {
+                // Count assigned passengers for this driver
+                const assignedPassengers = participantsResult.data?.filter(p => p.assigned_driver_id === driver.user_id).length || 0;
+                const availableSeats = Math.max(0, driver.available_seats - assignedPassengers);
+                totalAvailableSeats += availableSeats;
+              }
+            }
+          }
+
+          const totalCarpoolSeats = carpoolResult.data?.reduce((sum, p) => sum + (p.available_seats || 0), 0) || 0;
+
+          return {
+            ...event,
+            participants_count: participantsResult.count || 0,
+            carpool_seats: totalCarpoolSeats,
+            available_carpool_seats: totalAvailableSeats,
+            equipment_count: equipmentResult.count || 0
+          };
+        })
+      );
+
+      const validEvents = eventsWithStats.filter(Boolean) as Event[];
+
       if (mountedRef.current) {
-        setUpcomingEvents(events || []);
+        setUpcomingEvents(validEvents);
       }
     } catch (error: any) {
       if (error.name !== 'AbortError' && mountedRef.current) {
