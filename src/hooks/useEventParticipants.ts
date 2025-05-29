@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
@@ -19,6 +19,8 @@ export const useEventParticipants = () => {
   const [loading, setLoading] = useState(false);
   const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
   const { toast } = useToast();
+  const fetchingRef = useRef(false);
+  const lastEventIdsRef = useRef<string>('');
 
   // Set up real-time subscriptions for participants and approvals
   useEffect(() => {
@@ -33,7 +35,13 @@ export const useEventParticipants = () => {
         },
         (payload) => {
           console.log('🔄 Event participants updated:', payload);
-          // Don't auto-refresh here to avoid infinite loops
+          // Debounce to prevent rapid updates
+          setTimeout(() => {
+            if (!fetchingRef.current) {
+              // Trigger a refresh only if we're not already fetching
+              refreshApprovals();
+            }
+          }, 500);
         }
       )
       .on(
@@ -63,6 +71,14 @@ export const useEventParticipants = () => {
       return;
     }
 
+    // Prevent concurrent fetches and unnecessary re-fetches
+    const eventIds = events.map(e => e.id).sort().join(',');
+    if (fetchingRef.current || eventIds === lastEventIdsRef.current) {
+      return;
+    }
+
+    fetchingRef.current = true;
+    lastEventIdsRef.current = eventIds;
     setLoading(true);
     console.log('Fetching participants for events:', events.length);
     
@@ -146,6 +162,7 @@ export const useEventParticipants = () => {
       });
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   }, [approvals, toast]);
 

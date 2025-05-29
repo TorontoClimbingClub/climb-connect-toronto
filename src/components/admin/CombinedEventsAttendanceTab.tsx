@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import type { Event } from "@/types/events";
 import { useEventStatus } from "@/hooks/useEventStatus";
 import { useEventParticipants } from "@/hooks/useEventParticipants";
@@ -33,40 +33,35 @@ export function CombinedEventsAttendanceTab({
     handleRejectAttendance 
   } = useEventParticipants();
 
-  // Load events with participants when component mounts or events change
+  // Memoize events with status to prevent unnecessary recalculations
+  const eventsWithStatus = useMemo(() => {
+    return events.map(event => ({
+      ...event,
+      event_status: getEventStatus(event)
+    }));
+  }, [events, getEventStatus]);
+
+  // Load events with participants when events change
   useEffect(() => {
     console.log('Events changed, total:', events.length);
     if (events.length > 0) {
-      const eventsWithStatus = events.map(event => ({
-        ...event,
-        event_status: getEventStatus(event)
-      }));
       console.log('Calling fetchEventsWithParticipants with events:', eventsWithStatus.length);
       fetchEventsWithParticipants(eventsWithStatus);
     } else {
-      // Clear events if no events provided
       fetchEventsWithParticipants([]);
     }
-  }, [events, getEventStatus, fetchEventsWithParticipants]);
+  }, [eventsWithStatus.length, fetchEventsWithParticipants]); // Only depend on length to prevent loops
 
   const handleRefreshAfterUpdate = async () => {
     console.log('Refreshing after update...');
-    // First refresh the events from the database
     await onRefreshEvents();
-    
-    // The useEffect above will automatically trigger fetchEventsWithParticipants
-    // when events change, so we don't need to call it manually here
   };
 
-  // Show loading state while fetching participants, but also show events count
-  const isLoading = participantsLoading;
-  
   // Use eventsWithParticipants if available, otherwise fall back to events with basic structure
   const displayEvents = eventsWithParticipants.length > 0 
     ? eventsWithParticipants 
-    : events.map(event => ({
+    : eventsWithStatus.map(event => ({
         ...event,
-        event_status: getEventStatus(event),
         participants: [],
         participants_count: 0,
         event_date_time: new Date(`${event.date}T${event.time}`)
@@ -76,7 +71,7 @@ export function CombinedEventsAttendanceTab({
     eventsCount: events.length,
     eventsWithParticipantsCount: eventsWithParticipants.length,
     displayEventsCount: displayEvents.length,
-    isLoading,
+    participantsLoading,
     showCreateForm
   });
 
@@ -96,7 +91,7 @@ export function CombinedEventsAttendanceTab({
 
       {!showCreateForm && (
         <div className="space-y-4">
-          {isLoading && events.length > 0 && (
+          {participantsLoading && events.length > 0 && eventsWithParticipants.length === 0 && (
             <div className="text-center text-stone-600">
               Loading participants for {events.length} events...
             </div>
@@ -115,7 +110,7 @@ export function CombinedEventsAttendanceTab({
               />
             ))
           ) : (
-            !isLoading && <EmptyEventsState />
+            !participantsLoading && <EmptyEventsState />
           )}
         </div>
       )}
