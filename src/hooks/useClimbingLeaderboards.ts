@@ -16,10 +16,15 @@ export const processClimbingData = (
   profilesData: any[],
   completionsData: any[]
 ) => {
-  console.log('Processing climbing data:', { 
+  console.log('🔍 [CLIMBING DEBUG] Processing climbing data:', { 
     profiles: profilesData.length, 
     completions: completionsData.length 
   });
+
+  // Log sample data to understand structure
+  if (completionsData.length > 0) {
+    console.log('📊 [CLIMBING DATA] Sample completion:', completionsData[0]);
+  }
 
   // Group completions by user
   const userStats = completionsData.reduce((acc: any, completion) => {
@@ -27,8 +32,13 @@ export const processClimbingData = (
     const grade = completion.routes?.grade;
     const style = completion.routes?.style;
     
-    if (!userId || !grade || !style) {
-      console.warn('Incomplete completion data:', completion);
+    if (!userId) {
+      console.warn('⚠️ [CLIMBING WARNING] Completion missing user_id:', completion);
+      return acc;
+    }
+    
+    if (!grade || !style) {
+      console.warn('⚠️ [CLIMBING WARNING] Completion missing route data:', { userId, grade, style, completion });
       return acc;
     }
     
@@ -46,32 +56,52 @@ export const processClimbingData = (
     acc[userId].routes.push({ grade, style });
     
     // Count by style
-    if (style === 'Traditional') acc[userId].tradRoutes++;
-    if (style === 'Sport') acc[userId].sportRoutes++;
-    if (style === 'Top Rope') acc[userId].topRopeRoutes++;
+    if (style === 'Traditional') {
+      acc[userId].tradRoutes++;
+      console.log(`📈 [CLIMBING STATS] User ${userId} trad routes: ${acc[userId].tradRoutes}`);
+    }
+    if (style === 'Sport') {
+      acc[userId].sportRoutes++;
+      console.log(`📈 [CLIMBING STATS] User ${userId} sport routes: ${acc[userId].sportRoutes}`);
+    }
+    if (style === 'Top Rope') {
+      acc[userId].topRopeRoutes++;
+      console.log(`📈 [CLIMBING STATS] User ${userId} top rope routes: ${acc[userId].topRopeRoutes}`);
+    }
     
     // Track highest grade
     const gradeValue = gradeOrder[grade] || 0;
     if (gradeValue > acc[userId].highestGradeValue) {
       acc[userId].highestGrade = grade;
       acc[userId].highestGradeValue = gradeValue;
+      console.log(`🏆 [CLIMBING GRADE] User ${userId} new highest grade: ${grade} (${gradeValue})`);
     }
     
     return acc;
   }, {});
 
-  console.log('User stats calculated:', Object.keys(userStats).length, 'users');
+  console.log('📊 [CLIMBING STATS] User stats calculated:', Object.keys(userStats).length, 'users');
+  console.log('📊 [CLIMBING STATS] Sample user stats:', Object.values(userStats)[0]);
 
   // Create leaderboard entries for each category
   const createLeaderboard = (metric: string, isGrade = false) => {
+    console.log(`🔍 [CLIMBING DEBUG] Creating ${metric} leaderboard (isGrade: ${isGrade})`);
+    
     const results = Object.entries(userStats)
       .map(([userId, stats]: [string, any]) => {
         const profile = profilesData.find(p => p.id === userId);
-        if (!profile) return null;
+        if (!profile) {
+          console.warn(`⚠️ [CLIMBING WARNING] Profile not found for user: ${userId}`);
+          return null;
+        }
         
         const value = isGrade ? stats.highestGrade : stats[metric];
-        if (!value || (typeof value === 'number' && value === 0)) return null;
+        if (!value || (typeof value === 'number' && value === 0)) {
+          console.log(`📊 [CLIMBING FILTER] User ${userId} (${profile.full_name}) filtered out - ${metric}: ${value}`);
+          return null;
+        }
         
+        console.log(`✅ [CLIMBING INCLUDE] User ${userId} (${profile.full_name}) - ${metric}: ${value}`);
         return {
           id: userId,
           full_name: profile.full_name,
@@ -89,7 +119,8 @@ export const processClimbingData = (
       })
       .slice(0, 5); // Show top 5 for climbing leaderboards
 
-    console.log(`${metric} leaderboard:`, results.length, 'entries');
+    console.log(`📊 [CLIMBING RESULT] ${metric} leaderboard:`, results.length, 'entries');
+    console.log(`📊 [CLIMBING RESULT] ${metric} top entries:`, results);
     return results;
   };
 
@@ -100,6 +131,12 @@ export const processClimbingData = (
     topTopRopeClimbers: createLeaderboard('topRopeRoutes')
   };
 
-  console.log('Climbing leaderboards processed:', results);
+  console.log('🏁 [CLIMBING FINAL] All climbing leaderboards processed:', {
+    topGradeClimbers: results.topGradeClimbers.length,
+    topTradClimbers: results.topTradClimbers.length,
+    topSportClimbers: results.topSportClimbers.length,
+    topTopRopeClimbers: results.topTopRopeClimbers.length
+  });
+  
   return results;
 };

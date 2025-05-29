@@ -23,9 +23,12 @@ export function useLeaderboards() {
   const { toast } = useToast();
 
   const fetchAllLeaderboards = async () => {
-    console.log('Fetching all leaderboards data...');
+    console.log('🚀 [LEADERBOARD MAIN] Starting fetchAllLeaderboards...');
     setLoading(true);
+    
     try {
+      console.log('⏱️ [LEADERBOARD MAIN] Fetching all data in parallel...');
+      
       // Fetch all data in parallel
       const [profilesData, completionsData, gearData, eventData] = await Promise.all([
         fetchPublicProfiles(),
@@ -34,7 +37,7 @@ export function useLeaderboards() {
         fetchEventData()
       ]);
 
-      console.log('All data fetched successfully:', {
+      console.log('✅ [LEADERBOARD MAIN] All data fetched successfully:', {
         profiles: profilesData.length,
         completions: completionsData.length,
         gear: gearData.length,
@@ -42,6 +45,7 @@ export function useLeaderboards() {
       });
 
       // Process climbing leaderboards
+      console.log('⚙️ [LEADERBOARD MAIN] Processing climbing leaderboards...');
       const climbingResults = processClimbingData(profilesData, completionsData);
       setTopGradeClimbers(climbingResults.topGradeClimbers);
       setTopTradClimbers(climbingResults.topTradClimbers);
@@ -49,17 +53,28 @@ export function useLeaderboards() {
       setTopTopRopeClimbers(climbingResults.topTopRopeClimbers);
 
       // Process event leaderboard
+      console.log('⚙️ [LEADERBOARD MAIN] Processing event leaderboard...');
       const eventResults = processEventData(profilesData, eventData);
       setTopEventAttendees(eventResults);
 
       // Process gear leaderboard
+      console.log('⚙️ [LEADERBOARD MAIN] Processing gear leaderboard...');
       const gearResults = processGearData(profilesData, gearData);
       setTopGearOwners(gearResults);
 
-      console.log('All leaderboards processed successfully');
+      console.log('🎉 [LEADERBOARD MAIN] All leaderboards processed successfully');
+      console.log('📊 [LEADERBOARD SUMMARY] Final results:', {
+        topGradeClimbers: climbingResults.topGradeClimbers.length,
+        topTradClimbers: climbingResults.topTradClimbers.length,
+        topSportClimbers: climbingResults.topSportClimbers.length,
+        topTopRopeClimbers: climbingResults.topTopRopeClimbers.length,
+        topEventAttendees: eventResults.length,
+        topGearOwners: gearResults.length
+      });
 
     } catch (error: any) {
-      console.error('Error in fetchAllLeaderboards:', error);
+      console.error('💥 [LEADERBOARD CRITICAL] Error in fetchAllLeaderboards:', error);
+      console.error('💥 [LEADERBOARD CRITICAL] Error stack:', error.stack);
       toast({
         title: "Error",
         description: "Failed to load leaderboards",
@@ -67,6 +82,7 @@ export function useLeaderboards() {
       });
     } finally {
       setLoading(false);
+      console.log('🏁 [LEADERBOARD MAIN] fetchAllLeaderboards completed');
     }
   };
 
