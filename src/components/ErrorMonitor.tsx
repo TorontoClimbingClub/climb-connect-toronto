@@ -1,88 +1,64 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { errorLogger } from '@/utils/errorLogger';
 
 export const ErrorMonitor = () => {
   const { user } = useAuth();
+
+  const logError = useCallback((type: string, message: string, details?: any) => {
+    console.error(`[${type.toUpperCase()}]`, message, details || '');
+  }, []);
 
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       const errorMessage = event.message || 'Unknown error';
       
-      // Determine error type
-      let errorType: 'access_denied' | 'auth_error' | 'general_error' = 'general_error';
-      if (errorMessage.includes('Access') || errorMessage.includes('access')) {
-        errorType = 'access_denied';
-      } else if (errorMessage.includes('JWT') || errorMessage.includes('session') || errorMessage.includes('auth')) {
-        errorType = 'auth_error';
-      }
-
-      // Log the error instead of showing toast
-      errorLogger.log({
-        message: errorMessage,
+      logError('window_error', errorMessage, {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack,
         userId: user?.id,
         userEmail: user?.email,
-        route: window.location.pathname,
-        type: errorType,
-        details: event.filename || 'Unknown source',
-        stack: event.error?.stack,
-        source: 'window.error'
+        route: window.location.pathname
       });
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const errorMessage = event.reason?.message || 'Promise rejection';
       
-      let errorType: 'access_denied' | 'auth_error' | 'general_error' | 'network_error' = 'general_error';
-      if (errorMessage.includes('Access') || errorMessage.includes('access')) {
-        errorType = 'access_denied';
-      } else if (errorMessage.includes('JWT') || errorMessage.includes('session') || errorMessage.includes('auth')) {
-        errorType = 'auth_error';
-      } else if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('Failed to fetch')) {
-        errorType = 'network_error';
-      }
-
-      // Log the error instead of showing toast
-      errorLogger.log({
-        message: errorMessage,
+      logError('promise_rejection', errorMessage, {
+        reason: event.reason,
         userId: user?.id,
         userEmail: user?.email,
-        route: window.location.pathname,
-        type: errorType,
-        details: JSON.stringify(event.reason),
-        stack: event.reason?.stack,
-        source: 'promise.rejection'
+        route: window.location.pathname
       });
     };
 
-    // Also capture fetch errors
+    // Enhanced fetch wrapper with better error logging
     const originalFetch = window.fetch;
     window.fetch = async (...args) => {
       try {
         const response = await originalFetch(...args);
         if (!response.ok) {
-          errorLogger.log({
-            message: `HTTP ${response.status}: ${response.statusText}`,
+          logError('fetch_error', `HTTP ${response.status}: ${response.statusText}`, {
+            url: args[0],
+            status: response.status,
+            statusText: response.statusText,
             userId: user?.id,
             userEmail: user?.email,
-            route: window.location.pathname,
-            type: 'network_error',
-            details: `URL: ${args[0]}`,
-            source: 'fetch'
+            route: window.location.pathname
           });
         }
         return response;
       } catch (error: any) {
-        errorLogger.log({
-          message: `Fetch failed: ${error.message}`,
+        logError('fetch_exception', `Fetch failed: ${error.message}`, {
+          url: args[0],
+          error: error.message,
+          stack: error.stack,
           userId: user?.id,
           userEmail: user?.email,
-          route: window.location.pathname,
-          type: 'network_error',
-          details: `URL: ${args[0]}`,
-          stack: error.stack,
-          source: 'fetch'
+          route: window.location.pathname
         });
         throw error;
       }
@@ -94,10 +70,9 @@ export const ErrorMonitor = () => {
     return () => {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      // Restore original fetch
       window.fetch = originalFetch;
     };
-  }, [user]);
+  }, [user, logError]);
 
   return null;
 };

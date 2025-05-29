@@ -4,7 +4,7 @@ import { Navigation } from "@/components/Navigation";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { RouteManagementTab } from "@/components/admin/RouteManagementTab";
-import { ErrorLogTab } from "@/components/admin/ErrorLogTab";
+import { ConsoleLogTab } from "@/components/admin/ConsoleLogTab";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useUserHandlers, useEventHandlers } from "@/utils/admin";
 
@@ -47,7 +47,7 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto p-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">Admin Panel</h1>
-          <p className="text-stone-600">Manage TCC users, events, routes, and view error logs</p>
+          <p className="text-stone-600">Manage TCC users, events, routes, and view console logs</p>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
@@ -55,7 +55,7 @@ export default function Admin() {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="routes">Routes</TabsTrigger>
-            <TabsTrigger value="errors">Error Log</TabsTrigger>
+            <TabsTrigger value="console">Console</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -82,8 +82,8 @@ export default function Admin() {
             <RouteManagementTab />
           </TabsContent>
 
-          <TabsContent value="errors">
-            <ErrorLogTab />
+          <TabsContent value="console">
+            <ConsoleLogTab />
           </TabsContent>
         </Tabs>
       </div>

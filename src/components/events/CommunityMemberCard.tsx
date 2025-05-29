@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, Phone, Mountain, Package, Users } from "lucide-react";
@@ -15,7 +16,7 @@ interface CommunityMemberCardProps {
   onClick: () => void;
 }
 
-export function CommunityMemberCard({
+export const CommunityMemberCard = memo(function CommunityMemberCard({
   member,
   userStats,
   isCurrentUser,
@@ -44,10 +45,9 @@ export function CommunityMemberCard({
     allow_profile_viewing: member?.allow_profile_viewing ?? true,
   };
 
-  // Apply privacy settings for ALL users (including self) to avoid confusion
+  // Apply privacy settings consistently for all users
   const shouldShowClimbingLevel = safeMember.show_climbing_level;
   const shouldShowClimbingProgress = safeMember.show_climbing_progress;
-  const shouldShowCompletionStats = safeMember.show_completion_stats;
 
   // Calculate hidden styles based on privacy settings
   const getPrivacyFilteredHiddenStyles = () => {
@@ -58,19 +58,34 @@ export function CommunityMemberCard({
     return filtered;
   };
 
-  // Stable display values to prevent flickering
-  const displayEquipmentCount = safeMember.equipment_count;
-  const displayEventsCount = safeMember.events_count;
+  const handleCardClick = () => {
+    if (canViewProfile) {
+      onClick();
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick();
+    }
+  };
 
   return (
     <Card 
-      className={`${isCurrentUser ? "border-orange-200 bg-orange-50" : ""} ${canViewProfile ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
-      onClick={onClick}
+      className={`${isCurrentUser ? "border-orange-200 bg-orange-50" : ""} ${
+        canViewProfile ? "cursor-pointer hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-[#E55A2B] focus:ring-offset-2" : ""
+      }`}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={canViewProfile ? 0 : -1}
+      role={canViewProfile ? "button" : undefined}
+      aria-label={canViewProfile ? `View ${safeMember.full_name}'s profile` : undefined}
     >
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
-          <div>
-            <h3 className="font-semibold text-[#E55A2B]">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-[#E55A2B] truncate">
               {safeMember.full_name}
               {isCurrentUser && (
                 <Badge variant="outline" className="ml-2 text-xs">You</Badge>
@@ -78,20 +93,20 @@ export function CommunityMemberCard({
             </h3>
             {safeMember.phone && (
               <div className="flex items-center text-sm text-stone-600 mt-1">
-                <Phone className="h-3 w-3 mr-1" />
-                {safeMember.phone}
+                <Phone className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+                <span className="truncate">{safeMember.phone}</span>
               </div>
             )}
           </div>
           
-          <div className="flex flex-col gap-1">
-            {safeMember.is_carpool_driver && (
+          {safeMember.is_carpool_driver && (
+            <div className="flex-shrink-0 ml-2">
               <Badge variant="secondary" className="text-xs">
-                <Car className="h-3 w-3 mr-1" />
+                <Car className="h-3 w-3 mr-1" aria-hidden="true" />
                 Driver ({safeMember.passenger_capacity} seats)
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Climbing Level and Experience - respect privacy settings */}
@@ -99,8 +114,8 @@ export function CommunityMemberCard({
           <div className="mb-3 p-3 bg-stone-50 rounded-lg">
             <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
-                <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" />
-                <div>
+                <Mountain className="h-4 w-4 text-[#E55A2B] mt-1 flex-shrink-0" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
                   {safeMember.climbing_level && (
                     <p className="text-sm font-medium text-stone-700">
                       {safeMember.climbing_level}
@@ -118,7 +133,7 @@ export function CommunityMemberCard({
                 </div>
               </div>
               {safeMember.climbing_description && (
-                <p className="text-sm text-stone-700 mt-1">{safeMember.climbing_description}</p>
+                <p className="text-sm text-stone-700 mt-1 break-words">{safeMember.climbing_description}</p>
               )}
             </div>
           </div>
@@ -138,15 +153,15 @@ export function CommunityMemberCard({
 
         <div className="flex justify-between text-sm text-stone-600">
           <div className="flex items-center">
-            <Package className="h-4 w-4 mr-1" />
-            {displayEquipmentCount} gear items
+            <Package className="h-4 w-4 mr-1 flex-shrink-0" aria-hidden="true" />
+            <span>{safeMember.equipment_count} gear items</span>
           </div>
           <div className="flex items-center">
-            <Users className="h-4 w-4 mr-1" />
-            {displayEventsCount} events joined
+            <Users className="h-4 w-4 mr-1 flex-shrink-0" aria-hidden="true" />
+            <span>{safeMember.events_count} events joined</span>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-}
+});

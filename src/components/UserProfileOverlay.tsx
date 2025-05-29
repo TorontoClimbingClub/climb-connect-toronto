@@ -1,16 +1,14 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { memo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Car, Phone, Mountain, Package, Users, CheckCircle2, X } from "lucide-react";
-import { CommunityMember } from "@/types/community";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { X, Phone, Mountain, Car, Package, Users, Calendar } from "lucide-react";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
+import { CompletedRoutesList } from "@/components/profile/CompletedRoutesList";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
-import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
-import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
+import { CommunityMember } from "@/types/community";
 
 interface UserProfileOverlayProps {
   user: CommunityMember | null;
@@ -18,156 +16,145 @@ interface UserProfileOverlayProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOverlayProps) {
-  const { user: currentUser } = useAuth();
-  const { completions, getUserCompletionStats } = useClimbCompletions();
-  const { equipment: userEquipment } = useEquipmentProfile();
-  
+export const UserProfileOverlay = memo(function UserProfileOverlay({
+  user,
+  open,
+  onOpenChange
+}: UserProfileOverlayProps) {
+  const { getUserCompletionStats } = useClimbCompletions();
+
   if (!user) return null;
 
   const userStats = getUserCompletionStats(user.id);
-  const isOwnProfile = user.id === currentUser?.id;
+  const completions = userStats?.completions || [];
 
-  // Filter completions to only show this user's completions
-  const userCompletions = completions.filter(c => c.user_id === user.id);
-  const completedRoutes = userCompletions.map(completion => {
-    const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
-    return route ? { ...route, completedAt: completion.completed_at } : null;
-  }).filter(Boolean).sort((a, b) => {
-    if (!a || !b) return 0;
-    return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
-  });
+  const handleClose = () => {
+    onOpenChange(false);
+  };
 
+  // Calculate privacy-filtered hidden styles
   const getHiddenStyles = () => {
     const hidden: string[] = [];
-    // Apply privacy settings - only hide if user has specifically set to false AND it's not their own profile
-    if (!isOwnProfile && user.show_trad_progress === false) hidden.push('Trad');
-    if (!isOwnProfile && user.show_sport_progress === false) hidden.push('Sport');
-    if (!isOwnProfile && user.show_top_rope_progress === false) hidden.push('Top Rope');
+    if (!user.show_trad_progress) hidden.push('Trad');
+    if (!user.show_sport_progress) hidden.push('Sport');
+    if (!user.show_top_rope_progress) hidden.push('Top Rope');
     return hidden;
   };
 
-  // Apply privacy settings - show content if it's own profile OR if privacy setting allows it
-  const shouldShowClimbingLevel = isOwnProfile || (user.show_climbing_level ?? true);
-  const shouldShowClimbingProgress = isOwnProfile || (user.show_climbing_progress ?? true);
-  const shouldShowCompletionStats = isOwnProfile || (user.show_completion_stats ?? true);
-
-  // Get equipment for this user (only show for own profile for now)
-  const equipmentToShow = isOwnProfile ? userEquipment : [];
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-2 border-[#E55A2B] shadow-2xl">
-        <DialogHeader className="relative pb-4 border-b border-gray-200">
-          <DialogTitle className="text-2xl font-bold text-[#E55A2B] pr-8">{user.full_name}</DialogTitle>
-          <DialogDescription className="text-base text-gray-600">
-            View {isOwnProfile ? 'your' : `${user.full_name}'s`} climbing profile and achievements
-          </DialogDescription>
-          
-          {/* Enhanced close button - positioned prominently */}
-          <Button 
-            onClick={() => onOpenChange(false)}
-            variant="outline"
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        aria-describedby="user-profile-description"
+      >
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <DialogTitle className="text-xl font-bold text-[#E55A2B]">
+            {user.full_name}'s Profile
+          </DialogTitle>
+          <Button
+            variant="ghost"
             size="sm"
-            className="absolute top-0 right-0 border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600 font-medium"
+            onClick={handleClose}
+            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-2 focus:ring-[#E55A2B] focus:ring-offset-2"
+            aria-label="Close profile"
           >
-            <X className="h-4 w-4 mr-1" />
-            Close
+            <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
 
-        <div className="space-y-6 mt-6">
-          {/* Bio */}
-          {user.bio && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-stone-700">{user.bio}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Contact & Transport */}
-          <div className="space-y-3">
-            {user.phone && (
-              <div className="flex items-center text-sm text-stone-600">
-                <Phone className="h-4 w-4 mr-2" />
-                {user.phone}
-              </div>
-            )}
-            
-            {user.is_carpool_driver && (
-              <Badge variant="secondary" className="text-sm">
-                <Car className="h-4 w-4 mr-1" />
-                Driver ({user.passenger_capacity} seats available)
-              </Badge>
-            )}
-          </div>
-
-          {/* Climbing Info - respect privacy settings */}
-          {shouldShowClimbingLevel && (user.climbing_level || user.climbing_experience) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Mountain className="h-5 w-5" />
-                  Climbing Experience
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {user.climbing_level && (
-                  <p className="font-medium text-stone-700 mb-2">{user.climbing_level}</p>
-                )}
-                {user.climbing_experience && user.climbing_experience.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {user.climbing_experience.map((exp) => (
-                      <Badge key={exp} variant="outline">
-                        {exp}
-                      </Badge>
-                    ))}
+        <div id="user-profile-description" className="space-y-6">
+          {/* Basic Information */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4" aria-hidden="true" />
+                Basic Information
+              </h3>
+              
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium">Name:</span>
+                  <span>{user.full_name}</span>
+                </div>
+                
+                {user.phone && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-3 w-3" aria-hidden="true" />
+                    <span>{user.phone}</span>
                   </div>
                 )}
-                {user.climbing_description && (
-                  <p className="text-sm text-stone-600">{user.climbing_description}</p>
+                
+                {user.is_carpool_driver && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Car className="h-3 w-3" aria-hidden="true" />
+                    <Badge variant="secondary" className="text-xs">
+                      Driver ({user.passenger_capacity} seats available)
+                    </Badge>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Equipment List - Only for own profile for now */}
-          {isOwnProfile && equipmentToShow.length > 0 && (
+          {/* Climbing Information */}
+          {user.show_climbing_level && (user.climbing_level || user.climbing_experience?.length > 0 || user.climbing_description) && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Equipment ({equipmentToShow.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                  {equipmentToShow.map((item) => (
-                    <div key={item.id} className="p-2 bg-stone-50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-stone-900">{item.item_name}</span>
-                        <span className="text-sm text-stone-600">×{item.quantity}</span>
-                      </div>
-                      <div className="text-xs text-stone-500">
-                        {item.equipment_categories?.name}
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Mountain className="h-4 w-4" aria-hidden="true" />
+                  Climbing Information
+                </h3>
+                
+                <div className="space-y-3">
+                  {user.climbing_level && (
+                    <div>
+                      <span className="text-sm font-medium">Level: </span>
+                      <Badge variant="outline">{user.climbing_level}</Badge>
+                    </div>
+                  )}
+                  
+                  {user.climbing_experience && user.climbing_experience.length > 0 && (
+                    <div>
+                      <span className="text-sm font-medium">Experience: </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {user.climbing_experience.map((exp) => (
+                          <Badge key={exp} variant="outline" className="text-xs">
+                            {exp}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
+                  
+                  {user.climbing_description && (
+                    <div>
+                      <span className="text-sm font-medium">Description: </span>
+                      <p className="text-sm text-gray-700 mt-1 break-words">{user.climbing_description}</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Progress - respect privacy settings */}
-          {shouldShowClimbingProgress && (
+          {/* Bio */}
+          {user.bio && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Climbing Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-800 mb-3">About</h3>
+                <p className="text-sm text-gray-700 break-words">{user.bio}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Climbing Progress */}
+          {user.show_climbing_progress && completions.length > 0 && (
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-800 mb-3">Climbing Progress</h3>
                 <CompletionProgressBars 
-                  completions={userCompletions} 
+                  completions={completions}
+                  compact={false}
                   areaName="Rattlesnake Point"
                   hiddenStyles={getHiddenStyles()}
                 />
@@ -175,80 +162,33 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
             </Card>
           )}
 
-          {/* Completed Routes - respect privacy settings */}
-          {shouldShowCompletionStats && completedRoutes.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
-                  Completed Routes ({completedRoutes.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                  {completedRoutes.slice(0, 10).map((route) => {
-                    if (!route) return null;
-                    return (
-                      <div key={route.id} className="p-3 bg-stone-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-stone-900">{route.name}</h4>
-                          <Badge className={getStyleColor(route.style)} variant="secondary">
-                            {route.style}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-stone-600">
-                          <span className={getDifficultyColor(route.grade)}>
-                            {route.grade}
-                          </span>
-                          <span>{route.area}</span>
-                          <span className="text-xs">
-                            {new Date(route.completedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {completedRoutes.length > 10 && (
-                    <p className="text-sm text-stone-500 text-center">
-                      +{completedRoutes.length - 10} more routes
-                    </p>
-                  )}
+          {/* Activity Stats */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                Activity
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                  <span>{user.equipment_count || 0} gear items</span>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                  <span>{user.events_count || 0} events joined</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Completed Routes */}
+          {user.show_completion_stats && (
+            <CompletedRoutesList completions={completions} userId={user.id} />
           )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div className="p-3 bg-stone-50 rounded-lg">
-              <div className="flex items-center justify-center mb-1">
-                <Package className="h-4 w-4 mr-1" />
-              </div>
-              <p className="text-lg font-bold text-[#E55A2B]">{user.equipment_count || 0}</p>
-              <p className="text-xs text-stone-600">Gear Items</p>
-            </div>
-            <div className="p-3 bg-stone-50 rounded-lg">
-              <div className="flex items-center justify-center mb-1">
-                <Users className="h-4 w-4 mr-1" />
-              </div>
-              <p className="text-lg font-bold text-[#E55A2B]">{user.events_count || 0}</p>
-              <p className="text-xs text-stone-600">Events Joined</p>
-            </div>
-          </div>
-
-          {/* Bottom Close Button */}
-          <div className="pt-4 border-t">
-            <Button 
-              onClick={() => onOpenChange(false)}
-              className="w-full bg-[#E55A2B] hover:bg-[#D14B20] text-white font-semibold"
-              size="lg"
-            >
-              <X className="h-4 w-4 mr-2" />
-              Close Profile
-            </Button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
-}
+});
