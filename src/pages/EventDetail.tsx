@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,18 +132,6 @@ export default function EventDetail() {
         <div className="mb-6">
           <EventDetailsCard event={event} participantsCount={participants.length} />
         </div>
-
-        {/* Event Description/Details if available */}
-        {event.description && (
-          <div className="mb-6">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-stone-900 mb-3">Event Details</h3>
-              <div className="text-stone-700 whitespace-pre-wrap">
-                {event.description}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Carpool Section */}
         <div className="mb-6">

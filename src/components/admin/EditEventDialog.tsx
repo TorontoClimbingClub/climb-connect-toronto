@@ -183,6 +183,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
                   <SelectValue placeholder="Select difficulty level" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">No difficulty level</SelectItem>
                   <SelectItem value="Beginner">Beginner</SelectItem>
                   <SelectItem value="Intermediate">Intermediate</SelectItem>
                   <SelectItem value="Advanced">Advanced</SelectItem>
@@ -198,7 +199,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
                   <SelectValue placeholder="Select required climbing level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No requirement</SelectItem>
+                  <SelectItem value="none">No requirement</SelectItem>
                   <SelectItem value="Never Climbed">Never Climbed</SelectItem>
                   <SelectItem value="Beginner">Beginner</SelectItem>
                   <SelectItem value="Intermediate">Intermediate</SelectItem>
