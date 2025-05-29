@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Check, X, RotateCcw } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface EventParticipant {
   id: string;
@@ -30,14 +31,24 @@ export function EventParticipantItem({
   onRejectAttendance,
   onResetAttendance
 }: EventParticipantItemProps) {
+  const [localStatus, setLocalStatus] = useState<'pending' | 'approved' | 'rejected'>(
+    participant.attendance_status || 'pending'
+  );
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Update local status when participant prop changes
+  useEffect(() => {
+    setLocalStatus(participant.attendance_status || 'pending');
+  }, [participant.attendance_status]);
+
   const getUserInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const getAttendanceBadge = () => {
-    console.log(`🏷️ [BADGE] User ${participant.full_name} status: ${participant.attendance_status}`);
+    console.log(`🏷️ [BADGE] User ${participant.full_name} status: ${localStatus}`);
     
-    switch (participant.attendance_status) {
+    switch (localStatus) {
       case 'approved':
         return (
           <Badge key={`${participant.user_id}-approved`} variant="default" className="text-xs bg-green-600 text-white">
@@ -62,34 +73,51 @@ export function EventParticipantItem({
 
   // Show attendance buttons for all events - admins can manage attendance anytime
   const showAttendanceButtons = true;
-  const isPending = participant.attendance_status === 'pending' || !participant.attendance_status;
-  const isApproved = participant.attendance_status === 'approved';
-  const isRejected = participant.attendance_status === 'rejected';
+  const isPending = localStatus === 'pending';
+  const isApproved = localStatus === 'approved';
+  const isRejected = localStatus === 'rejected';
 
   console.log(`🔘 [BUTTONS] User ${participant.full_name} - Pending: ${isPending}, Approved: ${isApproved}, Rejected: ${isRejected}`);
 
   const handleConfirm = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
     try {
+      setLocalStatus('approved'); // Optimistic update
       await onConfirmAttendance(participant.user_id, eventId);
     } catch (error) {
       console.error('Error confirming attendance:', error);
+      setLocalStatus(participant.attendance_status || 'pending'); // Revert on error
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleReject = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
     try {
+      setLocalStatus('rejected'); // Optimistic update
       await onRejectAttendance(participant.user_id, eventId);
     } catch (error) {
       console.error('Error rejecting attendance:', error);
+      setLocalStatus(participant.attendance_status || 'pending'); // Revert on error
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleReset = async () => {
-    if (onResetAttendance) {
+    if (onResetAttendance && !isUpdating) {
+      setIsUpdating(true);
       try {
+        setLocalStatus('pending'); // Optimistic update
         await onResetAttendance(participant.user_id, eventId);
       } catch (error) {
         console.error('Error resetting attendance:', error);
+        setLocalStatus(participant.attendance_status || 'pending'); // Revert on error
+      } finally {
+        setIsUpdating(false);
       }
     }
   };
@@ -114,6 +142,7 @@ export function EventParticipantItem({
               <Button
                 size="sm"
                 onClick={handleConfirm}
+                disabled={isUpdating}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Check className="h-4 w-4 mr-1" />
@@ -123,6 +152,7 @@ export function EventParticipantItem({
                 size="sm"
                 variant="outline"
                 onClick={handleReject}
+                disabled={isUpdating}
                 className="text-red-600 hover:text-red-700"
               >
                 <X className="h-4 w-4 mr-1" />
@@ -136,6 +166,7 @@ export function EventParticipantItem({
               size="sm"
               variant="outline"
               onClick={handleReset}
+              disabled={isUpdating}
               className="text-gray-600 hover:text-gray-700"
             >
               <RotateCcw className="h-4 w-4 mr-1" />
@@ -147,6 +178,7 @@ export function EventParticipantItem({
             <Button
               size="sm"
               onClick={handleConfirm}
+              disabled={isUpdating}
               className="bg-green-600 hover:bg-green-700"
             >
               <Check className="h-4 w-4 mr-1" />
@@ -159,6 +191,7 @@ export function EventParticipantItem({
               size="sm"
               variant="outline"
               onClick={handleReject}
+              disabled={isUpdating}
               className="text-red-600 hover:text-red-700"
             >
               <X className="h-4 w-4 mr-1" />
