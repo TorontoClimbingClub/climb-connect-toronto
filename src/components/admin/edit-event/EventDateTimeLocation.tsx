@@ -6,6 +6,7 @@ interface EventDateTimeLocationProps {
   formData: {
     date: string;
     time: string;
+    end_time: string;
     location: string;
   };
   onChange: (field: string, value: string) => void;
@@ -14,7 +15,7 @@ interface EventDateTimeLocationProps {
 export function EventDateTimeLocation({ formData, onChange }: EventDateTimeLocationProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <Label htmlFor="date">Date *</Label>
           <Input
@@ -26,13 +27,22 @@ export function EventDateTimeLocation({ formData, onChange }: EventDateTimeLocat
           />
         </div>
         <div>
-          <Label htmlFor="time">Time *</Label>
+          <Label htmlFor="time">Start Time *</Label>
           <Input
             id="time"
             type="time"
             value={formData.time}
             onChange={(e) => onChange('time', e.target.value)}
             required
+          />
+        </div>
+        <div>
+          <Label htmlFor="end_time">End Time</Label>
+          <Input
+            id="end_time"
+            type="time"
+            value={formData.end_time}
+            onChange={(e) => onChange('end_time', e.target.value)}
           />
         </div>
       </div>

@@ -6,6 +6,7 @@ export interface Event {
   details?: string | null;
   date: string;
   time: string;
+  end_time?: string | null;
   location: string;
   max_participants: number | null;
   difficulty_level: string | null;

@@ -8,64 +8,69 @@ export interface LeaderboardUser {
 }
 
 export const fetchPublicProfiles = async () => {
-  const { data: profilesData, error: profilesError } = await supabase
+  console.log('Fetching public profiles...');
+  const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, allow_profile_viewing')
+    .select('id, full_name')
     .eq('allow_profile_viewing', true);
-
-  if (profilesError) {
-    console.error('Error fetching profiles:', profilesError);
-    throw profilesError;
+  
+  if (error) {
+    console.error('Error fetching profiles:', error);
+    throw error;
   }
-
-  console.log('Profiles data:', profilesData);
-  return profilesData || [];
+  
+  console.log('Profiles fetched:', data?.length);
+  return data || [];
 };
 
 export const fetchClimbCompletions = async () => {
-  const { data: completionsData, error: completionsError } = await supabase
+  console.log('Fetching climb completions...');
+  const { data, error } = await supabase
     .from('climb_completions')
-    .select('user_id, route_id');
-
-  if (completionsError) {
-    console.error('Error fetching completions:', completionsError);
-    throw completionsError;
+    .select(`
+      user_id,
+      route_id,
+      routes!inner(
+        grade,
+        style
+      )
+    `);
+  
+  if (error) {
+    console.error('Error fetching completions:', error);
+    throw error;
   }
-
-  console.log('Completions data:', completionsData);
-  return completionsData || [];
+  
+  console.log('Completions fetched:', data?.length);
+  return data || [];
 };
 
 export const fetchGearData = async () => {
-  const { data: gearData, error: gearError } = await supabase
+  console.log('Fetching gear data...');
+  const { data, error } = await supabase
     .from('user_equipment')
     .select('user_id, quantity');
-
-  if (gearError) {
-    console.error('Error fetching gear data:', gearError);
-    throw gearError;
+  
+  if (error) {
+    console.error('Error fetching gear:', error);
+    throw error;
   }
-
-  console.log('Gear data:', gearData);
-  return gearData || [];
+  
+  console.log('Gear data fetched:', data?.length);
+  return data || [];
 };
 
 export const fetchEventData = async () => {
-  const today = new Date().toISOString().split('T')[0];
+  console.log('Fetching event attendance data...');
+  const { data, error } = await supabase
+    .from('event_attendance_approvals')
+    .select('user_id, status');
   
-  const { data: eventData, error: eventError } = await supabase
-    .from('event_participants')
-    .select(`
-      user_id,
-      events!inner(date)
-    `)
-    .lt('events.date', today);
-
-  if (eventError) {
-    console.error('Error fetching event data:', eventError);
-    throw eventError;
+  if (error) {
+    console.error('Error fetching event data:', error);
+    throw error;
   }
-
-  console.log('Event data:', eventData);
-  return eventData || [];
+  
+  console.log('Event data fetched:', data?.length);
+  return data || [];
 };

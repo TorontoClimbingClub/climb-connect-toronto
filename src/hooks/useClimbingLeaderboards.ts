@@ -1,131 +1,87 @@
 
-import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
-import { gradeToNumber } from "@/utils/gradeUtils";
 import type { LeaderboardUser } from "./useLeaderboardData";
 
-interface UserClimbingStats {
-  full_name: string;
-  highest_grade_numeric: number;
-  highest_grade_display: string;
-  trad_count: number;
-  sport_count: number;
-  top_rope_count: number;
-}
+// Grade mapping for sorting
+const gradeOrder: { [key: string]: number } = {
+  '5.3': 1, '5.4': 2, '5.5': 3, '5.6': 4, '5.7': 5, '5.8': 6, '5.9': 7,
+  '5.10a': 8, '5.10b': 9, '5.10c': 10, '5.10d': 11,
+  '5.11a': 12, '5.11b': 13, '5.11c': 14, '5.11d': 15,
+  '5.12a': 16, '5.12b': 17, '5.12c': 18, '5.12d': 19,
+  '5.13a': 20, '5.13b': 21, '5.13c': 22, '5.13d': 23,
+  '5.14a': 24, '5.14b': 25, '5.14c': 26, '5.14d': 27,
+  '5.15a': 28, '5.15b': 29, '5.15c': 30, '5.15d': 31
+};
 
 export const processClimbingData = (
   profilesData: any[],
   completionsData: any[]
-): {
-  topGradeClimbers: LeaderboardUser[];
-  topTradClimbers: LeaderboardUser[];
-  topSportClimbers: LeaderboardUser[];
-  topTopRopeClimbers: LeaderboardUser[];
-} => {
-  const userClimbingStats: { [userId: string]: UserClimbingStats } = {};
-
-  // Initialize stats for all public profiles
-  profilesData.forEach(profile => {
-    userClimbingStats[profile.id] = {
-      full_name: profile.full_name,
-      highest_grade_numeric: 0,
-      highest_grade_display: '5.0',
-      trad_count: 0,
-      sport_count: 0,
-      top_rope_count: 0
-    };
-  });
-
-  console.log('Processing completions:', completionsData);
-  console.log('Available routes count:', rattlesnakeRoutes.length);
-
-  completionsData.forEach(completion => {
-    // Convert route_id to string to ensure proper matching
-    const routeId = String(completion.route_id);
-    const route = rattlesnakeRoutes.find(r => String(r.id) === routeId);
+) => {
+  // Group completions by user
+  const userStats = completionsData.reduce((acc: any, completion) => {
+    const userId = completion.user_id;
+    const grade = completion.routes.grade;
+    const style = completion.routes.style;
     
-    console.log(`Looking for route ID: ${routeId}, found:`, route?.name, route?.grade, route?.style);
+    if (!acc[userId]) {
+      acc[userId] = {
+        routes: [],
+        tradRoutes: 0,
+        sportRoutes: 0,
+        topRopeRoutes: 0,
+        highestGrade: null,
+        highestGradeValue: 0
+      };
+    }
     
-    if (!route || !userClimbingStats[completion.user_id]) {
-      if (!route) {
-        console.log(`Route not found for ID: ${routeId}`);
-      }
-      return;
-    }
-
-    const gradeNumeric = gradeToNumber(route.grade);
-    console.log(`User ${completion.user_id}: Route ${route.name} (${route.grade}) = ${gradeNumeric} numeric`);
+    acc[userId].routes.push({ grade, style });
     
-    if (gradeNumeric > userClimbingStats[completion.user_id].highest_grade_numeric) {
-      userClimbingStats[completion.user_id].highest_grade_numeric = gradeNumeric;
-      userClimbingStats[completion.user_id].highest_grade_display = route.grade;
-      console.log(`Updated highest grade for user ${completion.user_id}: ${route.grade} (${gradeNumeric})`);
+    // Count by style
+    if (style === 'Traditional') acc[userId].tradRoutes++;
+    if (style === 'Sport') acc[userId].sportRoutes++;
+    if (style === 'Top Rope') acc[userId].topRopeRoutes++;
+    
+    // Track highest grade
+    const gradeValue = gradeOrder[grade] || 0;
+    if (gradeValue > acc[userId].highestGradeValue) {
+      acc[userId].highestGrade = grade;
+      acc[userId].highestGradeValue = gradeValue;
     }
+    
+    return acc;
+  }, {});
 
-    // Count by climbing style
-    if (route.style === 'Trad') {
-      userClimbingStats[completion.user_id].trad_count++;
-    } else if (route.style === 'Sport') {
-      userClimbingStats[completion.user_id].sport_count++;
-    } else if (route.style === 'Top Rope') {
-      userClimbingStats[completion.user_id].top_rope_count++;
-    }
-  });
-
-  console.log('Final user climbing stats:', userClimbingStats);
-
-  // Top grade climbers (only those who have climbed something)
-  const topGradeClimbers = Object.entries(userClimbingStats)
-    .filter(([,stats]) => stats.highest_grade_numeric > 0)
-    .sort(([,a], [,b]) => {
-      console.log(`Comparing grades: ${a.full_name} (${a.highest_grade_display}=${a.highest_grade_numeric}) vs ${b.full_name} (${b.highest_grade_display}=${b.highest_grade_numeric})`);
-      return b.highest_grade_numeric - a.highest_grade_numeric;
-    })
-    .slice(0, 5)
-    .map(([userId, stats]) => ({
-      id: userId,
-      full_name: stats.full_name,
-      metric_value: stats.highest_grade_display
-    }));
-
-  console.log('Top grade climbers result:', topGradeClimbers);
-
-  // Top trad climbers
-  const topTradClimbers = Object.entries(userClimbingStats)
-    .filter(([,stats]) => stats.trad_count > 0)
-    .sort(([,a], [,b]) => b.trad_count - a.trad_count)
-    .slice(0, 5)
-    .map(([userId, stats]) => ({
-      id: userId,
-      full_name: stats.full_name,
-      metric_value: stats.trad_count
-    }));
-
-  // Top sport climbers
-  const topSportClimbers = Object.entries(userClimbingStats)
-    .filter(([,stats]) => stats.sport_count > 0)
-    .sort(([,a], [,b]) => b.sport_count - a.sport_count)
-    .slice(0, 5)
-    .map(([userId, stats]) => ({
-      id: userId,
-      full_name: stats.full_name,
-      metric_value: stats.sport_count
-    }));
-
-  // Top top-rope climbers
-  const topTopRopeClimbers = Object.entries(userClimbingStats)
-    .filter(([,stats]) => stats.top_rope_count > 0)
-    .sort(([,a], [,b]) => b.top_rope_count - a.top_rope_count)
-    .slice(0, 5)
-    .map(([userId, stats]) => ({
-      id: userId,
-      full_name: stats.full_name,
-      metric_value: stats.top_rope_count
-    }));
+  // Create leaderboard entries for each category
+  const createLeaderboard = (metric: string, isGrade = false) => {
+    return Object.entries(userStats)
+      .map(([userId, stats]: [string, any]) => {
+        const profile = profilesData.find(p => p.id === userId);
+        if (!profile) return null;
+        
+        const value = isGrade ? stats.highestGrade : stats[metric];
+        if (!value || (typeof value === 'number' && value === 0)) return null;
+        
+        return {
+          id: userId,
+          full_name: profile.full_name,
+          metric_value: isGrade ? value : value
+        };
+      })
+      .filter(Boolean)
+      .sort((a: any, b: any) => {
+        if (isGrade) {
+          const aVal = gradeOrder[a.metric_value] || 0;
+          const bVal = gradeOrder[b.metric_value] || 0;
+          return bVal - aVal;
+        }
+        return b.metric_value - a.metric_value;
+      })
+      .slice(0, 5); // Show top 5 for climbing leaderboards
+  };
 
   return {
-    topGradeClimbers,
-    topTradClimbers,
-    topSportClimbers,
-    topTopRopeClimbers
+    topGradeClimbers: createLeaderboard('highestGrade', true),
+    topTradClimbers: createLeaderboard('tradRoutes'),
+    topSportClimbers: createLeaderboard('sportRoutes'),
+    topTopRopeClimbers: createLeaderboard('topRopeRoutes')
   };
 };

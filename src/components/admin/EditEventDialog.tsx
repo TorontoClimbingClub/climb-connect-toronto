@@ -27,6 +27,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
     details: (event as any).details || "",
     date: event.date,
     time: event.time,
+    end_time: (event as any).end_time || "",
     location: event.location,
     max_participants: event.max_participants || "",
     difficulty_level: event.difficulty_level || "",
@@ -50,6 +51,7 @@ export function EditEventDialog({ event, onEventUpdated }: EditEventDialogProps)
         capacity_limit: formData.capacity_limit ? parseInt(formData.capacity_limit.toString()) : null,
         difficulty_level: formData.difficulty_level || null,
         required_climbing_level: formData.required_climbing_level === "none" || !formData.required_climbing_level ? null : formData.required_climbing_level,
+        end_time: formData.end_time || null,
         updated_at: new Date().toISOString()
       };
 

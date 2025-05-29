@@ -297,6 +297,7 @@ export type Database = {
           description: string | null
           details: string | null
           difficulty_level: string | null
+          end_time: string | null
           id: string
           location: string
           max_participants: number | null
@@ -314,6 +315,7 @@ export type Database = {
           description?: string | null
           details?: string | null
           difficulty_level?: string | null
+          end_time?: string | null
           id?: string
           location: string
           max_participants?: number | null
@@ -331,6 +333,7 @@ export type Database = {
           description?: string | null
           details?: string | null
           difficulty_level?: string | null
+          end_time?: string | null
           id?: string
           location?: string
           max_participants?: number | null

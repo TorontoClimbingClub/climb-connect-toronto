@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { Plus, Trash2, Calendar, MapPin, Users, Edit, Check, X, Clock } from "lu
 import { CreateEventDialog } from "./CreateEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
-import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -40,8 +40,22 @@ export function CombinedEventsAttendanceTab({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [eventsWithParticipants, setEventsWithParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const { approvals, approveAttendance, rejectAttendance } = useAttendanceApprovals();
+  const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
   const { toast } = useToast();
+
+  const getEventStatus = (event: any) => {
+    const now = new Date();
+    const eventStartTime = new Date(`${event.date}T${event.time}`);
+    const eventEndTime = event.end_time ? new Date(`${event.date}T${event.end_time}`) : null;
+
+    if (now < eventStartTime) {
+      return { status: 'upcoming', label: 'Upcoming', color: 'blue' };
+    } else if (eventEndTime && now >= eventStartTime && now <= eventEndTime) {
+      return { status: 'running', label: 'Event Running', color: 'green' };
+    } else {
+      return { status: 'ended', label: 'Event Ended', color: 'gray' };
+    }
+  };
 
   const fetchEventsWithParticipants = async () => {
     setLoading(true);
@@ -76,15 +90,14 @@ export function CombinedEventsAttendanceTab({
             };
           }) || [];
 
-          const eventDateTime = new Date(`${event.date}T${event.time}`);
-          const hasEnded = new Date() > eventDateTime;
+          const eventStatus = getEventStatus(event);
 
           return {
             ...event,
             participants: participantsWithStatus,
             participants_count: participantsWithStatus.length,
-            has_ended: hasEnded,
-            event_date_time: eventDateTime
+            event_status: eventStatus,
+            event_date_time: new Date(`${event.date}T${event.time}`)
           };
         })
       );
@@ -128,6 +141,7 @@ export function CombinedEventsAttendanceTab({
         });
       }
 
+      await refreshApprovals();
       await fetchEventsWithParticipants();
     } catch (error: any) {
       console.error('Error confirming attendance:', error);
@@ -164,6 +178,7 @@ export function CombinedEventsAttendanceTab({
         });
       }
 
+      await refreshApprovals();
       await fetchEventsWithParticipants();
     } catch (error: any) {
       console.error('Error rejecting attendance:', error);
@@ -223,22 +238,27 @@ export function CombinedEventsAttendanceTab({
       {!showCreateForm && (
         <div className="space-y-4">
           {eventsWithParticipants.map((event) => (
-            <Card key={event.id} className={`w-full ${event.has_ended ? 'border-green-200' : 'border-blue-200'}`}>
+            <Card key={event.id} className={`w-full border-${event.event_status.color}-200`}>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Calendar className="h-4 w-4 text-[#E55A2B]" />
                       <CardTitle className="text-lg">{event.title}</CardTitle>
-                      <Badge variant="outline" className={event.has_ended ? "text-green-700 border-green-700" : "text-blue-700 border-blue-700"}>
-                        {event.has_ended ? 'Event Ended' : 'Upcoming'}
+                      <Badge variant="outline" className={`text-${event.event_status.color}-700 border-${event.event_status.color}-700`}>
+                        {event.event_status.label}
                       </Badge>
                     </div>
                     
                     <div className="flex items-center gap-4 text-sm text-stone-600">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        <span>{event.event_date_time.toLocaleDateString()} at {event.event_date_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>
+                          {event.event_date_time.toLocaleDateString()} 
+                          {' '}
+                          {event.event_date_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {event.end_time && ` - ${new Date(`${event.date}T${event.end_time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                        </span>
                       </div>
                       {event.location && (
                         <div className="flex items-center gap-1">
@@ -282,7 +302,12 @@ export function CombinedEventsAttendanceTab({
                     
                     {event.participants.length > 0 ? (
                       <div className="space-y-2">
-                        {event.participants.map((participant: EventParticipant) => (
+                        {event.participants
+                          .filter((participant: EventParticipant) => 
+                            event.event_status.status === 'ended' ? 
+                            participant.attendance_status === 'pending' : true
+                          )
+                          .map((participant: EventParticipant) => (
                           <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8">
@@ -302,7 +327,7 @@ export function CombinedEventsAttendanceTab({
                               )}
                             </div>
                             
-                            {event.has_ended && participant.attendance_status === 'pending' && (
+                            {event.event_status.status === 'ended' && participant.attendance_status === 'pending' && (
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
