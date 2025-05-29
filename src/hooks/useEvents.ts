@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -34,9 +33,22 @@ export function useEvents() {
 
           const [participantsResult, carpoolResult, equipmentResult] = await Promise.all([
             supabase.from('event_participants').select('*', { count: 'exact' }).eq('event_id', event.id).abortSignal(abortController.signal),
-            supabase.from('event_participants').select('available_seats').eq('event_id', event.id).not('available_seats', 'is', null).abortSignal(abortController.signal),
+            supabase.from('event_participants').select('available_seats, assigned_driver_id, user_id').eq('event_id', event.id).not('available_seats', 'is', null).abortSignal(abortController.signal),
             supabase.from('event_equipment').select('*', { count: 'exact' }).eq('event_id', event.id).abortSignal(abortController.signal)
           ]);
+
+          // Calculate available seats by subtracting assigned passengers from total seats
+          let totalAvailableSeats = 0;
+          if (carpoolResult.data) {
+            for (const driver of carpoolResult.data) {
+              if (driver.available_seats) {
+                // Count assigned passengers for this driver
+                const assignedPassengers = participantsResult.data?.filter(p => p.assigned_driver_id === driver.user_id).length || 0;
+                const availableSeats = Math.max(0, driver.available_seats - assignedPassengers);
+                totalAvailableSeats += availableSeats;
+              }
+            }
+          }
 
           const totalCarpoolSeats = carpoolResult.data?.reduce((sum, p) => sum + (p.available_seats || 0), 0) || 0;
 
@@ -44,6 +56,7 @@ export function useEvents() {
             ...event,
             participants_count: participantsResult.count || 0,
             carpool_seats: totalCarpoolSeats,
+            available_carpool_seats: totalAvailableSeats,
             equipment_count: equipmentResult.count || 0
           };
         })
