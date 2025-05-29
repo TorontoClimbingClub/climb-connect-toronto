@@ -188,6 +188,11 @@ export function AttendanceApprovalsTab() {
                 return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
               };
 
+              // Check if the event has started to enable/disable approve button
+              const eventStarted = approval.event?.date && approval.event?.time 
+                ? isEventTimeReached(approval.event.date, approval.event.time)
+                : false;
+
               return (
                 <Card key={approval.id} className="border-orange-200">
                   <CardContent className="p-4">
@@ -208,6 +213,12 @@ export function AttendanceApprovalsTab() {
                           <span>{approval.event?.title}</span>
                           <span>•</span>
                           <span>{new Date(approval.event?.date).toLocaleDateString()}</span>
+                          {approval.event?.time && (
+                            <>
+                              <span>•</span>
+                              <span>{approval.event.time}</span>
+                            </>
+                          )}
                         </div>
                         
                         <div className="flex items-center gap-2 text-xs text-stone-500">
@@ -220,10 +231,12 @@ export function AttendanceApprovalsTab() {
                         <Button
                           size="sm"
                           onClick={() => approveAttendance(approval.id)}
-                          className="bg-green-600 hover:bg-green-700"
+                          disabled={!eventStarted}
+                          className={eventStarted ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}
+                          title={eventStarted ? "Approve attendance" : "Event must start before approving attendance"}
                         >
                           <Check className="h-4 w-4 mr-1" />
-                          Approve
+                          {eventStarted ? "Approve" : "Approve (Event Not Started)"}
                         </Button>
                         <Button
                           size="sm"

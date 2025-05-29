@@ -1,11 +1,10 @@
 
 import { memo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { X, Phone, Mountain, Car, Package, Users, Calendar } from "lucide-react";
+import { Phone, Mountain, Car, Package, Users, Calendar } from "lucide-react";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { CompletedRoutesList } from "@/components/profile/CompletedRoutesList";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
@@ -29,10 +28,6 @@ export const UserProfileOverlay = memo(function UserProfileOverlay({
   const userStats = getUserCompletionStats(user.id);
   const completions = userStats?.completions || [];
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
-
   const getUserInitials = () => {
     return user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
@@ -52,7 +47,7 @@ export const UserProfileOverlay = memo(function UserProfileOverlay({
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         aria-describedby="user-profile-description"
       >
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <DialogHeader>
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={user.profile_photo_url || undefined} />
@@ -62,15 +57,6 @@ export const UserProfileOverlay = memo(function UserProfileOverlay({
               {user.full_name}'s Profile
             </DialogTitle>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
-            className="h-8 w-8 p-0 hover:bg-gray-100 focus:ring-2 focus:ring-[#E55A2B] focus:ring-offset-2"
-            aria-label="Close profile"
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         <div id="user-profile-description" className="space-y-6">
