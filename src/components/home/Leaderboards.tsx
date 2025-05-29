@@ -1,7 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Mountain, Users, Package, Star } from "lucide-react";
 import { useLeaderboards } from "@/hooks/useLeaderboards";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function Leaderboards() {
   const { 
@@ -11,8 +14,32 @@ export function Leaderboards() {
     topTopRopeClimbers,
     topGearOwners,
     topEventAttendees,
-    loading 
+    loading,
+    refreshLeaderboards
   } = useLeaderboards();
+
+  // Set up real-time subscription to refresh leaderboards when attendance changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('leaderboards-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_attendance_approvals'
+        },
+        (payload) => {
+          console.log('🔄 Attendance approval updated, refreshing leaderboards:', payload);
+          refreshLeaderboards();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refreshLeaderboards]);
 
   if (loading) {
     return (

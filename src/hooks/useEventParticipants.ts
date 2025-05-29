@@ -1,3 +1,4 @@
+
 import { useAttendanceManagement } from "./useAttendanceManagement";
 import { useParticipantData } from "./useParticipantData";
 import { useEventParticipantsRealtime } from "./useEventParticipantsRealtime";
@@ -7,7 +8,8 @@ export const useEventParticipants = () => {
     approvals,
     handleConfirmAttendance,
     handleRejectAttendance,
-    handleResetAttendance
+    handleResetAttendance,
+    refreshApprovals
   } = useAttendanceManagement();
 
   const {
@@ -16,10 +18,8 @@ export const useEventParticipants = () => {
     fetchEventsWithParticipants
   } = useParticipantData(approvals);
 
-  // Set up real-time subscriptions
-  useEventParticipantsRealtime(() => {
-    // This will trigger a refresh of approvals which will cascade to participant data
-  });
+  // Set up real-time subscriptions with proper refresh function
+  useEventParticipantsRealtime(refreshApprovals);
 
   return {
     eventsWithParticipants,
