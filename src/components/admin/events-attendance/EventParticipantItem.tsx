@@ -36,11 +36,10 @@ export function EventParticipantItem({
   );
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Sync local status with participant prop changes - this ensures persistence
+  // Update local status when participant prop changes
   useEffect(() => {
-    console.log(`🔄 [SYNC] User ${participant.full_name} status changed from ${localStatus} to ${participant.attendance_status || 'pending'}`);
     setLocalStatus(participant.attendance_status || 'pending');
-  }, [participant.attendance_status, participant.user_id]); // Include user_id to handle participant changes
+  }, [participant.attendance_status]);
 
   const getUserInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -83,14 +82,12 @@ export function EventParticipantItem({
   const handleConfirm = async () => {
     if (isUpdating) return;
     setIsUpdating(true);
-    console.log(`✅ [CONFIRM] Confirming attendance for ${participant.full_name}`);
     try {
+      setLocalStatus('approved'); // Optimistic update
       await onConfirmAttendance(participant.user_id, eventId);
-      // Don't set local status here - let it sync from the prop update
     } catch (error) {
       console.error('Error confirming attendance:', error);
-      // Only revert on error
-      setLocalStatus(participant.attendance_status || 'pending');
+      setLocalStatus(participant.attendance_status || 'pending'); // Revert on error
     } finally {
       setIsUpdating(false);
     }
@@ -99,14 +96,12 @@ export function EventParticipantItem({
   const handleReject = async () => {
     if (isUpdating) return;
     setIsUpdating(true);
-    console.log(`❌ [REJECT] Rejecting attendance for ${participant.full_name}`);
     try {
+      setLocalStatus('rejected'); // Optimistic update
       await onRejectAttendance(participant.user_id, eventId);
-      // Don't set local status here - let it sync from the prop update
     } catch (error) {
       console.error('Error rejecting attendance:', error);
-      // Only revert on error
-      setLocalStatus(participant.attendance_status || 'pending');
+      setLocalStatus(participant.attendance_status || 'pending'); // Revert on error
     } finally {
       setIsUpdating(false);
     }
@@ -115,14 +110,12 @@ export function EventParticipantItem({
   const handleReset = async () => {
     if (onResetAttendance && !isUpdating) {
       setIsUpdating(true);
-      console.log(`🔄 [RESET] Resetting attendance for ${participant.full_name}`);
       try {
+        setLocalStatus('pending'); // Optimistic update
         await onResetAttendance(participant.user_id, eventId);
-        // Don't set local status here - let it sync from the prop update
       } catch (error) {
         console.error('Error resetting attendance:', error);
-        // Only revert on error
-        setLocalStatus(participant.attendance_status || 'pending');
+        setLocalStatus(participant.attendance_status || 'pending'); // Revert on error
       } finally {
         setIsUpdating(false);
       }
