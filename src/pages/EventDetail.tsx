@@ -111,7 +111,7 @@ export default function EventDetail() {
         {(event as any).details && <div className="mb-6">
             <div className="bg-white rounded-lg shadow-sm border p-6">
               
-              <div className="text-stone-900 whitespace-pre-wrap">
+              <div className="text-stone-700 whitespace-pre-wrap">
                 {(event as any).details}
               </div>
             </div>
