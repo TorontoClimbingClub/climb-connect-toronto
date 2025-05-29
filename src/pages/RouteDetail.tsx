@@ -1,5 +1,5 @@
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { RouteHeader } from "@/components/route-detail/RouteHeader";
 import { RouteDetailsCard } from "@/components/route-detail/RouteDetailsCard";
@@ -7,7 +7,6 @@ import { PhotosSection } from "@/components/route-detail/PhotosSection";
 import { CommentsSection } from "@/components/route-detail/CommentsSection";
 import { useRouteData } from "@/hooks/useRouteData";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
-import { useAccessControl } from "@/hooks/useAccessControl";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,15 +14,14 @@ import { Button } from "@/components/ui/button";
 export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const { hasAccess, accessLoading } = useAccessControl('public');
 
   console.log('🏔️ RouteDetail - Component mounted:', {
     routeId,
     userId: user?.id,
     userEmail: user?.email,
-    hasAccess,
-    accessLoading
+    route: location.pathname
   });
 
   const route = rattlesnakeRoutes.find(r => r.id === routeId);
@@ -41,15 +39,6 @@ export default function RouteDetail() {
 
   const { toggleCompletion, isCompleted } = useClimbCompletions();
   const completed = isCompleted(routeId || "");
-
-  // Show loading state while checking access
-  if (accessLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="text-[#E55A2B]">Loading route...</div>
-      </div>
-    );
-  }
 
   if (!route) {
     console.error('❌ Route not found:', routeId);
@@ -77,6 +66,21 @@ export default function RouteDetail() {
     await addComment(comment, parentId);
   };
 
+  const handleBack = () => {
+    // Check if we came from a specific state that has navigation history
+    const searchParams = new URLSearchParams(location.search);
+    const fromSector = searchParams.get('sector');
+    const fromArea = searchParams.get('area');
+    
+    if (fromSector && fromArea) {
+      // Navigate back to the specific area within the sector
+      navigate(`/routes?sector=${fromSector}&area=${fromArea}`);
+    } else {
+      // Default back to routes page
+      navigate("/routes");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-2xl mx-auto p-4">
@@ -84,7 +88,7 @@ export default function RouteDetail() {
           routeName={route.name}
           area={route.area}
           sector={route.sector}
-          onBack={() => navigate("/routes")}
+          onBack={handleBack}
         />
 
         <RouteDetailsCard
