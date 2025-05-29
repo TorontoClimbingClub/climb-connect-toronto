@@ -30,7 +30,8 @@ export function useCommunityData() {
 
       if (!profiles || profiles.length === 0) {
         if (mountedRef.current) {
-          setMembers([]);
+          // Only set empty if we don't have existing data
+          setMembers(prevMembers => prevMembers.length === 0 ? [] : prevMembers);
         }
         return;
       }
@@ -51,7 +52,7 @@ export function useCommunityData() {
       const equipmentCounts = new Map<string, number>();
       const eventCounts = new Map<string, number>();
 
-      // Process equipment data with error handling
+      // Process equipment data with error handling - don't fail the whole request
       if (equipmentError) {
         console.error('❌ Equipment fetch error:', equipmentError);
         errorLogger.log({
@@ -68,7 +69,7 @@ export function useCommunityData() {
         });
       }
 
-      // Process events data with error handling
+      // Process events data with error handling - don't fail the whole request
       if (eventsError) {
         console.error('❌ Events fetch error:', eventsError);
         errorLogger.log({
@@ -119,11 +120,17 @@ export function useCommunityData() {
           source: 'community_data_main'
         });
         
-        toast({
-          title: "Error",
-          description: apiError.message || "Failed to load community members",
-          variant: "destructive",
-        });
+        // Only show toast for non-network errors to avoid spam
+        if (!error.message?.includes('Failed to fetch')) {
+          toast({
+            title: "Error",
+            description: apiError.message || "Failed to load community members",
+            variant: "destructive",
+          });
+        }
+        
+        // Don't reset members data on network errors - preserve existing data
+        console.log('🔄 Preserving existing member data due to network error');
       }
     } finally {
       if (mountedRef.current) {
