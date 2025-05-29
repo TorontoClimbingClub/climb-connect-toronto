@@ -3,6 +3,7 @@ import { BasicInformation } from "./BasicInformation";
 import { ClimbingInformation } from "./ClimbingInformation";
 import { PrivacySettings } from "./PrivacySettings";
 import { ClimbingStatsCard } from "./ClimbingStatsCard";
+import { ClimbCompletion } from "@/hooks/useClimbCompletions";
 
 interface UserProfile {
   id: string;
@@ -31,6 +32,7 @@ interface ProfileInformationProps {
   onSave: () => void;
   onCancel: () => void;
   onFormDataChange: (data: UserProfile) => void;
+  completions?: ClimbCompletion[];
 }
 
 export function ProfileInformation(props: ProfileInformationProps) {
@@ -43,7 +45,7 @@ export function ProfileInformation(props: ProfileInformationProps) {
         onFormDataChange={props.onFormDataChange}
       />
       {props.profile && !props.editing && (
-        <ClimbingStatsCard userId={props.profile.id} />
+        <ClimbingStatsCard userId={props.profile.id} completions={props.completions || []} />
       )}
       <PrivacySettings 
         editing={props.editing}

@@ -1,37 +1,24 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useClimbingStats } from "@/hooks/useClimbingStats";
 import { TrendingUp, Mountain, Calendar } from "lucide-react";
+import { ClimbCompletion } from "@/hooks/useClimbCompletions";
+import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 
 interface ClimbingStatsCardProps {
   userId: string;
+  completions: ClimbCompletion[];
 }
 
-export function ClimbingStatsCard({ userId }: ClimbingStatsCardProps) {
-  const { stats, loading } = useClimbingStats(userId);
+export function ClimbingStatsCard({ userId, completions }: ClimbingStatsCardProps) {
+  console.log('ClimbingStatsCard - userId:', userId);
+  console.log('ClimbingStatsCard - completions:', completions);
 
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Climbing Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Filter completions for this user
+  const userCompletions = completions.filter(c => c.user_id === userId);
+  console.log('ClimbingStatsCard - userCompletions:', userCompletions);
 
-  if (!stats || stats.total_completions === 0) {
+  if (userCompletions.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -42,10 +29,54 @@ export function ClimbingStatsCard({ userId }: ClimbingStatsCardProps) {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600">No completed climbs yet. Start logging your sends!</p>
+          <p className="text-xs mt-2 text-stone-400">
+            Debug: {completions.length} total completions, {userCompletions.length} for this user
+          </p>
         </CardContent>
       </Card>
     );
   }
+
+  // Calculate stats from the completions data
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const totalCompletions = userCompletions.length;
+  
+  // Get route data for each completion
+  const completedRoutes = userCompletions.map(completion => {
+    const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
+    return route ? { ...route, completedAt: completion.completed_at } : null;
+  }).filter(Boolean);
+
+  console.log('ClimbingStatsCard - completedRoutes:', completedRoutes);
+
+  // Count completions by style
+  const tradCompletions = completedRoutes.filter(route => route?.style === 'Trad').length;
+  const sportCompletions = completedRoutes.filter(route => route?.style === 'Sport').length;
+  const topRopeCompletions = completedRoutes.filter(route => route?.style === 'Top Rope').length;
+
+  const recentCompletions = userCompletions.filter(c => 
+    new Date(c.completed_at) >= thirtyDaysAgo
+  ).length;
+
+  // Find hardest grade (simplified - just get the highest grade string)
+  const grades = completedRoutes
+    .map(route => route?.grade)
+    .filter(grade => grade !== undefined)
+    .sort();
+  const hardestGrade = grades.length > 0 ? grades[grades.length - 1] : null;
+
+  const stats = {
+    total_completions: totalCompletions,
+    trad_completions: tradCompletions,
+    sport_completions: sportCompletions,
+    top_rope_completions: topRopeCompletions,
+    hardest_grade: hardestGrade,
+    recent_completions: recentCompletions
+  };
+
+  console.log('ClimbingStatsCard - calculated stats:', stats);
 
   return (
     <Card>

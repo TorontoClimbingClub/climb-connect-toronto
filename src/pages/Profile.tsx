@@ -40,6 +40,13 @@ export default function Profile() {
 
   const { toast } = useToast();
 
+  // Filter completions for the current user
+  const userCompletions = user ? completions.filter(c => c.user_id === user.id) : [];
+
+  console.log('Profile - user:', user);
+  console.log('Profile - all completions:', completions);
+  console.log('Profile - user completions:', userCompletions);
+
   const handleLogout = async () => {
     try {
       toast({
@@ -100,14 +107,15 @@ export default function Profile() {
           onSave={handleSave}
           onCancel={handleCancel}
           onFormDataChange={handleFormDataChange}
+          completions={userCompletions}
         />
 
         <div className="mb-6">
-          <CompletionProgressBars completions={completions} />
+          <CompletionProgressBars completions={userCompletions} />
         </div>
 
         <div className="mb-6">
-          <CompletedRoutesList completions={completions} userId={user?.id} />
+          <CompletedRoutesList completions={userCompletions} userId={user?.id} />
         </div>
 
         <EquipmentInventory
