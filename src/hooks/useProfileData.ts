@@ -13,10 +13,15 @@ export function useProfileData() {
   const { user } = useAuth();
   const { toast } = useToast();
   const mountedRef = useRef(true);
-  const [hasShownProfileToast, setHasShownProfileToast] = useState(false);
+  const [hasShownPrivacyToast, setHasShownPrivacyToast] = useState(false);
 
   useEffect(() => {
     mountedRef.current = true;
+    // Check if privacy toast was already shown in this session
+    const privacyToastShown = sessionStorage.getItem('privacyToastShown');
+    if (privacyToastShown) {
+      setHasShownPrivacyToast(true);
+    }
     return () => {
       mountedRef.current = false;
     };
@@ -33,15 +38,16 @@ export function useProfileData() {
 
   // Show privacy settings toast when user first visits profile
   useEffect(() => {
-    if (profile && !hasShownProfileToast && mountedRef.current) {
-      setHasShownProfileToast(true);
+    if (profile && !hasShownPrivacyToast && mountedRef.current) {
+      setHasShownPrivacyToast(true);
+      sessionStorage.setItem('privacyToastShown', 'true');
       toast({
         title: "Set Your Privacy Settings",
         description: "Don't forget to configure your privacy settings to control what other members can see about you.",
         duration: 8000,
       });
     }
-  }, [profile, hasShownProfileToast, toast]);
+  }, [profile, hasShownPrivacyToast, toast]);
 
   const fetchProfile = async () => {
     if (!user || !mountedRef.current) {

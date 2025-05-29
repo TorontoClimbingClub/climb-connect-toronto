@@ -19,6 +19,14 @@ interface EventDetailsCardProps {
   participantsCount: number;
 }
 
+function formatTime12Hour(time24: string) {
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+}
+
 export function EventDetailsCard({ event, participantsCount }: EventDetailsCardProps) {
   return (
     <Card>
@@ -31,7 +39,7 @@ export function EventDetailsCard({ event, participantsCount }: EventDetailsCardP
       <CardContent className="space-y-3">
         <div className="flex items-center text-sm">
           <Calendar className="h-4 w-4 mr-2" />
-          {new Date(event.date).toLocaleDateString()} at {event.time}
+          {new Date(event.date).toLocaleDateString()} at {formatTime12Hour(event.time)}
         </div>
         
         <div className="flex items-center text-sm">

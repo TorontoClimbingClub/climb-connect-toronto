@@ -49,12 +49,18 @@ export default function EventDetail() {
     }
   };
 
-  const handleUpdateCarpoolStatus = async (isDriver: boolean, seats: number) => {
+  const handleUpdateCarpoolStatus = async (isDriver: boolean, seats: number, notes?: string) => {
     if (!currentUserParticipation) return;
     const result = await updateCarpoolStatus(currentUserParticipation.id, isDriver, seats);
     if (result.success) {
       refreshData();
     }
+  };
+
+  const handleAssignToDriver = async (driverId: string) => {
+    // This would need to be implemented in useEventActions
+    console.log('Assign to driver:', driverId);
+    // For now, just log - you'd need to add this functionality to the backend
   };
 
   if (loading) {
@@ -95,6 +101,7 @@ export default function EventDetail() {
             currentUserId={user?.id}
             currentUserParticipation={currentUserParticipation}
             onUpdateCarpoolStatus={handleUpdateCarpoolStatus}
+            onAssignToDriver={handleAssignToDriver}
           />
         </div>
 

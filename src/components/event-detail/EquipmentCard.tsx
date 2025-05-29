@@ -1,15 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Package, Plus, X } from "lucide-react";
+import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Package, Plus, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
 import { useEquipmentManagement } from "@/hooks/useEquipmentManagement";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface Equipment {
   id: string;
@@ -42,230 +39,166 @@ interface EquipmentCardProps {
 export function EquipmentCard({ 
   equipment, 
   userEquipment, 
-  currentUserId,
-  eventId,
+  currentUserId, 
+  eventId, 
   onRefresh 
 }: EquipmentCardProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showAddEquipment, setShowAddEquipment] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { addEquipmentToEvent } = useEquipmentManagement();
+  const { addEquipmentToEvent, removeUserEquipmentFromEvent, loading } = useEquipmentManagement();
   const { toast } = useToast();
-  const { user } = useAuth();
 
-  // Check if current user is admin
-  const [userRole, setUserRole] = useState<'member' | 'organizer' | 'admin'>('member');
+  // Check if current user is participating in the event
+  const isUserParticipating = equipment.some(item => item.user_id === currentUserId);
 
-  // Fetch user role
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) return;
-      try {
-        const { data, error } = await supabase
-          .rpc('get_user_role', { _user_id: user.id });
-        if (error) throw error;
-        setUserRole(data || 'member');
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      }
-    };
-    fetchUserRole();
-  }, [user]);
-
-  const availableEquipment = userEquipment.filter(item => !item.is_assigned);
-
-  const handleEquipmentSelection = (equipmentId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedEquipment(prev => [...prev, equipmentId]);
-    } else {
-      setSelectedEquipment(prev => prev.filter(id => id !== equipmentId));
-    }
-  };
-
-  const handleAddSelected = async () => {
-    if (selectedEquipment.length > 0 && currentUserId) {
-      setLoading(true);
-      const result = await addEquipmentToEvent(selectedEquipment, eventId, currentUserId);
-      if (result.success) {
-        setSelectedEquipment([]);
-        setIsDialogOpen(false);
-        onRefresh();
-      }
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveEquipment = async (eventEquipmentId: string, equipmentOwnerId: string) => {
-    // Check if user can remove this equipment (own equipment or admin)
-    if (currentUserId !== equipmentOwnerId && userRole !== 'admin') {
+  const handleAddEquipment = async () => {
+    if (!currentUserId) return;
+    
+    if (selectedEquipment.length === 0) {
       toast({
-        title: "Error",
-        description: "You can only remove your own equipment",
+        title: "No equipment selected",
+        description: "Please select equipment to add to the event",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      setLoading(true);
-      
-      // Remove specific equipment item from event
-      const { error } = await supabase
-        .from('event_equipment')
-        .delete()
-        .eq('id', eventEquipmentId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Equipment removed from event",
-      });
-
+    const result = await addEquipmentToEvent(selectedEquipment, eventId, currentUserId);
+    if (result.success) {
+      setSelectedEquipment([]);
+      setShowAddEquipment(false);
       onRefresh();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to remove equipment",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
     }
   };
+
+  const handleRemoveAllUserEquipment = async () => {
+    if (!currentUserId) return;
+    
+    const result = await removeUserEquipmentFromEvent(currentUserId, eventId);
+    if (result.success) {
+      onRefresh();
+    }
+  };
+
+  const availableEquipment = userEquipment.filter(item => 
+    !item.is_assigned || item.assigned_event === eventId
+  );
+
+  const userEventEquipment = equipment.filter(item => item.user_id === currentUserId);
 
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Equipment Available ({equipment.length} items)
-            </CardTitle>
-            <CardDescription>
-              Gear that participants are bringing to share
-            </CardDescription>
-          </div>
-          
-          {currentUserId && availableEquipment.length > 0 && (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="bg-[#E55A2B] hover:bg-[#D14B20] text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Share Gear
+          <CardTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Shared Equipment
+          </CardTitle>
+          {currentUserId && isUserParticipating && (
+            <div className="flex gap-2">
+              {userEventEquipment.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveAllUserEquipment}
+                  disabled={loading}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Remove My Equipment
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Share Your Equipment</DialogTitle>
-                  <DialogDescription>
-                    Select equipment from your inventory to share with this event
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="max-h-96 overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">Share</TableHead>
-                        <TableHead>Item</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Quantity</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {availableEquipment.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedEquipment.includes(item.id)}
-                              onCheckedChange={(checked) => 
-                                handleEquipmentSelection(item.id, checked as boolean)
-                              }
-                            />
-                          </TableCell>
-                          <TableCell className="font-medium">{item.item_name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{item.category_name}</Badge>
-                          </TableCell>
-                          <TableCell>{item.quantity}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleAddSelected}
-                    disabled={selectedEquipment.length === 0 || loading}
-                    className="bg-[#E55A2B] hover:bg-[#D14B20] text-white"
-                  >
-                    {loading ? "Sharing..." : `Share Selected (${selectedEquipment.length})`}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddEquipment(!showAddEquipment)}
+                disabled={loading}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Equipment
+              </Button>
+            </div>
+          )}
+          {currentUserId && !isUserParticipating && (
+            <Badge variant="secondary" className="text-xs">
+              Join event to share equipment
+            </Badge>
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {/* Add Equipment Section */}
+        {showAddEquipment && currentUserId && isUserParticipating && (
+          <div className="p-4 bg-orange-50 rounded-lg border">
+            <h4 className="font-medium mb-3">Select equipment to share:</h4>
+            {availableEquipment.length > 0 ? (
+              <div className="space-y-2">
+                {availableEquipment.map((item) => (
+                  <div key={item.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={item.id}
+                      checked={selectedEquipment.includes(item.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedEquipment([...selectedEquipment, item.id]);
+                        } else {
+                          setSelectedEquipment(selectedEquipment.filter(id => id !== item.id));
+                        }
+                      }}
+                    />
+                    <label htmlFor={item.id} className="text-sm flex-1 cursor-pointer">
+                      {item.item_name} (×{item.quantity}) - {item.category_name}
+                      {item.notes && <span className="text-stone-500"> • {item.notes}</span>}
+                    </label>
+                  </div>
+                ))}
+                <div className="flex gap-2 mt-3">
+                  <Button onClick={handleAddEquipment} size="sm" disabled={loading}>
+                    Add Selected
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setShowAddEquipment(false);
+                      setSelectedEquipment([]);
+                    }} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-stone-600">No equipment available to share</p>
+            )}
+          </div>
+        )}
+
+        {/* Equipment List */}
         {equipment.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Owner</TableHead>
-                <TableHead>Notes</TableHead>
-                {currentUserId && <TableHead className="w-12">Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {equipment.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.item_name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
+          <div className="space-y-3">
+            {equipment.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-[#E55A2B]">{item.item_name}</h4>
+                    <Badge variant="outline" className="text-xs">
                       {item.category_name}
                     </Badge>
-                  </TableCell>
-                  <TableCell>{item.quantity}</TableCell>
-                  <TableCell>{item.owner_name}</TableCell>
-                  <TableCell className="max-w-xs">
-                    {item.notes ? (
-                      <span className="text-sm text-stone-600">{item.notes}</span>
-                    ) : (
-                      <span className="text-stone-400">No notes</span>
-                    )}
-                  </TableCell>
-                  {currentUserId && (
-                    <TableCell>
-                      {(item.user_id === currentUserId || userRole === 'admin') && (
-                        <Button
-                          onClick={() => handleRemoveEquipment(item.id, item.user_id)}
-                          variant="ghost"
-                          size="sm"
-                          disabled={loading}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                  <p className="text-sm text-stone-600">
+                    Shared by: {item.owner_name} • Quantity: {item.quantity}
+                    {item.notes && ` • ${item.notes}`}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-6 text-stone-600">
-            No equipment shared yet. Participants can add gear from their profile.
+            <Package className="h-12 w-12 mx-auto mb-3 text-stone-400" />
+            <p className="font-medium mb-1">No equipment shared yet</p>
+            <p className="text-sm">Join the event and add your gear to share with others</p>
           </div>
         )}
       </CardContent>

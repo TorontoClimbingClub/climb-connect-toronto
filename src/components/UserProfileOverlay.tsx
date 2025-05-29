@@ -130,8 +130,8 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {equipmentToShow.slice(0, 10).map((item) => (
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                  {equipmentToShow.map((item) => (
                     <div key={item.id} className="p-2 bg-stone-50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-stone-900">{item.item_name}</span>
@@ -142,11 +142,6 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
                       </div>
                     </div>
                   ))}
-                  {equipmentToShow.length > 10 && (
-                    <p className="text-sm text-stone-500 text-center">
-                      +{equipmentToShow.length - 10} more items
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -178,7 +173,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                   {completedRoutes.slice(0, 10).map((route) => {
                     if (!route) return null;
                     return (
