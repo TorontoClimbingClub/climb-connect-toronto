@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface LeaderboardUser {
@@ -140,7 +141,8 @@ export const fetchEventData = async () => {
       .from('event_attendance_approvals')
       .select('user_id, status, event_id, approved_at')
       .eq('status', 'approved'),
-    supabase
+    // Use type assertion for the new table since it's not in generated types yet
+    (supabase as any)
       .from('archived_event_attendance')
       .select('user_id, event_id, attended_at')
   ]);
@@ -150,15 +152,22 @@ export const fetchEventData = async () => {
     throw currentAttendance.error;
   }
 
+  // Handle archived attendance gracefully (might be empty if no events have been archived yet)
+  const archivedData = archivedAttendance.error ? [] : (archivedAttendance.data || []);
+  
+  if (archivedAttendance.error) {
+    console.warn('⚠️ [LEADERBOARD WARNING] Could not fetch archived attendance data:', archivedAttendance.error);
+  }
+
   // Combine current and archived data
   const combinedData = [
-    ...(currentAttendance.data || []).map(record => ({
+    ...(currentAttendance.data || []).map((record: any) => ({
       user_id: record.user_id,
       status: 'approved' as const,
       event_id: record.event_id,
       approved_at: record.approved_at
     })),
-    ...(archivedAttendance.data || []).map(record => ({
+    ...archivedData.map((record: any) => ({
       user_id: record.user_id,
       status: 'approved' as const,
       event_id: record.event_id,
@@ -168,7 +177,7 @@ export const fetchEventData = async () => {
   
   console.log('✅ [LEADERBOARD SUCCESS] Combined event attendance data fetched:', combinedData.length, 'approved records');
   console.log('📊 [LEADERBOARD DATA] Current records:', currentAttendance.data?.length);
-  console.log('📊 [LEADERBOARD DATA] Archived records:', archivedAttendance.data?.length);
+  console.log('📊 [LEADERBOARD DATA] Archived records:', archivedData.length);
   
   return combinedData;
 };

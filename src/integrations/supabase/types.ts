@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      archived_event_attendance: {
+        Row: {
+          archived_at: string
+          attended_at: string
+          created_at: string
+          event_date: string
+          event_id: string
+          event_title: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string
+          attended_at: string
+          created_at?: string
+          event_date: string
+          event_id: string
+          event_title: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          archived_at?: string
+          attended_at?: string
+          created_at?: string
+          event_date?: string
+          event_id?: string
+          event_title?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           color: string

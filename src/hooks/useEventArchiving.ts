@@ -38,7 +38,8 @@ export const useEventArchiving = () => {
           archived_at: new Date().toISOString()
         }));
 
-        const { error: archiveError } = await supabase
+        // Use type assertion since the table is new and not in generated types yet
+        const { error: archiveError } = await (supabase as any)
           .from('archived_event_attendance')
           .insert(archiveData);
 
