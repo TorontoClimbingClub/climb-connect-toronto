@@ -20,9 +20,9 @@ interface EventCardProps {
   canManageUsers: boolean;
   onDeleteEvent: (eventId: string) => void;
   onRefreshEvents: () => void;
-  onConfirmAttendance: (userId: string, eventId: string) => void;
-  onRejectAttendance: (userId: string, eventId: string) => void;
-  onResetAttendance?: (userId: string, eventId: string) => void;
+  onConfirmAttendance: (userId: string, eventId: string) => Promise<void>;
+  onRejectAttendance: (userId: string, eventId: string) => Promise<void>;
+  onResetAttendance?: (userId: string, eventId: string) => Promise<void>;
 }
 
 export function EventCard({ 
