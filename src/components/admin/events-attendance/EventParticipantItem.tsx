@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -71,7 +70,6 @@ export function EventParticipantItem({
     }
   };
 
-  // Show attendance buttons for all events - admins can manage attendance anytime
   const showAttendanceButtons = true;
   const isPending = localStatus === 'pending';
   const isApproved = localStatus === 'approved';

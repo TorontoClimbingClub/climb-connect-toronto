@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface LeaderboardUser {
@@ -134,18 +133,42 @@ export const fetchGearData = async () => {
 
 export const fetchEventData = async () => {
   console.log('🔍 [LEADERBOARD DEBUG] Fetching event attendance data for Event Enthusiast leaderboard...');
-  const { data, error } = await supabase
-    .from('event_attendance_approvals')
-    .select('user_id, status, event_id, approved_at')
-    .eq('status', 'approved');
   
-  if (error) {
-    console.error('❌ [LEADERBOARD ERROR] Error fetching event attendance data:', error);
-    throw error;
+  // Fetch both current and archived attendance data
+  const [currentAttendance, archivedAttendance] = await Promise.all([
+    supabase
+      .from('event_attendance_approvals')
+      .select('user_id, status, event_id, approved_at')
+      .eq('status', 'approved'),
+    supabase
+      .from('archived_event_attendance')
+      .select('user_id, event_id, attended_at')
+  ]);
+
+  if (currentAttendance.error) {
+    console.error('❌ [LEADERBOARD ERROR] Error fetching current event attendance data:', currentAttendance.error);
+    throw currentAttendance.error;
   }
+
+  // Combine current and archived data
+  const combinedData = [
+    ...(currentAttendance.data || []).map(record => ({
+      user_id: record.user_id,
+      status: 'approved' as const,
+      event_id: record.event_id,
+      approved_at: record.approved_at
+    })),
+    ...(archivedAttendance.data || []).map(record => ({
+      user_id: record.user_id,
+      status: 'approved' as const,
+      event_id: record.event_id,
+      approved_at: record.attended_at
+    }))
+  ];
   
-  console.log('✅ [LEADERBOARD SUCCESS] Event attendance data fetched:', data?.length, 'approved records');
-  console.log('📊 [LEADERBOARD DATA] Event attendance sample:', data?.slice(0, 3));
+  console.log('✅ [LEADERBOARD SUCCESS] Combined event attendance data fetched:', combinedData.length, 'approved records');
+  console.log('📊 [LEADERBOARD DATA] Current records:', currentAttendance.data?.length);
+  console.log('📊 [LEADERBOARD DATA] Archived records:', archivedAttendance.data?.length);
   
-  return data || [];
+  return combinedData;
 };

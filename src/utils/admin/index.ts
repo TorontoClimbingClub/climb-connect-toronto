@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEventArchiving } from "@/hooks/useEventArchiving";
 
 export function useUserHandlers(fetchUsers: () => Promise<void>) {
   const { toast } = useToast();
@@ -120,13 +120,18 @@ export function useUserHandlers(fetchUsers: () => Promise<void>) {
 
 export function useEventHandlers(fetchEvents: () => Promise<void>) {
   const { toast } = useToast();
+  const { archiveEventAttendance } = useEventArchiving();
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this event? Attendance data will be archived but the event will be permanently removed.')) {
       return;
     }
 
     try {
+      // Archive attendance data before deleting the event
+      await archiveEventAttendance(eventId);
+
+      // Now delete the event
       const { error } = await supabase
         .from('events')
         .delete()
@@ -136,7 +141,7 @@ export function useEventHandlers(fetchEvents: () => Promise<void>) {
 
       toast({
         title: "Success!",
-        description: "Event deleted successfully",
+        description: "Event deleted successfully and attendance data archived",
       });
 
       fetchEvents();
