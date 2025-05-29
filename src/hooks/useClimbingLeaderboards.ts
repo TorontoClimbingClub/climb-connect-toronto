@@ -16,11 +16,21 @@ export const processClimbingData = (
   profilesData: any[],
   completionsData: any[]
 ) => {
+  console.log('Processing climbing data:', { 
+    profiles: profilesData.length, 
+    completions: completionsData.length 
+  });
+
   // Group completions by user
   const userStats = completionsData.reduce((acc: any, completion) => {
     const userId = completion.user_id;
-    const grade = completion.routes.grade;
-    const style = completion.routes.style;
+    const grade = completion.routes?.grade;
+    const style = completion.routes?.style;
+    
+    if (!userId || !grade || !style) {
+      console.warn('Incomplete completion data:', completion);
+      return acc;
+    }
     
     if (!acc[userId]) {
       acc[userId] = {
@@ -50,9 +60,11 @@ export const processClimbingData = (
     return acc;
   }, {});
 
+  console.log('User stats calculated:', Object.keys(userStats).length, 'users');
+
   // Create leaderboard entries for each category
   const createLeaderboard = (metric: string, isGrade = false) => {
-    return Object.entries(userStats)
+    const results = Object.entries(userStats)
       .map(([userId, stats]: [string, any]) => {
         const profile = profilesData.find(p => p.id === userId);
         if (!profile) return null;
@@ -63,7 +75,7 @@ export const processClimbingData = (
         return {
           id: userId,
           full_name: profile.full_name,
-          metric_value: isGrade ? value : value
+          metric_value: value
         };
       })
       .filter(Boolean)
@@ -76,12 +88,18 @@ export const processClimbingData = (
         return b.metric_value - a.metric_value;
       })
       .slice(0, 5); // Show top 5 for climbing leaderboards
+
+    console.log(`${metric} leaderboard:`, results.length, 'entries');
+    return results;
   };
 
-  return {
+  const results = {
     topGradeClimbers: createLeaderboard('highestGrade', true),
     topTradClimbers: createLeaderboard('tradRoutes'),
     topSportClimbers: createLeaderboard('sportRoutes'),
     topTopRopeClimbers: createLeaderboard('topRopeRoutes')
   };
+
+  console.log('Climbing leaderboards processed:', results);
+  return results;
 };

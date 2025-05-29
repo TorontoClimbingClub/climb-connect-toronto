@@ -56,6 +56,8 @@ export function useLeaderboards() {
       const gearResults = processGearData(profilesData, gearData);
       setTopGearOwners(gearResults);
 
+      console.log('All leaderboards processed successfully');
+
     } catch (error: any) {
       console.error('Error in fetchAllLeaderboards:', error);
       toast({
@@ -70,7 +72,7 @@ export function useLeaderboards() {
 
   useEffect(() => {
     fetchAllLeaderboards();
-  }, [toast]);
+  }, []);
 
   return {
     topGradeClimbers,
