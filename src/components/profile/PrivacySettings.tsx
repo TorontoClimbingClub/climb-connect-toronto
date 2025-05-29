@@ -34,14 +34,42 @@ export function PrivacySettings({
   formData,
   onFormDataChange,
 }: PrivacySettingsProps) {
+  
+  // Test function to verify checkbox functionality
+  const testCheckboxFunctionality = () => {
+    console.log('=== CHECKBOX FUNCTIONALITY TEST ===');
+    console.log('Current editing state:', editing);
+    console.log('Current formData privacy values:', {
+      allow_profile_viewing: formData.allow_profile_viewing,
+      show_climbing_level: formData.show_climbing_level,
+      show_climbing_progress: formData.show_climbing_progress,
+      show_completion_stats: formData.show_completion_stats,
+      show_trad_progress: formData.show_trad_progress,
+      show_sport_progress: formData.show_sport_progress,
+      show_top_rope_progress: formData.show_top_rope_progress,
+    });
+    console.log('onFormDataChange function available:', typeof onFormDataChange === 'function');
+  };
+
+  // Call test on every render
+  testCheckboxFunctionality();
+
   const handleCheckboxChange = (field: keyof UserProfile, checked: boolean | "indeterminate") => {
-    console.log(`Checkbox change: ${field} = ${checked}`);
+    console.log(`🔄 Checkbox change initiated: ${field} = ${checked} (type: ${typeof checked})`);
+    console.log('Previous value:', formData[field]);
+    
+    const booleanValue = checked === true;
     const updatedData = { 
       ...formData, 
-      [field]: checked === true
+      [field]: booleanValue
     };
-    console.log('Updated form data:', updatedData);
+    
+    console.log('New value will be:', booleanValue);
+    console.log('Full updated data:', updatedData);
+    
+    // Call the parent update function
     onFormDataChange(updatedData);
+    console.log('✅ onFormDataChange called successfully');
   };
 
   return (
@@ -62,10 +90,11 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.allow_profile_viewing === true}
-            onCheckedChange={(checked) => 
-              handleCheckboxChange('allow_profile_viewing', checked)
-            }
+            checked={Boolean(formData.allow_profile_viewing)}
+            onCheckedChange={(checked) => {
+              console.log('🎯 Allow Profile Viewing checkbox clicked, checked value:', checked);
+              handleCheckboxChange('allow_profile_viewing', checked);
+            }}
             disabled={!editing}
           />
         </div>
@@ -78,10 +107,11 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.show_climbing_level === true}
-            onCheckedChange={(checked) => 
-              handleCheckboxChange('show_climbing_level', checked)
-            }
+            checked={Boolean(formData.show_climbing_level)}
+            onCheckedChange={(checked) => {
+              console.log('🎯 Show Climbing Level checkbox clicked, checked value:', checked);
+              handleCheckboxChange('show_climbing_level', checked);
+            }}
             disabled={!editing}
           />
         </div>
@@ -94,15 +124,16 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.show_climbing_progress === true}
-            onCheckedChange={(checked) => 
-              handleCheckboxChange('show_climbing_progress', checked)
-            }
+            checked={Boolean(formData.show_climbing_progress)}
+            onCheckedChange={(checked) => {
+              console.log('🎯 Show Progress Bars checkbox clicked, checked value:', checked);
+              handleCheckboxChange('show_climbing_progress', checked);
+            }}
             disabled={!editing}
           />
         </div>
 
-        {/* Individual Progress Settings - always show when progress bars are enabled */}
+        {/* Individual Progress Settings */}
         <div className="ml-6 space-y-3 p-3 bg-stone-50 rounded-lg">
           <p className="text-sm font-medium text-stone-700">Individual Progress Bars:</p>
           
@@ -112,10 +143,11 @@ export function PrivacySettings({
               <p className="text-xs text-muted-foreground">Traditional climbing routes</p>
             </div>
             <Checkbox
-              checked={formData.show_trad_progress === true}
-              onCheckedChange={(checked) => 
-                handleCheckboxChange('show_trad_progress', checked)
-              }
+              checked={Boolean(formData.show_trad_progress)}
+              onCheckedChange={(checked) => {
+                console.log('🎯 Show Trad Progress checkbox clicked, checked value:', checked);
+                handleCheckboxChange('show_trad_progress', checked);
+              }}
               disabled={!editing}
             />
           </div>
@@ -126,10 +158,11 @@ export function PrivacySettings({
               <p className="text-xs text-muted-foreground">Sport climbing routes</p>
             </div>
             <Checkbox
-              checked={formData.show_sport_progress === true}
-              onCheckedChange={(checked) => 
-                handleCheckboxChange('show_sport_progress', checked)
-              }
+              checked={Boolean(formData.show_sport_progress)}
+              onCheckedChange={(checked) => {
+                console.log('🎯 Show Sport Progress checkbox clicked, checked value:', checked);
+                handleCheckboxChange('show_sport_progress', checked);
+              }}
               disabled={!editing}
             />
           </div>
@@ -140,10 +173,11 @@ export function PrivacySettings({
               <p className="text-xs text-muted-foreground">Top rope climbing routes</p>
             </div>
             <Checkbox
-              checked={formData.show_top_rope_progress === true}
-              onCheckedChange={(checked) => 
-                handleCheckboxChange('show_top_rope_progress', checked)
-              }
+              checked={Boolean(formData.show_top_rope_progress)}
+              onCheckedChange={(checked) => {
+                console.log('🎯 Show Top Rope Progress checkbox clicked, checked value:', checked);
+                handleCheckboxChange('show_top_rope_progress', checked);
+              }}
               disabled={!editing}
             />
           </div>
@@ -157,10 +191,11 @@ export function PrivacySettings({
             </p>
           </div>
           <Checkbox
-            checked={formData.show_completion_stats === true}
-            onCheckedChange={(checked) => 
-              handleCheckboxChange('show_completion_stats', checked)
-            }
+            checked={Boolean(formData.show_completion_stats)}
+            onCheckedChange={(checked) => {
+              console.log('🎯 Show Completion Stats checkbox clicked, checked value:', checked);
+              handleCheckboxChange('show_completion_stats', checked);
+            }}
             disabled={!editing}
           />
         </div>

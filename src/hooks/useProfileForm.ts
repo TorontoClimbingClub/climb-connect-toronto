@@ -8,11 +8,13 @@ export function useProfileForm(initialProfile: UserProfile | null) {
   // Initialize form data based on whether we have an existing profile or not
   const getInitialFormData = (): UserProfile => {
     if (initialProfile) {
-      // Use existing profile data
+      console.log('🔄 useProfileForm: Using existing profile data:', initialProfile);
+      // Use existing profile data exactly as it is
       return initialProfile;
     }
     
-    // Default values for new profiles
+    console.log('🔄 useProfileForm: Creating new profile with minimal defaults');
+    // Minimal defaults for new profiles - let database defaults handle privacy settings
     return {
       id: '',
       full_name: '',
@@ -23,14 +25,8 @@ export function useProfileForm(initialProfile: UserProfile | null) {
       climbing_level: '',
       climbing_experience: [],
       bio: '',
-      allow_profile_viewing: true,
-      show_climbing_progress: false,
-      show_completion_stats: false,
-      show_climbing_level: true,
-      show_trad_progress: false,
-      show_sport_progress: false,
-      show_top_rope_progress: false,
       created_at: '',
+      // Remove privacy setting defaults - let them come from database
     };
   };
 
@@ -39,17 +35,20 @@ export function useProfileForm(initialProfile: UserProfile | null) {
   // Update form data when initial profile changes
   useEffect(() => {
     if (initialProfile) {
+      console.log('🔄 useProfileForm useEffect: Updating form data with profile:', initialProfile);
       setFormData(initialProfile);
     }
   }, [initialProfile]);
 
   // Update form data when profile changes
   const updateFormData = (profile: UserProfile) => {
+    console.log('🔄 useProfileForm: updateFormData called with:', profile);
     setFormData(profile);
   };
 
   const handleCancel = () => {
     if (initialProfile) {
+      console.log('🔄 useProfileForm: Canceling changes, reverting to:', initialProfile);
       setFormData(initialProfile);
     }
     setEditing(false);
