@@ -10,12 +10,14 @@ import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { useCommunityData } from "@/hooks/useCommunityData";
 import { useAccessControl } from "@/hooks/useAccessControl";
+import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 
 export default function Events() {
   const { user } = useAuth();
   const { hasAccess, accessLoading } = useAccessControl('authenticated');
   const { upcomingEvents, userParticipations, loading, fetchUserParticipations } = useOptimizedEvents();
   const { members, loading: membersLoading, fetchCommunityMembers } = useCommunityData();
+  const { getUserCompletionStats } = useClimbCompletions();
 
   // Enable real-time updates for events
   useRealtimeEvents();
@@ -91,17 +93,20 @@ export default function Events() {
             Community Spotlight
           </h2>
           <div className="space-y-4">
-            {members.slice(0, 3).map((member) => (
-              <CommunityMemberCard 
-                key={member.id} 
-                member={member}
-                userStats={{ completions: 0, avgGrade: "N/A" }}
-                isCurrentUser={false}
-                canViewProfile={true}
-                hiddenStyles={[]}
-                onClick={() => {}}
-              />
-            ))}
+            {members.slice(0, 3).map((member) => {
+              const userStats = getUserCompletionStats(member.id);
+              return (
+                <CommunityMemberCard 
+                  key={member.id} 
+                  member={member}
+                  userStats={userStats}
+                  isCurrentUser={user?.id === member.id}
+                  canViewProfile={true}
+                  hiddenStyles={[]}
+                  onClick={() => {}}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

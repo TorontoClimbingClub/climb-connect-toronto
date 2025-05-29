@@ -25,32 +25,58 @@ export const useClimbingStats = (userId: string | undefined) => {
 
     const fetchStats = async () => {
       try {
-        // Get all completions for the user with route information
-        const { data: completions, error } = await supabase
+        // Get all completions for the user
+        const { data: completions, error: completionsError } = await supabase
           .from('climb_completions')
-          .select(`
-            *,
-            routes!inner(*)
-          `)
+          .select('*')
           .eq('user_id', userId);
 
-        if (error) throw error;
+        if (completionsError) throw completionsError;
 
         if (completions && completions.length > 0) {
+          // Get all routes that the user has completed
+          const routeIds = completions.map(c => c.route_id);
+          const { data: routes, error: routesError } = await supabase
+            .from('routes')
+            .select('*')
+            .in('id', routeIds);
+
+          if (routesError) throw routesError;
+
+          // Create a map of route_id to route for easy lookup
+          const routeMap = new Map(routes?.map(route => [route.id, route]) || []);
+
           // Calculate stats from the completions data
           const now = new Date();
           const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
           const totalCompletions = completions.length;
-          const tradCompletions = completions.filter(c => c.routes.style === 'Trad').length;
-          const sportCompletions = completions.filter(c => c.routes.style === 'Sport').length;
-          const topRopeCompletions = completions.filter(c => c.routes.style === 'Top Rope').length;
+          
+          // Count completions by style
+          const tradCompletions = completions.filter(c => {
+            const route = routeMap.get(c.route_id);
+            return route?.style === 'Trad';
+          }).length;
+          
+          const sportCompletions = completions.filter(c => {
+            const route = routeMap.get(c.route_id);
+            return route?.style === 'Sport';
+          }).length;
+          
+          const topRopeCompletions = completions.filter(c => {
+            const route = routeMap.get(c.route_id);
+            return route?.style === 'Top Rope';
+          }).length;
+
           const recentCompletions = completions.filter(c => 
             new Date(c.completed_at) >= thirtyDaysAgo
           ).length;
 
           // Find hardest grade (simplified - just get the highest grade string)
-          const grades = completions.map(c => c.routes.grade).sort();
+          const grades = completions
+            .map(c => routeMap.get(c.route_id)?.grade)
+            .filter(grade => grade !== undefined)
+            .sort();
           const hardestGrade = grades.length > 0 ? grades[grades.length - 1] : null;
 
           setStats({
