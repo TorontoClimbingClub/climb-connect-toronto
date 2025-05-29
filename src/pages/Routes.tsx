@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
-import { RouteFilters } from "@/components/RouteFilters";
+import { EnhancedRouteFilters } from "@/components/filters/EnhancedRouteFilters";
 import { PageHeader } from "@/components/routes/PageHeader";
 import { CragCard } from "@/components/routes/CragCard";
 import { SectorCard } from "@/components/routes/SectorCard";
@@ -85,6 +86,7 @@ export default function Routes() {
   };
 
   const handleFiltersChange = (newFilteredRoutes: ClimbingRoute[]) => {
+    console.log('Filters changed, new route count:', newFilteredRoutes.length);
     setFilteredRoutes(newFilteredRoutes);
     // Don't reset selections when filters change - keep user on same page
   };
@@ -102,9 +104,10 @@ export default function Routes() {
         {selectedCrag && !selectedSector && (
           <>
             <MapWidget />
-            <RouteFilters 
+            <EnhancedRouteFilters 
               routes={rattlesnakeRoutes} 
               onFiltersChange={handleFiltersChange}
+              selectedSector={selectedSector}
             />
           </>
         )}

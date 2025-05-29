@@ -33,9 +33,9 @@ export function MapWidget() {
               href={googleMapsLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded transition-colors"
+              className="inline-block bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded transition-colors"
             >
-              View in Google Maps
+              View in Maps
             </a>
           </div>
         </div>
