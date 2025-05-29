@@ -8,6 +8,7 @@ import { EventDetailsCard } from "@/components/event-detail/EventDetailsCard";
 import { CarpoolCard } from "@/components/event-detail/CarpoolCard";
 import { ParticipantsTable } from "@/components/event-detail/ParticipantsTable";
 import { EquipmentCard } from "@/components/event-detail/EquipmentCard";
+import { EventCommentsSection } from "@/components/event-detail/EventCommentsSection";
 import { useEventData } from "@/hooks/useEventData";
 import { useEventActions } from "@/hooks/useEventActions";
 
@@ -77,6 +78,25 @@ export default function EventDetail() {
     }
   };
 
+  const handleUpdateCarpoolPreference = async (needsCarpool: boolean) => {
+    if (!currentUserParticipation) return;
+    
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .update({
+          needs_carpool: needsCarpool
+        })
+        .eq('id', currentUserParticipation.id);
+
+      if (error) throw error;
+
+      refreshData();
+    } catch (error) {
+      console.error('Error updating carpool preference:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -98,7 +118,7 @@ export default function EventDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="w-full max-w-6xl mx-auto p-4">
+      <div className="w-full max-w-4xl mx-auto p-4">
         <EventHeader
           event={event}
           userJoined={userJoined}
@@ -108,10 +128,24 @@ export default function EventDetail() {
           onLeaveEvent={handleLeaveEvent}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Event Details - Full width */}
+        <div className="mb-6">
           <EventDetailsCard event={event} participantsCount={participants.length} />
         </div>
 
+        {/* Event Description/Details if available */}
+        {event.description && (
+          <div className="mb-6">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-stone-900 mb-3">Event Details</h3>
+              <div className="text-stone-700 whitespace-pre-wrap">
+                {event.description}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Carpool Section */}
         <div className="mb-6">
           <CarpoolCard 
             participants={participants}
@@ -119,8 +153,16 @@ export default function EventDetail() {
             currentUserParticipation={currentUserParticipation}
             onUpdateCarpoolStatus={handleUpdateCarpoolStatus}
             onAssignToDriver={handleAssignToDriver}
+            onUpdateCarpoolPreference={handleUpdateCarpoolPreference}
           />
         </div>
+
+        {/* Comments Section */}
+        {eventId && (
+          <div className="mb-6">
+            <EventCommentsSection eventId={eventId} />
+          </div>
+        )}
 
         <div className="space-y-6">
           <ParticipantsTable participants={participants} />

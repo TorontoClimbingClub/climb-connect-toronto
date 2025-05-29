@@ -29,6 +29,7 @@ export interface Participant {
   phone: string | null;
   carpool_driver_notes?: string | null;
   assigned_driver_id?: string | null;
+  needs_carpool?: boolean | null;
 }
 
 export interface EventEquipment {

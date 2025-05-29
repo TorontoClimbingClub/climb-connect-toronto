@@ -20,7 +20,7 @@ interface UserProfileOverlayProps {
 
 export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOverlayProps) {
   const { user: currentUser } = useAuth();
-  const { getUserCompletionStats } = useClimbCompletions();
+  const { completions, getUserCompletionStats } = useClimbCompletions();
   const { equipment: userEquipment } = useEquipmentProfile();
   
   if (!user) return null;
@@ -28,8 +28,9 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
   const userStats = getUserCompletionStats(user.id);
   const isOwnProfile = user.id === currentUser?.id;
 
-  // Get completed routes for this user
-  const completedRoutes = userStats.completions.map(completion => {
+  // Filter completions to only show this user's completions
+  const userCompletions = completions.filter(c => c.user_id === user.id);
+  const completedRoutes = userCompletions.map(completion => {
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
     return route ? { ...route, completedAt: completion.completed_at } : null;
   }).filter(Boolean).sort((a, b) => {
@@ -155,7 +156,7 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
               </CardHeader>
               <CardContent>
                 <CompletionProgressBars 
-                  completions={userStats.completions} 
+                  completions={userCompletions} 
                   areaName="Rattlesnake Point"
                   hiddenStyles={getHiddenStyles()}
                 />

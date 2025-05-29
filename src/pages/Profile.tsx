@@ -12,8 +12,10 @@ import { forceLogoutAndRedirect } from "@/utils/auth";
 import { UserProfile } from "@/types";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Profile() {
+  const { user } = useAuth();
   const {
     profile,
     loading,
@@ -105,7 +107,7 @@ export default function Profile() {
         </div>
 
         <div className="mb-6">
-          <CompletedRoutesList completions={completions} />
+          <CompletedRoutesList completions={completions} userId={user?.id} />
         </div>
 
         <EquipmentInventory

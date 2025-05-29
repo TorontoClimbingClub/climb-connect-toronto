@@ -7,16 +7,23 @@ import { useNavigate } from "react-router-dom";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbCompletion, useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CompletedRoutesListProps {
   completions: ClimbCompletion[];
+  userId?: string; // Optional userId for viewing other users' completions
 }
 
-export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
+export function CompletedRoutesList({ completions, userId }: CompletedRoutesListProps) {
   const navigate = useNavigate();
   const { toggleCompletion } = useClimbCompletions();
+  const { user } = useAuth();
 
-  const completedRoutes = completions.map(completion => {
+  // Filter completions to only show the target user's completions
+  const targetUserId = userId || user?.id;
+  const userCompletions = completions.filter(c => c.user_id === targetUserId);
+  
+  const completedRoutes = userCompletions.map(completion => {
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
     return route ? { ...route, completedAt: completion.completed_at } : null;
   }).filter(Boolean).sort((a, b) => {
@@ -34,6 +41,8 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
     toggleCompletion(routeId);
   };
 
+  const isOwnProfile = !userId || userId === user?.id;
+
   if (completedRoutes.length === 0) {
     return (
       <Card>
@@ -46,7 +55,7 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
         <CardContent>
           <div className="text-center py-8 text-stone-500">
             <Mountain className="h-12 w-12 mx-auto mb-4 text-stone-400" />
-            <p>No routes completed yet. Start climbing to see your progress!</p>
+            <p>{isOwnProfile ? "No routes completed yet. Start climbing to see your progress!" : "No completed routes to display."}</p>
           </div>
         </CardContent>
       </Card>
@@ -99,15 +108,17 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={(e) => handleToggleCompletion(route.id, e)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    title="Mark as not completed"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  {isOwnProfile && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => handleToggleCompletion(route.id, e)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="Mark as not completed"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             );
