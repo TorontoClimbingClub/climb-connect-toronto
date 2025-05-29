@@ -8,13 +8,14 @@ import { CragCard } from "@/components/routes/CragCard";
 import { SectorCard } from "@/components/routes/SectorCard";
 import { AreaCard } from "@/components/routes/AreaCard";
 import { MapWidget } from "@/components/routes/MapWidget";
-import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbingRoute } from "@/types/routes";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouteManagement } from "@/hooks/useRouteManagement";
 
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { routes } = useRouteManagement();
   
   // Use try-catch to handle auth context issues gracefully
   let user = null;
@@ -31,13 +32,14 @@ export default function Routes() {
   const [selectedCrag, setSelectedCrag] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
-  const [filteredRoutes, setFilteredRoutes] = useState<ClimbingRoute[]>(rattlesnakeRoutes);
+  const [filteredRoutes, setFilteredRoutes] = useState<ClimbingRoute[]>(routes);
 
   console.log('🏔️ Routes page loaded:', {
     userId: user?.id,
     userEmail: user?.email,
     route: location.pathname,
-    authError
+    authError,
+    totalRoutes: routes.length
   });
 
   // Get unique sectors and areas from filtered routes
@@ -96,7 +98,7 @@ export default function Routes() {
     }
     if (selectedCrag) {
       // Show filtered route count when filters are active
-      const hasActiveFilters = filteredRoutes.length !== rattlesnakeRoutes.length;
+      const hasActiveFilters = filteredRoutes.length !== routes.length;
       if (hasActiveFilters) {
         return `${selectedCrag} (${filteredRoutes.length} routes)`;
       }
@@ -110,9 +112,9 @@ export default function Routes() {
       return 'Select an area to view routes';
     }
     if (selectedCrag) {
-      const hasActiveFilters = filteredRoutes.length !== rattlesnakeRoutes.length;
+      const hasActiveFilters = filteredRoutes.length !== routes.length;
       if (hasActiveFilters) {
-        return `Showing filtered results - ${filteredRoutes.length} of ${rattlesnakeRoutes.length} routes`;
+        return `Showing filtered results - ${filteredRoutes.length} of ${routes.length} routes`;
       }
       return 'Select a sector';
     }
@@ -146,7 +148,7 @@ export default function Routes() {
             <>
               <MapWidget />
               <EnhancedRouteFilters 
-                routes={rattlesnakeRoutes} 
+                routes={routes} 
                 onFiltersChange={handleFiltersChange}
               />
               {sectors.map((sector) => (

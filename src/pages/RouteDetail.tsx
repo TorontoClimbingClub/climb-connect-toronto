@@ -7,14 +7,15 @@ import { PhotosSection } from "@/components/route-detail/PhotosSection";
 import { CommentsSection } from "@/components/route-detail/CommentsSection";
 import { useRouteData } from "@/hooks/useRouteData";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
-import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useRouteManagement } from "@/hooks/useRouteManagement";
 
 export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { routes } = useRouteManagement();
   
   // Use try-catch to handle auth context issues gracefully
   let user = null;
@@ -36,7 +37,7 @@ export default function RouteDetail() {
     authError
   });
 
-  const route = rattlesnakeRoutes.find(r => r.id === routeId);
+  const route = routes.find(r => r.id === routeId);
   
   const {
     comments,

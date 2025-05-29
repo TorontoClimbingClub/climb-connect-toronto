@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Plus, Search } from "lucide-react";
 import { ClimbingRoute } from "@/types/routes";
 import { EditRouteDialog } from "./EditRouteDialog";
-import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { useToast } from "@/hooks/use-toast";
+import { useRouteManagement } from "@/hooks/useRouteManagement";
 
 export function RouteManagementTab() {
-  const [routes, setRoutes] = useState<ClimbingRoute[]>(rattlesnakeRoutes);
+  const { routes, updateRoute, addRoute, deleteRoute } = useRouteManagement();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRoute, setSelectedRoute] = useState<ClimbingRoute | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -39,20 +38,20 @@ export function RouteManagementTab() {
     console.log('Saving route data:', routeData);
     
     if (selectedRoute) {
-      // Edit existing route
-      setRoutes(prev => {
-        const updatedRoutes = prev.map(route => 
-          route.id === selectedRoute.id 
-            ? { ...route, ...routeData }
-            : route
-        );
-        console.log('Updated routes:', updatedRoutes);
-        return updatedRoutes;
-      });
-      toast({
-        title: "Route Updated",
-        description: `${routeData.name} has been updated successfully`,
-      });
+      // Edit existing route using global management
+      const success = updateRoute(selectedRoute.id, routeData);
+      if (success) {
+        toast({
+          title: "Route Updated",
+          description: `${routeData.name} has been updated successfully`,
+        });
+      } else {
+        toast({
+          title: "Update Failed",
+          description: "Failed to update the route",
+          variant: "destructive",
+        });
+      }
     } else {
       // Add new route
       const newRoute: ClimbingRoute = {
@@ -63,11 +62,7 @@ export function RouteManagementTab() {
         area: routeData.area!,
         sector: routeData.sector!,
       };
-      setRoutes(prev => {
-        const updatedRoutes = [...prev, newRoute];
-        console.log('Added new route:', newRoute);
-        return updatedRoutes;
-      });
+      addRoute(newRoute);
       toast({
         title: "Route Added",
         description: `${routeData.name} has been added successfully`,
@@ -81,11 +76,13 @@ export function RouteManagementTab() {
   const handleDeleteRoute = (routeId: string) => {
     const route = routes.find(r => r.id === routeId);
     if (window.confirm(`Are you sure you want to delete "${route?.name}"? This action cannot be undone.`)) {
-      setRoutes(prev => prev.filter(route => route.id !== routeId));
-      toast({
-        title: "Route Deleted",
-        description: `${route?.name} has been deleted`,
-      });
+      const success = deleteRoute(routeId);
+      if (success) {
+        toast({
+          title: "Route Deleted",
+          description: `${route?.name} has been deleted`,
+        });
+      }
     }
   };
 
