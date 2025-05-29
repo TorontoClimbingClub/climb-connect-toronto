@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -61,28 +60,13 @@ export function useAdminData() {
 
       if (profilesError) throw profilesError;
 
-      // Try to get auth users data (email) - this might fail with client-side permissions
-      let authUsers: any = null;
-      try {
-        const { data: authUsersData, error: authError } = await supabase.auth.admin.listUsers();
-        if (!authError) {
-          authUsers = authUsersData;
-        }
-      } catch (error) {
-        console.warn('Could not fetch auth users with admin API - this is expected with client-side permissions:', error);
-      }
-
       // Get user roles for each profile
       const usersWithRoles = await Promise.all(
         (profiles || []).map(async (profile: ProfileData) => {
           const { data: role } = await supabase.rpc('get_user_role', { _user_id: profile.id });
           
-          // Find corresponding auth user for email if available
-          const authUser = authUsers?.users?.find((u: any) => u.id === profile.id);
-          
           return {
             id: profile.id,
-            email: authUser?.email || 'Email access requires service role',
             full_name: profile.full_name,
             phone: profile.phone,
             is_carpool_driver: profile.is_carpool_driver,

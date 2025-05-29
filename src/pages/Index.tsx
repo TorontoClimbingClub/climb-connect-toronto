@@ -1,16 +1,17 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, ArrowRight, ExternalLink, Mountain } from "lucide-react";
+import { Calendar, ArrowRight, ExternalLink, Mountain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
+import { Leaderboards } from "@/components/home/Leaderboards";
 
 export default function Index() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-md mx-auto p-4">
+      <div className="max-w-4xl mx-auto p-4">
         {/* Hero Section */}
         <div className="text-center mb-8">
           <div className="bg-white p-4 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
@@ -29,7 +30,7 @@ export default function Index() {
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/events')}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -65,24 +66,11 @@ export default function Index() {
           </Card>
         </div>
 
-        {/* Call to Action */}
-        <Card>
-          <CardContent className="p-6 text-center">
-            <h3 className="text-lg font-semibold mb-2">Ready to climb?</h3>
-            <p className="text-stone-600 mb-4">
-              Check out our upcoming events and join the adventure!
-            </p>
-            <Button 
-              onClick={() => navigate('/events')}
-              className="w-full bg-[#E55A2B] hover:bg-orange-700"
-            >
-              View Events & Community
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Leaderboards Section */}
+        <Leaderboards />
         
         {/* Website Return Button */}
-        <div className="mt-6">
+        <div className="mt-8">
           <Button 
             onClick={() => window.open('https://www.torontoclimbingclub.ca', '_blank')}
             variant="outline"

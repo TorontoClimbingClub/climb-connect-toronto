@@ -63,7 +63,6 @@ export function UsersTab({
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Climbing Level</TableHead>
@@ -77,9 +76,6 @@ export function UsersTab({
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="font-medium">{user.full_name}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-gray-600">{user.email}</div>
                   </TableCell>
                   <TableCell>{user.phone || 'Not provided'}</TableCell>
                   <TableCell>
