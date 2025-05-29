@@ -6,6 +6,7 @@ import { CheckCircle2, Mountain, ExternalLink, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbCompletion, useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
 
 interface CompletedRoutesListProps {
   completions: ClimbCompletion[];
@@ -22,32 +23,6 @@ export function CompletedRoutesList({ completions }: CompletedRoutesListProps) {
     if (!a || !b) return 0;
     return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
   });
-
-  const getStyleColor = (style: string) => {
-    switch (style) {
-      case 'Trad':
-        return 'bg-orange-100 text-orange-800';
-      case 'Sport':
-        return 'bg-blue-100 text-blue-800';
-      case 'Top Rope':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getDifficultyColor = (grade: string) => {
-    if (grade.includes('5.1') && (grade.includes('0') || grade.includes('1') || grade.includes('2'))) {
-      return 'text-red-600 font-bold';
-    }
-    if (grade.includes('5.9') || grade.includes('5.10')) {
-      return 'text-orange-600 font-semibold';
-    }
-    if (grade.includes('5.7') || grade.includes('5.8')) {
-      return 'text-yellow-600 font-medium';
-    }
-    return 'text-green-600';
-  };
 
   const handleRouteClick = (routeId: string, event: React.MouseEvent) => {
     event.stopPropagation();

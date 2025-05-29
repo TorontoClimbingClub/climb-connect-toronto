@@ -1,15 +1,14 @@
 
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mountain, Phone, Eye, EyeOff, ExternalLink } from "lucide-react";
-import { CompletionProgressBars } from "./CompletionProgressBars";
+import { Car, Phone, Mountain, Package, Users, CheckCircle2 } from "lucide-react";
+import { CommunityMember } from "@/types/community";
+import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { useAuth } from "@/contexts/AuthContext";
-import { CommunityMember } from "@/types/community";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
-import { useNavigate } from "react-router-dom";
+import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
 
 interface UserProfileOverlayProps {
   user: CommunityMember | null;
@@ -18,74 +17,16 @@ interface UserProfileOverlayProps {
 }
 
 export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOverlayProps) {
-  const { getUserCompletionStats, completions } = useClimbCompletions();
   const { user: currentUser } = useAuth();
-  const [userCompletions, setUserCompletions] = useState<any[]>([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user && open) {
-      // Get completions for this specific user
-      const userStats = getUserCompletionStats(user.id);
-      setUserCompletions(userStats.completions);
-    }
-  }, [user, open, completions, getUserCompletionStats]);
-
+  const { getUserCompletionStats } = useClimbCompletions();
+  
   if (!user) return null;
 
-  const userInitials = user.full_name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  const userStats = getUserCompletionStats(user.id);
+  const isOwnProfile = user.id === currentUser?.id;
 
-  const isOwnProfile = currentUser?.id === user.id;
-  const canShowClimbingLevel = user.show_climbing_level !== false || isOwnProfile;
-  const canShowClimbingProgress = user.show_climbing_progress !== false || isOwnProfile;
-  const canShowCompletionStats = user.show_completion_stats !== false || isOwnProfile;
-
-  // Check if user allows profile viewing - but don't show this restriction to their own profile
-  if (!user.allow_profile_viewing && !isOwnProfile) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                <AvatarFallback className="bg-[#E55A2B] text-white font-semibold">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-xl font-bold text-[#E55A2B]">{user.full_name}</h2>
-                <p className="text-stone-600 text-sm">Community Member</p>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="bg-stone-50 p-6 rounded-lg text-center">
-            <EyeOff className="h-8 w-8 text-stone-400 mx-auto mb-2" />
-            <p className="text-stone-600">This member's profile is private</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  // Get hidden styles based on privacy settings (but show everything for own profile)
-  const getHiddenStyles = () => {
-    if (isOwnProfile) return []; // Show everything for own profile
-    
-    const hidden: string[] = [];
-    if (user.show_trad_progress === false) hidden.push('Trad');
-    if (user.show_sport_progress === false) hidden.push('Sport');
-    if (user.show_top_rope_progress === false) hidden.push('Top Rope');
-    return hidden;
-  };
-
-  // Get completed routes with details
-  const completedRoutes = userCompletions.map(completion => {
+  // Get completed routes for this user
+  const completedRoutes = userStats.completions.map(completion => {
     const route = rattlesnakeRoutes.find(r => r.id === completion.route_id);
     return route ? { ...route, completedAt: completion.completed_at } : null;
   }).filter(Boolean).sort((a, b) => {
@@ -93,187 +34,149 @@ export function UserProfileOverlay({ user, open, onOpenChange }: UserProfileOver
     return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
   });
 
-  const getStyleColor = (style: string) => {
-    switch (style) {
-      case 'Trad':
-        return 'bg-orange-100 text-orange-800';
-      case 'Sport':
-        return 'bg-blue-100 text-blue-800';
-      case 'Top Rope':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getDifficultyColor = (grade: string) => {
-    if (grade.includes('5.1') && (grade.includes('0') || grade.includes('1') || grade.includes('2'))) {
-      return 'text-red-600 font-bold';
-    }
-    if (grade.includes('5.9') || grade.includes('5.10')) {
-      return 'text-orange-600 font-semibold';
-    }
-    if (grade.includes('5.7') || grade.includes('5.8')) {
-      return 'text-yellow-600 font-medium';
-    }
-    return 'text-green-600';
-  };
-
-  const handleRouteClick = (routeId: string) => {
-    navigate(`/routes/${routeId}`);
-    onOpenChange(false);
+  const getHiddenStyles = () => {
+    const hidden: string[] = [];
+    if (user.show_trad_progress === false && !isOwnProfile) hidden.push('Trad');
+    if (user.show_sport_progress === false && !isOwnProfile) hidden.push('Sport');
+    if (user.show_top_rope_progress === false && !isOwnProfile) hidden.push('Top Rope');
+    return hidden;
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-[#E55A2B] text-white font-semibold">
-                {userInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="text-xl font-bold text-[#E55A2B]">{user.full_name}</h2>
-              <p className="text-stone-600 text-sm">Community Member</p>
-            </div>
-          </DialogTitle>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full max-w-md overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="text-[#E55A2B]">{user.full_name}</SheetTitle>
+          <SheetDescription>
+            View {isOwnProfile ? 'your' : `${user.full_name}'s`} climbing profile and achievements
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="space-y-6">
-          {/* Contact Info */}
-          <div className="flex items-center gap-4 text-sm">
+        <div className="space-y-6 mt-6">
+          {/* Contact & Transport */}
+          <div className="space-y-3">
             {user.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-stone-500" />
-                <span>{user.phone}</span>
+              <div className="flex items-center text-sm text-stone-600">
+                <Phone className="h-4 w-4 mr-2" />
+                {user.phone}
               </div>
+            )}
+            
+            {user.is_carpool_driver && (
+              <Badge variant="secondary" className="text-sm">
+                <Car className="h-4 w-4 mr-1" />
+                Driver ({user.passenger_capacity} seats available)
+              </Badge>
             )}
           </div>
 
-          {/* Bio */}
-          {user.bio && (
-            <div>
-              <h3 className="font-semibold mb-2">About</h3>
-              <p className="text-stone-700 text-sm bg-stone-50 p-3 rounded-lg">
-                {user.bio}
-              </p>
-            </div>
-          )}
-
           {/* Climbing Info */}
-          {canShowClimbingLevel && (user.climbing_level || user.climbing_experience) && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Mountain className="h-5 w-5 text-[#E55A2B]" />
-                <h3 className="font-semibold">Climbing Information</h3>
-              </div>
-              
-              {user.climbing_level && (
-                <div>
-                  <span className="text-sm font-medium">Level: </span>
-                  <Badge variant="outline">{user.climbing_level}</Badge>
-                </div>
-              )}
-              
-              {user.climbing_experience && user.climbing_experience.length > 0 && (
-                <div>
-                  <span className="text-sm font-medium">Experience: </span>
-                  <div className="flex flex-wrap gap-1 mt-1">
+          {(user.show_climbing_level !== false || isOwnProfile) && (user.climbing_level || user.climbing_experience) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Mountain className="h-5 w-5" />
+                  Climbing Experience
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {user.climbing_level && (
+                  <p className="font-medium text-stone-700 mb-2">{user.climbing_level}</p>
+                )}
+                {user.climbing_experience && user.climbing_experience.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
                     {user.climbing_experience.map((exp) => (
-                      <Badge key={exp} variant="secondary" className="text-xs">
+                      <Badge key={exp} variant="outline">
                         {exp}
                       </Badge>
                     ))}
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+                {user.climbing_description && (
+                  <p className="text-sm text-stone-600">{user.climbing_description}</p>
+                )}
+              </CardContent>
+            </Card>
           )}
 
-          {/* Climbing Description */}
-          {user.climbing_description && (
-            <div>
-              <h3 className="font-semibold mb-2">About Their Climbing</h3>
-              <p className="text-stone-700 text-sm bg-stone-50 p-3 rounded-lg">
-                {user.climbing_description}
-              </p>
-            </div>
+          {/* Progress */}
+          {(user.show_climbing_progress !== false || isOwnProfile) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Climbing Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CompletionProgressBars 
+                  completions={userStats.completions} 
+                  areaName="Rattlesnake Point"
+                  hiddenStyles={getHiddenStyles()}
+                />
+              </CardContent>
+            </Card>
           )}
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="bg-stone-50 p-3 rounded-lg">
-              <div className="text-2xl font-bold text-[#E55A2B]">
-                {canShowCompletionStats ? userCompletions.length : '•••'}
-              </div>
-              <div className="text-xs text-stone-600">Routes Completed</div>
-            </div>
-            <div className="bg-stone-50 p-3 rounded-lg">
-              <div className="text-2xl font-bold text-[#E55A2B]">{user.equipment_count || 0}</div>
-              <div className="text-xs text-stone-600">Equipment Items</div>
-            </div>
-            <div className="bg-stone-50 p-3 rounded-lg">
-              <div className="text-2xl font-bold text-[#E55A2B]">{user.events_count || 0}</div>
-              <div className="text-xs text-stone-600">Events Joined</div>
-            </div>
-          </div>
-
-          {/* Completion Progress */}
-          {canShowClimbingProgress ? (
-            <CompletionProgressBars 
-              completions={userCompletions} 
-              title={`${user.full_name}'s Progress`}
-              areaName="Rattlesnake Point"
-              hiddenStyles={getHiddenStyles()}
-            />
-          ) : (
-            <div className="bg-stone-50 p-6 rounded-lg text-center">
-              <EyeOff className="h-8 w-8 text-stone-400 mx-auto mb-2" />
-              <p className="text-stone-600">Climbing progress is private</p>
-            </div>
-          )}
-
-          {/* Completed Routes List */}
-          {canShowCompletionStats && completedRoutes.length > 0 && (
-            <div>
-              <h3 className="font-semibold mb-3">Completed Routes ({completedRoutes.length})</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {completedRoutes.map((route) => {
-                  if (!route) return null;
-                  return (
-                    <div
-                      key={route.id}
-                      className="flex items-center justify-between p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer"
-                      onClick={() => handleRouteClick(route.id)}
-                    >
-                      <div className="flex-1">
+          {/* Completed Routes */}
+          {(user.show_completion_stats !== false || isOwnProfile) && completedRoutes.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5" />
+                  Completed Routes ({completedRoutes.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {completedRoutes.slice(0, 10).map((route) => {
+                    if (!route) return null;
+                    return (
+                      <div key={route.id} className="p-3 bg-stone-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-stone-900 text-sm">{route.name}</h4>
+                          <h4 className="font-medium text-stone-900">{route.name}</h4>
                           <Badge className={getStyleColor(route.style)} variant="secondary">
                             {route.style}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-stone-600">
+                        <div className="flex items-center gap-4 text-sm text-stone-600">
                           <span className={getDifficultyColor(route.grade)}>
                             {route.grade}
                           </span>
                           <span>{route.area}</span>
-                          <span>
+                          <span className="text-xs">
                             {new Date(route.completedAt).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
-                      <ExternalLink className="h-4 w-4 text-stone-400" />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                    );
+                  })}
+                  {completedRoutes.length > 10 && (
+                    <p className="text-sm text-stone-500 text-center">
+                      +{completedRoutes.length - 10} more routes
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="p-3 bg-stone-50 rounded-lg">
+              <div className="flex items-center justify-center mb-1">
+                <Package className="h-4 w-4 mr-1" />
+              </div>
+              <p className="text-lg font-bold text-[#E55A2B]">{user.equipment_count}</p>
+              <p className="text-xs text-stone-600">Gear Items</p>
+            </div>
+            <div className="p-3 bg-stone-50 rounded-lg">
+              <div className="flex items-center justify-center mb-1">
+                <Users className="h-4 w-4 mr-1" />
+              </div>
+              <p className="text-lg font-bold text-[#E55A2B]">{user.events_count}</p>
+              <p className="text-xs text-stone-600">Events Joined</p>
+            </div>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
