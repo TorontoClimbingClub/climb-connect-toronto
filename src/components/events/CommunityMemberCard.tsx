@@ -44,7 +44,7 @@ export function CommunityMemberCard({
     allow_profile_viewing: member?.allow_profile_viewing ?? true,
   };
 
-  // Apply privacy settings - show content only if privacy setting allows it (for all users including self)
+  // Apply privacy settings for ALL users (including self) to avoid confusion
   const shouldShowClimbingLevel = safeMember.show_climbing_level;
   const shouldShowClimbingProgress = safeMember.show_climbing_progress;
   const shouldShowCompletionStats = safeMember.show_completion_stats;
@@ -57,6 +57,10 @@ export function CommunityMemberCard({
     if (!safeMember.show_top_rope_progress) filtered.push('Top Rope');
     return filtered;
   };
+
+  // Stable display values to prevent flickering
+  const displayEquipmentCount = safeMember.equipment_count;
+  const displayEventsCount = safeMember.events_count;
 
   return (
     <Card 
@@ -135,11 +139,11 @@ export function CommunityMemberCard({
         <div className="flex justify-between text-sm text-stone-600">
           <div className="flex items-center">
             <Package className="h-4 w-4 mr-1" />
-            {safeMember.equipment_count || 0} gear items
+            {displayEquipmentCount} gear items
           </div>
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1" />
-            {safeMember.events_count || 0} events joined
+            {displayEventsCount} events joined
           </div>
         </div>
       </CardContent>

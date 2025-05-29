@@ -4,7 +4,6 @@ import { Navigation } from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
 import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
-import { CommunityStats } from "@/components/events/CommunityStats";
 import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
@@ -89,10 +88,6 @@ export default function Events() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
-        <CommunityStats
-          memberCount={membersWithStats.length}
-        />
-
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Upcoming Events

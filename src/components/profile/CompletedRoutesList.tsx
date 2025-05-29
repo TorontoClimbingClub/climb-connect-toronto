@@ -1,4 +1,4 @@
-
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,6 @@ import { rattlesnakeRoutes } from "@/data/rattlesnakeRoutes";
 import { ClimbCompletion, useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { getStyleColor, getDifficultyColor } from "@/utils/climbing-styles";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
 
 interface CompletedRoutesListProps {
   completions: ClimbCompletion[];
