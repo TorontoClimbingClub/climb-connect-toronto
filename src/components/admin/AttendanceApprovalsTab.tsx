@@ -7,70 +7,186 @@ import { Check, X, Calendar, User, Clock, MapPin, Users } from "lucide-react";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
 import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface EventParticipant {
+  id: string;
+  user_id: string;
+  full_name: string;
+  profile_photo_url?: string;
+  attendance_status?: 'pending' | 'approved' | 'rejected';
+  approval_id?: string;
+}
+
 export function AttendanceApprovalsTab() {
-  const { approvals, loading, approveAttendance, rejectAttendance } = useAttendanceApprovals();
-  const { upcomingEvents } = useEvents();
+  const { approvals, loading: approvalsLoading, approveAttendance, rejectAttendance } = useAttendanceApprovals();
+  const { upcomingEvents, loading: eventsLoading } = useEvents();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [joiningEvent, setJoiningEvent] = useState<string | null>(null);
+  const [eventsWithParticipants, setEventsWithParticipants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const isEventTimeReached = (eventDate: string, eventTime: string) => {
-    const eventDateTime = new Date(`${eventDate}T${eventTime}`);
-    return new Date() >= eventDateTime;
-  };
-
-  const handleJoinEvent = async (eventId: string) => {
-    if (!user) return;
-    
-    setJoiningEvent(eventId);
+  const fetchEventsWithParticipants = async () => {
     try {
-      // Check if already joined
-      const { data: existingParticipation } = await supabase
-        .from('event_participants')
-        .select('id')
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .single();
+      // Get all events (past and upcoming) sorted by date
+      const { data: events, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: false });
 
-      if (existingParticipation) {
-        toast({
-          title: "Already Joined",
-          description: "You are already participating in this event",
-        });
-        return;
-      }
+      if (eventsError) throw eventsError;
 
-      // Join the event
-      const { error } = await supabase
-        .from('event_participants')
-        .insert({
-          event_id: eventId,
-          user_id: user.id
-        });
+      // For each event, get participants and their attendance status
+      const eventsWithParticipantsData = await Promise.all(
+        (events || []).map(async (event) => {
+          // Get participants
+          const { data: participants, error: participantsError } = await supabase
+            .from('event_participants')
+            .select(`
+              id,
+              user_id,
+              profiles!inner(
+                full_name,
+                profile_photo_url
+              )
+            `)
+            .eq('event_id', event.id);
 
-      if (error) throw error;
+          if (participantsError) throw participantsError;
 
-      toast({
-        title: "Success",
-        description: "Successfully joined the event",
-      });
+          // Get attendance approvals for this event
+          const eventApprovals = approvals.filter(approval => approval.event_id === event.id);
+
+          // Map participants with their attendance status
+          const participantsWithStatus = participants?.map(participant => {
+            const approval = eventApprovals.find(a => a.user_id === participant.user_id);
+            return {
+              id: participant.id,
+              user_id: participant.user_id,
+              full_name: participant.profiles.full_name,
+              profile_photo_url: participant.profiles.profile_photo_url,
+              attendance_status: approval?.status || 'pending',
+              approval_id: approval?.id
+            };
+          }) || [];
+
+          const eventDateTime = new Date(`${event.date}T${event.time}`);
+          const hasEnded = new Date() > eventDateTime;
+
+          return {
+            ...event,
+            participants: participantsWithStatus,
+            participants_count: participantsWithStatus.length,
+            has_ended: hasEnded,
+            event_date_time: eventDateTime
+          };
+        })
+      );
+
+      setEventsWithParticipants(eventsWithParticipantsData);
     } catch (error: any) {
-      console.error('Error joining event:', error);
+      console.error('Error fetching events with participants:', error);
       toast({
         title: "Error",
-        description: "Failed to join event",
+        description: "Failed to load events and participants",
         variant: "destructive",
       });
     } finally {
-      setJoiningEvent(null);
+      setLoading(false);
     }
   };
 
-  if (loading) {
+  useEffect(() => {
+    if (!approvalsLoading) {
+      fetchEventsWithParticipants();
+    }
+  }, [approvals, approvalsLoading]);
+
+  const handleConfirmAttendance = async (participantUserId: string, eventId: string) => {
+    try {
+      // Check if approval already exists
+      const existingApproval = approvals.find(
+        a => a.user_id === participantUserId && a.event_id === eventId
+      );
+
+      if (existingApproval) {
+        await approveAttendance(existingApproval.id);
+      } else {
+        // Create new approval record
+        const { error } = await supabase
+          .from('event_attendance_approvals')
+          .insert({
+            user_id: participantUserId,
+            event_id: eventId,
+            status: 'approved',
+            approved_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Attendance confirmed successfully",
+        });
+      }
+
+      // Refresh data
+      await fetchEventsWithParticipants();
+    } catch (error: any) {
+      console.error('Error confirming attendance:', error);
+      toast({
+        title: "Error",
+        description: "Failed to confirm attendance",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRejectAttendance = async (participantUserId: string, eventId: string) => {
+    try {
+      const existingApproval = approvals.find(
+        a => a.user_id === participantUserId && a.event_id === eventId
+      );
+
+      if (existingApproval) {
+        await rejectAttendance(existingApproval.id);
+      } else {
+        // Create new rejection record
+        const { error } = await supabase
+          .from('event_attendance_approvals')
+          .insert({
+            user_id: participantUserId,
+            event_id: eventId,
+            status: 'rejected'
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Attendance marked as not present",
+        });
+      }
+
+      // Refresh data
+      await fetchEventsWithParticipants();
+    } catch (error: any) {
+      console.error('Error rejecting attendance:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update attendance",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getUserInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  if (loading || approvalsLoading || eventsLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E55A2B]" />
@@ -78,93 +194,157 @@ export function AttendanceApprovalsTab() {
     );
   }
 
-  const pendingApprovals = approvals.filter(approval => approval.status === 'pending');
-  const processedApprovals = approvals.filter(approval => approval.status !== 'pending');
-
-  // Get upcoming events and sort them
-  const sortedUpcomingEvents = upcomingEvents
-    .filter(event => new Date(`${event.date}T${event.time}`) >= new Date())
-    .sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime())
-    .slice(0, 5);
+  // Separate events into upcoming and past
+  const upcomingEventsWithParticipants = eventsWithParticipants.filter(event => !event.has_ended);
+  const pastEventsWithParticipants = eventsWithParticipants.filter(event => event.has_ended);
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-emerald-800 mb-4">Event Attendance Management</h2>
-        <p className="text-stone-600 mb-6">Review attendance approvals and track upcoming events.</p>
+        <h2 className="text-xl font-semibold text-emerald-800 mb-4">Event Attendance Confirmation</h2>
+        <p className="text-stone-600 mb-6">Confirm attendance for participants after events have concluded to track member participation.</p>
       </div>
 
-      {/* Upcoming Events Section */}
+      {/* Past Events - Ready for Attendance Confirmation */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-[#E55A2B]">
-          Upcoming Events ({sortedUpcomingEvents.length})
+          Past Events - Confirm Attendance ({pastEventsWithParticipants.length})
         </h3>
         
-        {sortedUpcomingEvents.length > 0 ? (
-          <div className="grid gap-4">
-            {sortedUpcomingEvents.map((event) => {
-              const eventTimeReached = isEventTimeReached(event.date, event.time);
-              const eventDateTime = new Date(`${event.date}T${event.time}`);
-              
-              return (
-                <Card key={event.id} className="border-blue-200">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-[#E55A2B]" />
-                          <span className="font-medium text-lg">{event.title}</span>
+        {pastEventsWithParticipants.length > 0 ? (
+          <div className="space-y-4">
+            {pastEventsWithParticipants.slice(0, 10).map((event) => (
+              <Card key={event.id} className="border-green-200">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-[#E55A2B]" />
+                        {event.title}
+                      </CardTitle>
+                      <div className="flex items-center gap-4 text-sm text-stone-600 mt-1">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{event.event_date_time.toLocaleDateString()} at {event.event_date_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                        
-                        <div className="space-y-1 text-sm text-stone-600">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-3 w-3" />
-                            <span>{eventDateTime.toLocaleDateString()} at {eventDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        {event.location && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            <span>{event.location}</span>
                           </div>
-                          
-                          {event.location && (
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-3 w-3" />
-                              <span>{event.location}</span>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center gap-2">
-                            <Users className="h-3 w-3" />
-                            <span>{event.participants_count || 0} participants</span>
-                            {event.max_participants && (
-                              <span>/ {event.max_participants} max</span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {event.description && (
-                          <p className="text-sm text-stone-700 mt-2">{event.description}</p>
                         )}
                       </div>
-                      
-                      <div className="ml-4">
-                        <Button
-                          size="sm"
-                          onClick={() => handleJoinEvent(event.id)}
-                          disabled={!eventTimeReached || joiningEvent === event.id}
-                          className={eventTimeReached ? "bg-green-600 hover:bg-green-700" : ""}
-                          variant={eventTimeReached ? "default" : "outline"}
-                        >
-                          {joiningEvent === event.id ? (
-                            "Joining..."
-                          ) : eventTimeReached ? (
-                            "Join Event"
-                          ) : (
-                            `Available at ${eventDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                    </div>
+                    <Badge variant="outline" className="text-green-700 border-green-700">
+                      Event Ended
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Participants ({event.participants_count})
+                  </h4>
+                  
+                  {event.participants.length > 0 ? (
+                    <div className="space-y-2">
+                      {event.participants.map((participant: EventParticipant) => (
+                        <div key={participant.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={participant.profile_photo_url || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {getUserInitials(participant.full_name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{participant.full_name}</span>
+                            {participant.attendance_status !== 'pending' && (
+                              <Badge 
+                                variant={participant.attendance_status === 'approved' ? 'default' : 'destructive'}
+                                className="text-xs"
+                              >
+                                {participant.attendance_status === 'approved' ? 'Confirmed' : 'Not Present'}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {participant.attendance_status === 'pending' && (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleConfirmAttendance(participant.user_id, event.id)}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Confirm
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRejectAttendance(participant.user_id, event.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Not Present
+                              </Button>
+                            </div>
                           )}
-                        </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-stone-500 text-sm">No participants registered for this event</p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-stone-600">No past events requiring attendance confirmation</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Upcoming Events - Preview */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-stone-700">
+          Upcoming Events - Preview ({upcomingEventsWithParticipants.length})
+        </h3>
+        
+        {upcomingEventsWithParticipants.length > 0 ? (
+          <div className="space-y-3">
+            {upcomingEventsWithParticipants.slice(0, 5).map((event) => (
+              <Card key={event.id} className="border-blue-200">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-[#E55A2B]" />
+                        <span className="font-medium">{event.title}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-stone-600">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{event.event_date_time.toLocaleDateString()} at {event.event_date_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          <span>{event.participants_count} participants</span>
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    
+                    <Badge variant="outline" className="text-blue-700 border-blue-700">
+                      Upcoming
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         ) : (
           <Card>
@@ -174,125 +354,6 @@ export function AttendanceApprovalsTab() {
           </Card>
         )}
       </div>
-
-      {/* Pending Approvals */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-[#E55A2B]">
-          Pending Approvals ({pendingApprovals.length})
-        </h3>
-        
-        {pendingApprovals.length > 0 ? (
-          <div className="space-y-3">
-            {pendingApprovals.map((approval: any) => {
-              const getUserInitials = (name: string) => {
-                return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-              };
-
-              // Check if the event has started to enable/disable approve button
-              const eventStarted = approval.event?.date && approval.event?.time 
-                ? isEventTimeReached(approval.event.date, approval.event.time)
-                : false;
-
-              return (
-                <Card key={approval.id} className="border-orange-200">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={approval.user?.profile_photo_url || undefined} />
-                            <AvatarFallback className="text-xs">
-                              {getUserInitials(approval.user?.full_name || 'U')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{approval.user?.full_name}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 text-sm text-stone-600">
-                          <Calendar className="h-3 w-3" />
-                          <span>{approval.event?.title}</span>
-                          <span>•</span>
-                          <span>{new Date(approval.event?.date).toLocaleDateString()}</span>
-                          {approval.event?.time && (
-                            <>
-                              <span>•</span>
-                              <span>{approval.event.time}</span>
-                            </>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-2 text-xs text-stone-500">
-                          <Clock className="h-3 w-3" />
-                          <span>Requested {new Date(approval.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2 ml-4">
-                        <Button
-                          size="sm"
-                          onClick={() => approveAttendance(approval.id)}
-                          disabled={!eventStarted}
-                          className={eventStarted ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}
-                          title={eventStarted ? "Approve attendance" : "Event must start before approving attendance"}
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          {eventStarted ? "Approve" : "Approve (Event Not Started)"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => rejectAttendance(approval.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-stone-600">No pending attendance approvals</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Recently Processed */}
-      {processedApprovals.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-stone-700">
-            Recently Processed ({processedApprovals.slice(0, 10).length})
-          </h3>
-          
-          <div className="space-y-2">
-            {processedApprovals.slice(0, 10).map((approval: any) => (
-              <Card key={approval.id} className="border-stone-200">
-                <CardContent className="p-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium">{approval.user?.full_name}</span>
-                      <span className="text-xs text-stone-500">{approval.event?.title}</span>
-                    </div>
-                    
-                    <Badge 
-                      variant={approval.status === 'approved' ? 'default' : 'destructive'}
-                      className="text-xs"
-                    >
-                      {approval.status}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
