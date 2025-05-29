@@ -62,6 +62,14 @@ export function useCommunityData() {
           details: `Equipment bulk fetch error: ${JSON.stringify(equipmentError)}`,
           source: 'community_data_equipment_bulk'
         });
+        // Use existing data for equipment counts if available
+        setMembers(prevMembers => {
+          return prevMembers.map(member => ({
+            ...member,
+            // Preserve existing equipment_count if it exists
+            equipment_count: member.equipment_count || 0
+          }));
+        });
       } else if (equipmentData) {
         equipmentData.forEach(item => {
           const currentCount = equipmentCounts.get(item.user_id) || 0;
@@ -79,6 +87,14 @@ export function useCommunityData() {
           details: `Events bulk fetch error: ${JSON.stringify(eventsError)}`,
           source: 'community_data_events_bulk'
         });
+        // Use existing data for event counts if available
+        setMembers(prevMembers => {
+          return prevMembers.map(member => ({
+            ...member,
+            // Preserve existing events_count if it exists
+            events_count: member.events_count || 0
+          }));
+        });
       } else if (eventsData) {
         eventsData.forEach(participation => {
           const currentCount = eventCounts.get(participation.user_id) || 0;
@@ -86,24 +102,30 @@ export function useCommunityData() {
         });
       }
 
-      // Combine profile data with stats
-      const membersWithStats = profiles.map(profile => {
-        const equipmentCount = equipmentCounts.get(profile.id) || 0;
-        const eventsCount = eventCounts.get(profile.id) || 0;
+      // Only update if we have both equipment and events data, or if it's the first load
+      if ((!equipmentError && !eventsError) || members.length === 0) {
+        // Combine profile data with stats
+        const membersWithStats = profiles.map(profile => {
+          const equipmentCount = equipmentCounts.get(profile.id) || 0;
+          const eventsCount = eventCounts.get(profile.id) || 0;
 
-        console.log(`📊 User ${profile.full_name}: equipment=${equipmentCount}, events=${eventsCount}`);
+          console.log(`📊 User ${profile.full_name}: equipment=${equipmentCount}, events=${eventsCount}`);
 
-        return {
-          ...profile,
-          equipment_count: equipmentCount,
-          events_count: eventsCount,
-        };
-      });
+          return {
+            ...profile,
+            equipment_count: equipmentCount,
+            events_count: eventsCount,
+          };
+        });
 
-      console.log('✅ fetchCommunityMembers: Final members with stats', membersWithStats.length);
+        console.log('✅ fetchCommunityMembers: Final members with stats', membersWithStats.length);
 
-      if (mountedRef.current) {
-        setMembers(membersWithStats);
+        if (mountedRef.current) {
+          setMembers(membersWithStats);
+        }
+      } else {
+        // If there were errors fetching counts, preserve existing member data
+        console.log('🔄 Preserving existing member data due to partial fetch errors');
       }
     } catch (error: any) {
       if (error.name !== 'AbortError' && mountedRef.current) {
