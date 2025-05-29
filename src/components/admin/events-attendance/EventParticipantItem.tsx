@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -62,11 +63,7 @@ export function EventParticipantItem({
         );
       case 'pending':
       default:
-        return (
-          <Badge key={`${participant.user_id}-pending`} variant="secondary" className="text-xs bg-gray-500 text-white">
-            Pending
-          </Badge>
-        );
+        return null; // Remove the pending badge
     }
   };
 
@@ -144,7 +141,7 @@ export function EventParticipantItem({
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Check className="h-4 w-4 mr-1" />
-                Confirm
+                Present
               </Button>
               <Button
                 size="sm"
@@ -180,7 +177,7 @@ export function EventParticipantItem({
               className="bg-green-600 hover:bg-green-700"
             >
               <Check className="h-4 w-4 mr-1" />
-              Confirm
+              Present
             </Button>
           )}
           
