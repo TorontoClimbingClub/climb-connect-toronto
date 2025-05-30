@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Camera, Upload, X, RotateCcw } from "lucide-react";
+import { Camera, Upload, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,8 +21,7 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 200, height: 200 });
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [centerPoint, setCenterPoint] = useState({ x: 0.5, y: 0.5 });
   const [showCropper, setShowCropper] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,23 +34,12 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
       setShowCropper(true);
+      setCenterPoint({ x: 0.5, y: 0.5 }); // Reset to center
     }
   };
 
   const handleImageLoad = useCallback(() => {
-    if (imageRef.current) {
-      const { naturalWidth, naturalHeight } = imageRef.current;
-      setImageSize({ width: naturalWidth, height: naturalHeight });
-      
-      // Set initial crop area to center square
-      const size = Math.min(naturalWidth, naturalHeight);
-      setCropArea({
-        x: (naturalWidth - size) / 2,
-        y: (naturalHeight - size) / 2,
-        width: size,
-        height: size
-      });
-    }
+    // Image loaded, ready for cropping
   }, []);
 
   const getCroppedImage = (): Promise<Blob> => {
@@ -61,24 +49,33 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
       const image = imageRef.current!;
 
       // Set canvas size to desired output size (square)
-      canvas.width = 300;
-      canvas.height = 300;
+      const outputSize = 300;
+      canvas.width = outputSize;
+      canvas.height = outputSize;
 
-      // Calculate scale factors
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
+      // Calculate the crop size (square) based on the smaller dimension
+      const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
+      
+      // Calculate the source coordinates based on center point
+      const sourceX = (centerPoint.x * image.naturalWidth) - (cropSize / 2);
+      const sourceY = (centerPoint.y * image.naturalHeight) - (cropSize / 2);
+      
+      // Clamp source coordinates to stay within image bounds
+      const clampedSourceX = Math.max(0, Math.min(sourceX, image.naturalWidth - cropSize));
+      const clampedSourceY = Math.max(0, Math.min(sourceY, image.naturalHeight - cropSize));
 
-      // Draw cropped image
+      // Clear canvas and draw the cropped square image
+      ctx.clearRect(0, 0, outputSize, outputSize);
       ctx.drawImage(
         image,
-        cropArea.x * scaleX,
-        cropArea.y * scaleY,
-        cropArea.width * scaleX,
-        cropArea.height * scaleY,
+        clampedSourceX,
+        clampedSourceY,
+        cropSize,
+        cropSize,
         0,
         0,
-        300,
-        300
+        outputSize,
+        outputSize
       );
 
       canvas.toBlob(resolve!, 'image/jpeg', 0.9);
@@ -198,15 +195,14 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
     }
   };
 
-  const handleCropChange = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
     if (!imageRef.current || !showCropper) return;
     
     const rect = imageRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * imageSize.width;
-    const y = ((e.clientY - rect.top) / rect.height) * imageSize.height;
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
     
-    const size = Math.min(imageSize.width - x, imageSize.height - y, 200);
-    setCropArea({ x, y, width: size, height: size });
+    setCenterPoint({ x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) });
   };
 
   return (
@@ -275,29 +271,37 @@ export function ProfilePhotoUpload({ currentPhotoUrl, onPhotoUpdate, userInitial
 
       {showCropper && preview && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium">Adjust your photo:</h4>
-          <div className="relative inline-block border rounded-lg overflow-hidden">
+          <h4 className="text-sm font-medium">Click to center your photo:</h4>
+          <div className="relative inline-block border rounded-lg overflow-hidden bg-white">
             <img
               ref={imageRef}
               src={preview}
               alt="Preview"
               className="max-w-md max-h-64 object-contain cursor-crosshair"
               onLoad={handleImageLoad}
-              onClick={handleCropChange}
+              onClick={handleImageClick}
             />
-            {imageSize.width > 0 && (
-              <div
-                className="absolute border-2 border-[#E55A2B] bg-black bg-opacity-30"
-                style={{
-                  left: `${(cropArea.x / imageSize.width) * 100}%`,
-                  top: `${(cropArea.y / imageSize.height) * 100}%`,
-                  width: `${(cropArea.width / imageSize.width) * 100}%`,
-                  height: `${(cropArea.height / imageSize.height) * 100}%`,
-                }}
-              />
-            )}
+            {/* Center point indicator */}
+            <div
+              className="absolute w-4 h-4 bg-[#E55A2B] border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+              style={{
+                left: `${centerPoint.x * 100}%`,
+                top: `${centerPoint.y * 100}%`,
+              }}
+            />
+            {/* Preview square outline */}
+            <div
+              className="absolute border-2 border-[#E55A2B] pointer-events-none"
+              style={{
+                left: `${Math.max(0, Math.min(100, centerPoint.x * 100 - 25))}%`,
+                top: `${Math.max(0, Math.min(100, centerPoint.y * 100 - 25))}%`,
+                width: '50%',
+                height: '50%',
+                opacity: 0.7
+              }}
+            />
           </div>
-          <p className="text-xs text-stone-600">Click on the image to position the crop area</p>
+          <p className="text-xs text-stone-600">Click anywhere on the image to set the center point for cropping</p>
         </div>
       )}
 
