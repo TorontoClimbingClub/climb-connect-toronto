@@ -1,5 +1,5 @@
 
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { ClimbCompletion } from "@/hooks/useClimbCompletions";
 import { BadgeIcon } from "@/components/badges/BadgeIcon";
 import { useBadges } from "@/hooks/useBadges";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CommunityMemberCardProps {
   member: CommunityMember;
@@ -27,7 +28,7 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
   hiddenStyles,
   onClick
 }: CommunityMemberCardProps) {
-  const { getUserBadges } = useBadges();
+  const { getUserBadges, updateUserBadges } = useBadges();
   
   // Ensure member object has all required properties with defaults
   const safeMember = {
@@ -53,6 +54,30 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
 
   // Get user badges
   const userBadges = getUserBadges(safeMember.id);
+
+  // Set up real-time subscription to update badges when this user's attendance changes
+  useEffect(() => {
+    const channel = supabase
+      .channel(`member-badges-${safeMember.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_attendance_approvals',
+          filter: `user_id=eq.${safeMember.id}`
+        },
+        async (payload) => {
+          console.log('🔄 [MEMBER BADGES] Attendance updated for user, refreshing badges:', safeMember.id);
+          await updateUserBadges(safeMember.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [safeMember.id, updateUserBadges]);
 
   // Apply privacy settings consistently for all users
   const shouldShowClimbingLevel = safeMember.show_climbing_level;

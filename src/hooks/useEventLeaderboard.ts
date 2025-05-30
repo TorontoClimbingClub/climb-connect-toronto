@@ -12,22 +12,26 @@ export const processEventData = (
   
   if (eventData.length > 0) {
     console.log('📊 [EVENT DATA] Sample event attendance:', eventData[0]);
+    console.log('📊 [EVENT DATA] All event data:', eventData);
   }
   
   // Filter and count only approved attendances for each user
   const approvedAttendances = eventData.filter(approval => approval.status === 'approved');
   console.log('✅ [EVENT FILTER] Approved attendances found:', approvedAttendances.length);
+  console.log('✅ [EVENT FILTER] All approved attendances:', approvedAttendances);
   
   const eventStats = approvedAttendances.reduce((acc: any, approval) => {
     if (!acc[approval.user_id]) {
-      acc[approval.user_id] = { event_count: 0 };
+      acc[approval.user_id] = { event_count: 0, events: [] };
     }
     acc[approval.user_id].event_count += 1;
+    acc[approval.user_id].events.push(approval.event_id);
     console.log(`📈 [EVENT STATS] User ${approval.user_id} events: ${acc[approval.user_id].event_count}`);
     return acc;
   }, {});
 
   console.log('📊 [EVENT STATS] Event attendance stats:', Object.keys(eventStats).length, 'users with events');
+  console.log('📊 [EVENT STATS] Full event stats:', eventStats);
 
   // Create leaderboard entries for users with approved attendances
   const topEventAttendees = Object.entries(eventStats)

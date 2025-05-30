@@ -133,7 +133,7 @@ export const fetchGearData = async () => {
 };
 
 export const fetchEventData = async () => {
-  console.log('🔍 [LEADERBOARD DEBUG] Fetching event attendance data for Event Enthusiast leaderboard...');
+  console.log('🔍 [LEADERBOARD DEBUG] Fetching comprehensive event attendance data for Event Enthusiast leaderboard...');
   
   // Fetch both current and archived attendance data
   const [currentAttendance, archivedAttendance] = await Promise.all([
@@ -159,25 +159,46 @@ export const fetchEventData = async () => {
     console.warn('⚠️ [LEADERBOARD WARNING] Could not fetch archived attendance data:', archivedAttendance.error);
   }
 
-  // Combine current and archived data
-  const combinedData = [
-    ...(currentAttendance.data || []).map((record: any) => ({
+  // Combine current and archived data, ensuring we don't double-count
+  const currentDataMap = new Map();
+  const combinedData = [];
+
+  // Add current attendance data
+  for (const record of (currentAttendance.data || [])) {
+    const key = `${record.user_id}-${record.event_id}`;
+    currentDataMap.set(key, true);
+    combinedData.push({
       user_id: record.user_id,
       status: 'approved' as const,
       event_id: record.event_id,
       approved_at: record.approved_at
-    })),
-    ...archivedData.map((record: any) => ({
-      user_id: record.user_id,
-      status: 'approved' as const,
-      event_id: record.event_id,
-      approved_at: record.attended_at
-    }))
-  ];
+    });
+  }
+
+  // Add archived data only if not already present in current data
+  for (const record of archivedData) {
+    const key = `${record.user_id}-${record.event_id}`;
+    if (!currentDataMap.has(key)) {
+      combinedData.push({
+        user_id: record.user_id,
+        status: 'approved' as const,
+        event_id: record.event_id,
+        approved_at: record.attended_at
+      });
+    }
+  }
   
   console.log('✅ [LEADERBOARD SUCCESS] Combined event attendance data fetched:', combinedData.length, 'approved records');
   console.log('📊 [LEADERBOARD DATA] Current records:', currentAttendance.data?.length);
   console.log('📊 [LEADERBOARD DATA] Archived records:', archivedData.length);
+  console.log('📊 [LEADERBOARD DATA] Total unique records:', combinedData.length);
+  
+  // Log user breakdown for debugging
+  const userCounts = combinedData.reduce((acc: any, record) => {
+    acc[record.user_id] = (acc[record.user_id] || 0) + 1;
+    return acc;
+  }, {});
+  console.log('📊 [LEADERBOARD DATA] User event counts:', userCounts);
   
   return combinedData;
 };
