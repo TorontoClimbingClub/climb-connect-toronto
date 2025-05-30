@@ -169,11 +169,16 @@ export function useBadges() {
         },
         async (payload) => {
           console.log('🔄 [BADGES] Attendance approval updated, updating badges:', payload);
-          if (payload.new?.user_id) {
-            await updateUserBadges(payload.new.user_id);
+          
+          // Type guard for payload.new
+          if (payload.new && typeof payload.new === 'object' && 'user_id' in payload.new && payload.new.user_id) {
+            await updateUserBadges(payload.new.user_id as string);
           }
-          if (payload.old?.user_id && payload.old.user_id !== payload.new?.user_id) {
-            await updateUserBadges(payload.old.user_id);
+          
+          // Type guard for payload.old
+          if (payload.old && typeof payload.old === 'object' && 'user_id' in payload.old && payload.old.user_id && 
+              payload.old.user_id !== (payload.new as any)?.user_id) {
+            await updateUserBadges(payload.old.user_id as string);
           }
         }
       )
