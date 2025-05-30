@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { Navigation } from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
@@ -12,25 +11,39 @@ import { useCommunityData } from "@/hooks/useCommunityData";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { CommunityMember } from "@/types/community";
-
 export default function Events() {
-  const { user } = useAuth();
-  const { hasAccess, accessLoading } = useAccessControl('authenticated');
-  const { upcomingEvents, userParticipations, loading: eventsLoading, fetchUserParticipations } = useOptimizedEvents();
-  const { members, loading: membersLoading, fetchCommunityMembers } = useCommunityData();
-  const { getUserCompletionStats, loading: completionsLoading } = useClimbCompletions();
+  const {
+    user
+  } = useAuth();
+  const {
+    hasAccess,
+    accessLoading
+  } = useAccessControl('authenticated');
+  const {
+    upcomingEvents,
+    userParticipations,
+    loading: eventsLoading,
+    fetchUserParticipations
+  } = useOptimizedEvents();
+  const {
+    members,
+    loading: membersLoading,
+    fetchCommunityMembers
+  } = useCommunityData();
+  const {
+    getUserCompletionStats,
+    loading: completionsLoading
+  } = useClimbCompletions();
   const [selectedUser, setSelectedUser] = useState<CommunityMember | null>(null);
   const [showProfileOverlay, setShowProfileOverlay] = useState(false);
 
   // Enable real-time updates for events
   useRealtimeEvents();
-
   const handleMemberClick = useCallback((member: CommunityMember) => {
     console.log('📱 Events: Member clicked:', member.full_name);
     setSelectedUser(member);
     setShowProfileOverlay(true);
   }, []);
-
   const handleCloseProfile = useCallback(() => {
     setShowProfileOverlay(false);
     setSelectedUser(null);
@@ -47,12 +60,9 @@ export default function Events() {
   useEffect(() => {
     fetchCommunityMembers();
   }, [fetchCommunityMembers]);
-
   const loading = accessLoading || eventsLoading;
-
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+    return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
         <div className="max-w-md mx-auto p-4">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -62,13 +72,10 @@ export default function Events() {
           </div>
         </div>
         <Navigation />
-      </div>
-    );
+      </div>;
   }
-
   if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+    return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
         <div className="max-w-md mx-auto p-4">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-[#E55A2B] mb-4">Access Required</h1>
@@ -76,77 +83,43 @@ export default function Events() {
           </div>
         </div>
         <Navigation />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+  return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className="max-w-md mx-auto p-4">
         <main>
           <section className="mt-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               Upcoming Events
             </h2>
-            {upcomingEvents.length > 0 ? (
-              <div className="space-y-4" role="list">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} role="listitem">
-                    <EventCard
-                      event={event}
-                      userJoined={userParticipations.has(event.id)}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyEventsState />
-            )}
+            {upcomingEvents.length > 0 ? <div className="space-y-4" role="list">
+                {upcomingEvents.map(event => <div key={event.id} role="listitem">
+                    <EventCard event={event} userJoined={userParticipations.has(event.id)} />
+                  </div>)}
+              </div> : <EmptyEventsState />}
           </section>
 
           <section className="mt-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Community Spotlight
-            </h2>
-            {(membersLoading || completionsLoading) ? (
-              <div className="flex items-center justify-center py-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Members</h2>
+            {membersLoading || completionsLoading ? <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#E55A2B]" aria-hidden="true"></div>
                 <span className="ml-2 text-gray-600">Loading members...</span>
-              </div>
-            ) : members.length > 0 ? (
-              <div className="space-y-4" role="list">
-                {members.map((member) => {
-                  const userStats = getUserCompletionStats(member.id);
-                  return (
-                    <div key={member.id} role="listitem">
-                      <CommunityMemberCard 
-                        member={member}
-                        userStats={userStats}
-                        isCurrentUser={user?.id === member.id}
-                        canViewProfile={member.allow_profile_viewing ?? true}
-                        hiddenStyles={[]}
-                        onClick={() => handleMemberClick(member)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8">
+              </div> : members.length > 0 ? <div className="space-y-4" role="list">
+                {members.map(member => {
+              const userStats = getUserCompletionStats(member.id);
+              return <div key={member.id} role="listitem">
+                      <CommunityMemberCard member={member} userStats={userStats} isCurrentUser={user?.id === member.id} canViewProfile={member.allow_profile_viewing ?? true} hiddenStyles={[]} onClick={() => handleMemberClick(member)} />
+                    </div>;
+            })}
+              </div> : <div className="text-center py-8">
                 <p className="text-gray-600">No community members found.</p>
-              </div>
-            )}
+              </div>}
           </section>
         </main>
       </div>
 
-      <UserProfileOverlay
-        user={selectedUser}
-        open={showProfileOverlay}
-        onOpenChange={handleCloseProfile}
-      />
+      <UserProfileOverlay user={selectedUser} open={showProfileOverlay} onOpenChange={handleCloseProfile} />
 
       <Navigation />
-    </div>
-  );
+    </div>;
 }
