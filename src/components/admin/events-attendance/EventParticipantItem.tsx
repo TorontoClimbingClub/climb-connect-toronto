@@ -118,40 +118,44 @@ export function EventParticipantItem({
   };
 
   return (
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-      <div className="flex items-center gap-3">
-        <Avatar className="h-8 w-8">
+    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
           <AvatarImage src={participant.profile_photo_url || undefined} />
           <AvatarFallback className="text-xs">
             {getUserInitials(participant.full_name)}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium">{participant.full_name}</span>
-        {getAttendanceBadge()}
+        <div className="min-w-0 flex-1">
+          <span className="font-medium text-sm sm:text-base truncate block">{participant.full_name}</span>
+          <div className="mt-1">
+            {getAttendanceBadge()}
+          </div>
+        </div>
       </div>
       
       {showAttendanceButtons && (
-        <div className="flex gap-2">
+        <div className="flex gap-1 flex-shrink-0">
           {isPending && (
             <>
               <Button
                 size="sm"
                 onClick={handleConfirm}
                 disabled={isUpdating}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-auto"
               >
-                <Check className="h-4 w-4 mr-1" />
-                Present
+                <Check className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Present</span>
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleReject}
                 disabled={isUpdating}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-600 hover:text-red-700 text-xs px-2 py-1 h-auto"
               >
-                <X className="h-4 w-4 mr-1" />
-                Not Present
+                <X className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Not Present</span>
               </Button>
             </>
           )}
@@ -162,10 +166,10 @@ export function EventParticipantItem({
               variant="outline"
               onClick={handleReset}
               disabled={isUpdating}
-              className="text-gray-600 hover:text-gray-700"
+              className="text-gray-600 hover:text-gray-700 text-xs px-2 py-1 h-auto"
             >
-              <RotateCcw className="h-4 w-4 mr-1" />
-              Reset
+              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Reset</span>
             </Button>
           )}
           
@@ -174,10 +178,10 @@ export function EventParticipantItem({
               size="sm"
               onClick={handleConfirm}
               disabled={isUpdating}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1 h-auto"
             >
-              <Check className="h-4 w-4 mr-1" />
-              Present
+              <Check className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Present</span>
             </Button>
           )}
           
@@ -187,10 +191,10 @@ export function EventParticipantItem({
               variant="outline"
               onClick={handleReject}
               disabled={isUpdating}
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 text-xs px-2 py-1 h-auto"
             >
-              <X className="h-4 w-4 mr-1" />
-              Not Present
+              <X className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Not Present</span>
             </Button>
           )}
         </div>
