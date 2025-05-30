@@ -9,10 +9,10 @@ export interface LeaderboardUser {
 
 export const fetchPublicProfiles = async () => {
   console.log('🔍 [LEADERBOARD DEBUG] Starting fetchPublicProfiles...');
+  // Fetch ALL profiles for leaderboards - leaderboards should show everyone
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name')
-    .eq('allow_profile_viewing', true);
+    .select('id, full_name');
   
   if (error) {
     console.error('❌ [LEADERBOARD ERROR] Error fetching profiles:', error);
