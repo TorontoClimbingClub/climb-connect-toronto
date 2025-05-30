@@ -9,19 +9,27 @@ export interface LeaderboardUser {
 
 export const fetchPublicProfiles = async () => {
   console.log('🔍 [LEADERBOARD DEBUG] Starting fetchPublicProfiles...');
-  // Fetch ALL profiles for leaderboards - leaderboards should show everyone
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name');
   
-  if (error) {
-    console.error('❌ [LEADERBOARD ERROR] Error fetching profiles:', error);
+  try {
+    // Fetch ALL profiles for leaderboards - leaderboards should show everyone
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .order('full_name'); // Add ordering for consistency
+    
+    if (error) {
+      console.error('❌ [LEADERBOARD ERROR] Error fetching profiles:', error);
+      throw error;
+    }
+    
+    console.log('✅ [LEADERBOARD SUCCESS] Profiles fetched:', data?.length);
+    console.log('📊 [LEADERBOARD DATA] All profiles:', data?.map(p => `${p.id}: ${p.full_name}`));
+    return data || [];
+    
+  } catch (error) {
+    console.error('❌ [LEADERBOARD CRITICAL] Critical error in fetchPublicProfiles:', error);
     throw error;
   }
-  
-  console.log('✅ [LEADERBOARD SUCCESS] Profiles fetched:', data?.length);
-  console.log('📊 [LEADERBOARD DATA] Profile sample:', data?.slice(0, 2));
-  return data || [];
 };
 
 export const fetchClimbCompletions = async () => {
@@ -200,12 +208,13 @@ export const fetchEventData = async () => {
     console.log('📊 [LEADERBOARD DATA] Archived records:', archivedData.length);
     console.log('📊 [LEADERBOARD DATA] Total unique records:', combinedData.length);
     
-    // Log user breakdown for debugging
+    // Log user breakdown for debugging - show user IDs and counts
     const userCounts = combinedData.reduce((acc: any, record) => {
       acc[record.user_id] = (acc[record.user_id] || 0) + 1;
       return acc;
     }, {});
-    console.log('📊 [LEADERBOARD DATA] User event counts:', userCounts);
+    console.log('📊 [LEADERBOARD DATA] User event counts by ID:', userCounts);
+    console.log('📊 [LEADERBOARD DATA] Users with events:', Object.keys(userCounts));
     
     return combinedData;
     
