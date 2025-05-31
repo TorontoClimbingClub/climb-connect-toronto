@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,7 @@ export function CompletedRoutesList({ completions, userId }: CompletedRoutesList
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5" />
-            Completed Routes (0)
+            Completed Routes
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -77,7 +78,7 @@ export function CompletedRoutesList({ completions, userId }: CompletedRoutesList
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CheckCircle2 className="h-5 w-5" />
-          Completed Routes ({completedRoutes.length})
+          Completed Routes
         </CardTitle>
       </CardHeader>
       <CardContent>
