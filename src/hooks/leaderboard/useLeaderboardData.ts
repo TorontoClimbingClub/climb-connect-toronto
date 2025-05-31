@@ -11,16 +11,16 @@ export function useLeaderboardDataFetcher() {
   const { toast } = useToast();
 
   const fetchAllLeaderboardData = useCallback(async (): Promise<LeaderboardData> => {
-    console.log('🔍 [LEADERBOARD] Starting comprehensive leaderboard data fetch...');
+    console.log('🔍 [LEADERBOARD] Starting comprehensive leaderboard data fetch with new RLS policies...');
 
-    // Fetch all required data in parallel with enhanced queries
+    // Fetch all required data in parallel with comprehensive queries
     const [
       { data: profilesData, error: profilesError },
       { data: completionsData, error: completionsError },
       { data: gearData, error: gearError },
       { data: eventData, error: eventError }
     ] = await Promise.all([
-      // Enhanced profile query to ensure all users are included
+      // Fetch ALL profiles that allow leaderboard viewing (new RLS policy handles this)
       supabase
         .from('profiles')
         .select('id, full_name, allow_profile_viewing')
@@ -31,7 +31,7 @@ export function useLeaderboardDataFetcher() {
       supabase
         .from('user_equipment')
         .select('user_id, quantity'),
-      // Enhanced event query to ensure all approved attendance is included
+      // Fetch ALL approved attendance records (new RLS policy allows this)
       supabase
         .from('event_attendance_approvals')
         .select('user_id, status, event_id, approved_at')
@@ -55,9 +55,19 @@ export function useLeaderboardDataFetcher() {
       throw eventError;
     }
 
-    // Enhanced logging for admin user debugging
-    const adminProfiles = profilesData?.filter(p => p.full_name?.toLowerCase().includes('mateo')) || [];
-    console.log('👑 [LEADERBOARD] Admin profiles found:', adminProfiles);
+    console.log('✅ [LEADERBOARD] RLS policy check - Data fetched successfully');
+    console.log('📊 [LEADERBOARD] Profiles found:', profilesData?.length || 0);
+    console.log('📊 [LEADERBOARD] Event attendance records:', eventData?.length || 0);
+
+    // Log specific check for visibility
+    const publicProfiles = profilesData?.filter(p => p.allow_profile_viewing !== false) || [];
+    console.log('👥 [LEADERBOARD] Public profiles (visible on leaderboards):', publicProfiles.length);
+    
+    // Enhanced logging to verify Mateo and Jeff visibility
+    const mateoProfile = profilesData?.find(p => p.full_name?.toLowerCase().includes('mateo'));
+    const jeffProfile = profilesData?.find(p => p.full_name?.toLowerCase().includes('jeff'));
+    console.log('🔍 [LEADERBOARD] Mateo profile found:', mateoProfile);
+    console.log('🔍 [LEADERBOARD] Jeff profile found:', jeffProfile);
 
     // Fetch routes data separately to avoid join issues
     const { data: routesData, error: routesError } = await supabase
@@ -76,7 +86,7 @@ export function useLeaderboardDataFetcher() {
       };
     }).filter(item => item.routes !== null) || [];
 
-    // Also fetch archived attendance data for event leaderboard
+    // Also fetch archived attendance data for comprehensive event leaderboard
     let archivedEventData: any[] = [];
     try {
       const { data: archived, error: archivedError } = await supabase
@@ -93,7 +103,7 @@ export function useLeaderboardDataFetcher() {
       console.log('📊 [LEADERBOARD] No archived attendance data available:', error);
     }
 
-    // Combine current and archived event data with enhanced admin tracking
+    // Combine current and archived event data
     const combinedEventData = [...(eventData || [])];
     if (archivedEventData.length > 0) {
       const currentEventMap = new Map();
@@ -115,27 +125,28 @@ export function useLeaderboardDataFetcher() {
       });
     }
 
-    // Enhanced logging for admin event data
-    const adminEventRecords = combinedEventData.filter(record => {
+    console.log('📊 [LEADERBOARD] Combined event data:', combinedEventData.length, 'total records');
+
+    // Log event data for specific users to debug visibility
+    const mateoEvents = combinedEventData.filter(record => {
       const profile = profilesData?.find(p => p.id === record.user_id);
       return profile?.full_name?.toLowerCase().includes('mateo');
     });
-    console.log('👑 [LEADERBOARD] Admin event records:', adminEventRecords.length);
-
-    console.log('✅ [LEADERBOARD] All data fetched successfully');
-    console.log('📊 [LEADERBOARD] Data counts:', {
-      profiles: profilesData?.length,
-      completions: completionsWithRoutes.length,
-      gear: gearData?.length,
-      events: combinedEventData.length,
-      adminProfiles: adminProfiles.length,
-      adminEvents: adminEventRecords.length
+    const jeffEvents = combinedEventData.filter(record => {
+      const profile = profilesData?.find(p => p.id === record.user_id);
+      return profile?.full_name?.toLowerCase().includes('jeff');
     });
+    
+    console.log('📊 [LEADERBOARD] Mateo event records:', mateoEvents.length);
+    console.log('📊 [LEADERBOARD] Jeff event records:', jeffEvents.length);
 
     // Process all leaderboard data
     const climbingResults = processClimbingData(profilesData || [], completionsWithRoutes);
     const gearOwners = processGearData(profilesData || [], gearData || []);
     const eventAttendees = processEventData(profilesData || [], combinedEventData);
+
+    console.log('🏆 [LEADERBOARD] Final event leaderboard entries:', eventAttendees.length);
+    console.log('🏆 [LEADERBOARD] Event leaderboard results:', eventAttendees);
 
     return {
       topGradeClimbers: climbingResults.topGradeClimbers,

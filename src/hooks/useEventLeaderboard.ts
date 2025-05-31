@@ -5,19 +5,17 @@ export const processEventData = (
   profilesData: any[],
   eventData: any[]
 ) => {
-  console.log('🔍 [EVENT LEADERBOARD] Processing event attendance data:', { 
+  console.log('🔍 [EVENT LEADERBOARD] Processing event attendance with new RLS policies:', { 
     profiles: profilesData.length, 
     events: eventData.length 
   });
 
-  // Enhanced logging for debugging admin visibility
-  const adminProfiles = profilesData.filter(p => p.full_name?.toLowerCase().includes('mateo'));
-  console.log('👑 [EVENT DEBUG] Admin profiles found:', adminProfiles);
-
-  // Log sample data to understand structure
-  if (eventData.length > 0) {
-    console.log('📊 [EVENT DATA] Sample attendance:', eventData[0]);
-  }
+  // Log all profiles to verify visibility
+  console.log('👥 [EVENT LEADERBOARD] All profiles:', profilesData.map(p => ({
+    id: p.id,
+    name: p.full_name,
+    allow_viewing: p.allow_profile_viewing
+  })));
 
   // Group attendance by user and count approved events
   const userEventCounts = eventData.reduce((acc: any, attendance) => {
@@ -41,21 +39,16 @@ export const processEventData = (
     
     acc[userId]++;
     
-    // Enhanced logging for admin users
+    // Log progress for debugging
     const userProfile = profilesData.find(p => p.id === userId);
-    if (userProfile?.full_name?.toLowerCase().includes('mateo')) {
-      console.log(`👑 [EVENT ADMIN] Admin ${userProfile.full_name} approved events: ${acc[userId]}`);
-    }
-    
-    console.log(`📈 [EVENT STATS] User ${userId} (${userProfile?.full_name || 'Unknown'}) approved events: ${acc[userId]}`);
+    console.log(`📈 [EVENT COUNT] User ${userProfile?.full_name || 'Unknown'} (${userId}): ${acc[userId]} events`);
     
     return acc;
   }, {});
 
-  console.log('📊 [EVENT STATS] User event counts calculated:', Object.keys(userEventCounts).length, 'users');
-  console.log('📊 [EVENT STATS] Full user counts:', userEventCounts);
+  console.log('📊 [EVENT STATS] User event counts calculated:', Object.keys(userEventCounts).length, 'users with events');
 
-  // Create leaderboard entries with enhanced admin debugging
+  // Create leaderboard entries with proper visibility handling
   const results = Object.entries(userEventCounts)
     .map(([userId, eventCount]: [string, any]) => {
       const profile = profilesData.find(p => p.id === userId);
@@ -64,18 +57,16 @@ export const processEventData = (
         return null;
       }
       
-      // Enhanced logging for admin inclusion
-      if (profile.full_name?.toLowerCase().includes('mateo')) {
-        console.log(`👑 [EVENT ADMIN INCLUDE] Admin ${profile.full_name} - Events: ${eventCount}, Profile visible: ${profile.allow_profile_viewing !== false}`);
-      }
+      // Check if profile viewing is allowed (default to true if not explicitly set to false)
+      // This matches the new RLS policy: allow_profile_viewing IS NOT FALSE
+      const isProfileVisible = profile.allow_profile_viewing !== false;
       
-      // Check if profile viewing is allowed (default to true if not set)
-      if (profile.allow_profile_viewing === false) {
+      if (!isProfileVisible) {
         console.log(`🔒 [EVENT PRIVACY] User ${userId} (${profile.full_name}) excluded due to privacy settings`);
         return null;
       }
       
-      console.log(`✅ [EVENT INCLUDE] User ${userId} (${profile.full_name}) - Events: ${eventCount}`);
+      console.log(`✅ [EVENT INCLUDE] User ${userId} (${profile.full_name}) - Events: ${eventCount}, Visible: ${isProfileVisible}`);
       return {
         id: userId,
         full_name: profile.full_name,
@@ -86,12 +77,14 @@ export const processEventData = (
     .sort((a: any, b: any) => b.metric_value - a.metric_value)
     .slice(0, 10); // Show top 10 for event leaderboard
 
-  console.log(`📊 [EVENT RESULT] Event leaderboard:`, results.length, 'entries');
-  console.log(`📊 [EVENT RESULT] Top entries:`, results);
+  console.log(`🏆 [EVENT RESULT] Event leaderboard final results:`, results.length, 'entries');
+  console.log(`🏆 [EVENT RESULT] Leaderboard entries:`, results);
   
-  // Final check for admin in results
-  const adminInResults = results.find(r => r.full_name?.toLowerCase().includes('mateo'));
-  console.log(`👑 [EVENT FINAL] Admin in final results:`, adminInResults);
+  // Final verification for specific users
+  const mateoInResults = results.find(r => r.full_name?.toLowerCase().includes('mateo'));
+  const jeffInResults = results.find(r => r.full_name?.toLowerCase().includes('jeff'));
+  console.log(`🔍 [EVENT FINAL] Mateo in results:`, mateoInResults);
+  console.log(`🔍 [EVENT FINAL] Jeff in results:`, jeffInResults);
   
   return results;
 };
