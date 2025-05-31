@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -127,7 +126,7 @@ const ActiveSessionForm = () => {
           )}
         </CardContent>
       </Card>
-
+      
       {/* Session Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
