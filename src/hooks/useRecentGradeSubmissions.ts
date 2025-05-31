@@ -38,15 +38,21 @@ export const useRecentGradeSubmissions = (limit: number = 10) => {
               style,
               area,
               sector
-            ),
-            profiles!inner (
-              full_name
             )
           `)
           .order('created_at', { ascending: false })
           .limit(limit);
 
         if (error) throw error;
+
+        // Get user profiles separately to avoid join issues
+        const userIds = [...new Set(data?.map(item => item.user_id) || [])];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+
+        const profilesMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
 
         const transformedSubmissions: RecentGradeSubmission[] = (data || []).map(item => ({
           id: item.id,
@@ -62,7 +68,7 @@ export const useRecentGradeSubmissions = (limit: number = 10) => {
             area: item.routes.area,
             sector: item.routes.sector
           },
-          user_name: item.profiles?.full_name || 'Anonymous'
+          user_name: profilesMap.get(item.user_id) || 'Anonymous'
         }));
 
         setSubmissions(transformedSubmissions);
