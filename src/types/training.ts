@@ -21,3 +21,17 @@ export interface SessionStats {
   averageClimbsPerSession: number;
   totalSessionTime: number;
 }
+
+// Legacy type for backwards compatibility
+export interface ActiveSessionData {
+  sessionDate: string;
+  sessionGoal?: string;
+  customGoal?: string;
+  warmUpDone: boolean;
+  feltTiredAtEnd: boolean;
+  newTechniquesTried: boolean;
+  climbs: any[];
+  techniques: string[];
+  feltAfterSession?: string;
+  wouldChangeNextTime?: string;
+}
