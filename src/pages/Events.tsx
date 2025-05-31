@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import Navigation from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
@@ -22,7 +23,8 @@ export default function Events() {
     upcomingEvents,
     userParticipations,
     loading: eventsLoading,
-    fetchUserParticipations
+    fetchUserParticipations,
+    updateUserParticipation
   } = useEventManager();
   
   const {
@@ -52,6 +54,10 @@ export default function Events() {
     setShowProfileOverlay(false);
     setSelectedUser(null);
   }, []);
+
+  const handleParticipationChange = useCallback((eventId: string, joined: boolean) => {
+    updateUserParticipation(eventId, joined);
+  }, [updateUserParticipation]);
 
   // Fetch user participations when user changes
   useEffect(() => {
@@ -109,7 +115,11 @@ export default function Events() {
               <div className="space-y-4" role="list">
                 {upcomingEvents.map(event => (
                   <div key={event.id} role="listitem">
-                    <EventCard event={event} userJoined={userParticipations.has(event.id)} />
+                    <EventCard 
+                      event={event} 
+                      isParticipating={userParticipations.has(event.id)}
+                      onParticipationChange={handleParticipationChange}
+                    />
                   </div>
                 ))}
               </div>
