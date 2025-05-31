@@ -75,127 +75,111 @@ export function useBadges() {
     }
   };
 
-  const updateUserBadges = async (userId: string, retryCount = 0) => {
-    const maxRetries = 3;
-    
+  const recalculateUserBadges = async (userId: string) => {
     try {
-      console.log(`🏆 [BADGES] Updating badges for user: ${userId} (attempt ${retryCount + 1})`);
+      console.log(`🏆 [BADGES] Starting fresh badge recalculation for user: ${userId}`);
       
-      // Get current approved attendance count including archived data
+      // Step 1: Get fresh attendance count from database
       const [currentAttendance, archivedAttendance] = await Promise.all([
         supabase
           .from('event_attendance_approvals')
-          .select('user_id, status, event_id')
+          .select('user_id', { count: 'exact' })
           .eq('user_id', userId)
           .eq('status', 'approved'),
-        // Use type assertion for archived attendance
         (supabase as any)
           .from('archived_event_attendance')
-          .select('user_id, event_id')
+          .select('user_id', { count: 'exact' })
           .eq('user_id', userId)
       ]);
 
-      const currentCount = currentAttendance.data?.length || 0;
-      const archivedCount = archivedAttendance.error ? 0 : (archivedAttendance.data?.length || 0);
+      const currentCount = currentAttendance.count || 0;
+      const archivedCount = archivedAttendance.error ? 0 : (archivedAttendance.count || 0);
       const totalAttendanceCount = currentCount + archivedCount;
       
-      console.log(`🏆 [BADGES] User ${userId} attendance counts:`, { 
+      console.log(`🏆 [BADGES] Fresh attendance count for user ${userId}:`, { 
         currentCount, 
         archivedCount, 
         totalAttendanceCount 
       });
 
-      const badgeThresholds = [1, 5, 10, 20, 50];
-      const badgeNames = ['Event Newcomer', 'Regular Climber', 'Dedicated Member', 'Event Enthusiast', 'TCC Legend'];
-
-      // Get all event-related badges
+      // Step 2: Get all event badge definitions
       const { data: eventBadges, error: badgeError } = await supabase
         .from('badges')
         .select('*')
-        .in('name', badgeNames);
+        .in('name', ['Event Newcomer', 'Regular Climber', 'Dedicated Member', 'Event Enthusiast', 'TCC Legend']);
 
       if (badgeError) throw badgeError;
       if (!eventBadges) return;
 
-      // CRITICAL FIX: Remove unearned badges FIRST
-      console.log(`🗑️ [BADGES] Checking for badges to remove for user ${userId}`);
+      // Step 3: Remove ALL existing event badges for this user (clean slate approach)
+      console.log(`🗑️ [BADGES] Removing all existing event badges for user ${userId}`);
       
-      for (const badge of eventBadges) {
-        const badgeIndex = badgeNames.indexOf(badge.name);
-        const requiredCount = badgeThresholds[badgeIndex];
-        
-        if (totalAttendanceCount < requiredCount) {
-          console.log(`🗑️ [BADGES] Removing badge ${badge.name} from user ${userId} (has ${totalAttendanceCount}, needs ${requiredCount})`);
-          
-          const { error: removeError } = await supabase
-            .from('user_badges')
-            .delete()
-            .eq('user_id', userId)
-            .eq('badge_id', badge.id);
-          
-          if (removeError) {
-            console.error('❌ [BADGES] Error removing badge:', removeError);
-            throw removeError;
-          } else {
-            console.log(`✅ [BADGES] Successfully removed badge ${badge.name} from user ${userId}`);
-          }
-        }
+      const eventBadgeIds = eventBadges.map(badge => badge.id);
+      const { error: removeError } = await supabase
+        .from('user_badges')
+        .delete()
+        .eq('user_id', userId)
+        .in('badge_id', eventBadgeIds);
+      
+      if (removeError) {
+        console.error('❌ [BADGES] Error removing existing badges:', removeError);
+        throw removeError;
       }
 
-      // Award badges that are now earned
-      console.log(`🏆 [BADGES] Checking for badges to award for user ${userId}`);
+      console.log(`✅ [BADGES] Successfully removed all existing event badges for user ${userId}`);
+
+      // Step 4: Award badges based on current attendance count
+      const badgeThresholds = [1, 5, 10, 20, 50];
+      const badgeNames = ['Event Newcomer', 'Regular Climber', 'Dedicated Member', 'Event Enthusiast', 'TCC Legend'];
+      
+      const badgesToAward = [];
       
       for (let i = 0; i < badgeThresholds.length; i++) {
         if (totalAttendanceCount >= badgeThresholds[i]) {
           const badge = eventBadges.find(b => b.name === badgeNames[i]);
           if (badge) {
-            console.log(`🏆 [BADGES] Awarding badge ${badge.name} to user ${userId}`);
-            
-            const { error: awardError } = await supabase
-              .from('user_badges')
-              .upsert({ 
-                user_id: userId, 
-                badge_id: badge.id 
-              }, { 
-                onConflict: 'user_id,badge_id' 
-              });
-            
-            if (awardError) {
-              console.error('❌ [BADGES] Error awarding badge:', awardError);
-              throw awardError;
-            } else {
-              console.log(`✅ [BADGES] Successfully awarded badge ${badge.name} to user ${userId}`);
-            }
+            badgesToAward.push({
+              user_id: userId,
+              badge_id: badge.id
+            });
+            console.log(`🏆 [BADGES] Will award badge: ${badge.name} (threshold: ${badgeThresholds[i]})`);
           }
         }
       }
 
-      // Refresh user badges data
+      // Step 5: Award all earned badges in one operation
+      if (badgesToAward.length > 0) {
+        const { error: awardError } = await supabase
+          .from('user_badges')
+          .insert(badgesToAward);
+        
+        if (awardError) {
+          console.error('❌ [BADGES] Error awarding badges:', awardError);
+          throw awardError;
+        }
+        
+        console.log(`✅ [BADGES] Successfully awarded ${badgesToAward.length} badges to user ${userId}`);
+      } else {
+        console.log(`📝 [BADGES] No badges to award for user ${userId} (attendance: ${totalAttendanceCount})`);
+      }
+
+      // Step 6: Refresh user badges data
       await fetchUserBadges();
       
-      console.log(`✅ [BADGES] Badge update completed for user ${userId}`);
+      console.log(`✅ [BADGES] Badge recalculation completed for user ${userId}`);
       
     } catch (error: any) {
-      console.error(`❌ [BADGES] Error updating user badges (attempt ${retryCount + 1}):`, error);
-      
-      // Retry logic with exponential backoff
-      if (retryCount < maxRetries) {
-        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-        console.log(`🔄 [BADGES] Retrying badge update for user ${userId} in ${delay}ms`);
-        
-        setTimeout(() => {
-          updateUserBadges(userId, retryCount + 1);
-        }, delay);
-      } else {
-        console.error(`❌ [BADGES] Max retries exceeded for user ${userId}`);
-        toast({
-          title: "Badge Update Failed",
-          description: "There was an issue updating badges. Please try refreshing the page.",
-          variant: "destructive",
-        });
-      }
+      console.error(`❌ [BADGES] Error in badge recalculation for user ${userId}:`, error);
+      toast({
+        title: "Badge Update Failed",
+        description: "There was an issue updating badges. Please try refreshing the page.",
+        variant: "destructive",
+      });
     }
   };
+
+  // Alias for backward compatibility
+  const updateUserBadges = recalculateUserBadges;
 
   // Manual badge sync function for fixing existing inconsistencies
   const syncAllUserBadges = async () => {
@@ -226,11 +210,11 @@ export function useBadges() {
         const userId = userArray[i];
         console.log(`🔄 [BADGES] Processing user ${i + 1}/${userArray.length}: ${userId}`);
         
-        await updateUserBadges(userId);
+        await recalculateUserBadges(userId);
         
         // Add small delay to prevent overwhelming the database
         if (i < userArray.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
 
@@ -254,10 +238,10 @@ export function useBadges() {
     return userBadges.filter(ub => ub.user_id === userId);
   };
 
-  // Enhanced real-time subscription with better error handling
+  // Simplified real-time subscription - just trigger recalculation on any attendance change
   useEffect(() => {
     const channel = supabase
-      .channel('badges-realtime-enhanced-v2')
+      .channel('badges-realtime-simplified')
       .on(
         'postgres_changes',
         {
@@ -266,35 +250,28 @@ export function useBadges() {
           table: 'event_attendance_approvals'
         },
         async (payload) => {
-          console.log('🔄 [BADGES] Attendance approval changed, updating badges:', payload);
+          console.log('🔄 [BADGES] Attendance changed, triggering badge recalculation:', payload);
           
           try {
-            // Handle INSERT and UPDATE events
+            // Handle both new and old records to cover all event types
+            const userIds = new Set<string>();
+            
             if (payload.new && typeof payload.new === 'object' && 'user_id' in payload.new && payload.new.user_id) {
-              console.log('🔄 [BADGES] Processing INSERT/UPDATE for user:', payload.new.user_id);
-              await updateUserBadges(payload.new.user_id as string);
+              userIds.add(payload.new.user_id as string);
             }
             
-            // Handle DELETE events - this was the missing piece!
             if (payload.old && typeof payload.old === 'object' && 'user_id' in payload.old && payload.old.user_id) {
-              console.log('🔄 [BADGES] Processing DELETE for user:', payload.old.user_id);
-              await updateUserBadges(payload.old.user_id as string);
+              userIds.add(payload.old.user_id as string);
             }
             
-            // Handle UPDATE events where user_id might have changed
-            if (payload.old && payload.new && 
-                typeof payload.old === 'object' && 'user_id' in payload.old && payload.old.user_id &&
-                typeof payload.new === 'object' && 'user_id' in payload.new && payload.new.user_id &&
-                payload.old.user_id !== payload.new.user_id) {
-              console.log('🔄 [BADGES] Processing user_id change:', { 
-                old: payload.old.user_id, 
-                new: payload.new.user_id 
-              });
-              await updateUserBadges(payload.old.user_id as string);
-              await updateUserBadges(payload.new.user_id as string);
+            // Recalculate badges for affected users
+            for (const userId of userIds) {
+              console.log('🔄 [BADGES] Recalculating badges for affected user:', userId);
+              await recalculateUserBadges(userId);
             }
+            
           } catch (error) {
-            console.error('❌ [BADGES] Error in real-time badge update:', error);
+            console.error('❌ [BADGES] Error in real-time badge recalculation:', error);
           }
         }
       )
