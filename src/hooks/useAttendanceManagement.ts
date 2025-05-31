@@ -17,11 +17,9 @@ export const useAttendanceManagement = () => {
 
       if (existingApproval) {
         console.log('Updating existing approval:', existingApproval.id);
-        // Update existing approval to approved status
         await approveAttendance(existingApproval.id);
       } else {
         console.log('Creating new approval');
-        // Create new approval
         const { error } = await supabase
           .from('event_attendance_approvals')
           .insert({
@@ -60,11 +58,9 @@ export const useAttendanceManagement = () => {
 
       if (existingApproval) {
         console.log('Updating existing approval to rejected:', existingApproval.id);
-        // Update existing approval to rejected status
         await rejectAttendance(existingApproval.id);
       } else {
         console.log('Creating new rejection');
-        // Create new rejection
         const { error } = await supabase
           .from('event_attendance_approvals')
           .insert({
@@ -102,7 +98,6 @@ export const useAttendanceManagement = () => {
 
       if (existingApproval) {
         console.log('Deleting approval record:', existingApproval.id);
-        // Delete the approval record to reset to pending
         const { error } = await supabase
           .from('event_attendance_approvals')
           .delete()

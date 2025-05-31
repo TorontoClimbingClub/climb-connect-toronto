@@ -7,8 +7,6 @@ import { Car, Phone, Mountain, Package, Users } from "lucide-react";
 import { CommunityMember } from "@/types/community";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { ClimbCompletion } from "@/hooks/useClimbCompletions";
-import { BadgeIcon } from "@/components/badges/BadgeIcon";
-import { useEnhancedCommunityMember } from "@/hooks/useEnhancedCommunityMember";
 
 interface CommunityMemberCardProps {
   member: CommunityMember;
@@ -27,8 +25,6 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
   hiddenStyles,
   onClick
 }: CommunityMemberCardProps) {
-  // Use enhanced hook for real-time updates and consistent counting
-  const { userBadges, eventsCount, isLoading } = useEnhancedCommunityMember(member?.id || '');
   
   // Ensure member object has all required properties with defaults
   const safeMember = {
@@ -41,6 +37,7 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     climbing_experience: member?.climbing_experience || [],
     climbing_description: member?.climbing_description || null,
     equipment_count: member?.equipment_count || 0,
+    events_count: member?.events_count || 0,
     profile_photo_url: member?.profile_photo_url || null,
     show_climbing_level: member?.show_climbing_level ?? true,
     show_climbing_progress: member?.show_climbing_progress ?? true,
@@ -80,9 +77,6 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
       handleCardClick();
     }
   };
-
-  // Use the enhanced events count for consistent display
-  const displayEventsCount = isLoading ? '...' : eventsCount;
 
   return (
     <Card 
@@ -127,26 +121,6 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
             </div>
           )}
         </div>
-
-        {/* User Badges with real-time updates */}
-        {userBadges.length > 0 && (
-          <div className="mb-3">
-            <div className="flex flex-wrap gap-1">
-              {userBadges.slice(0, 3).map((userBadge) => (
-                <BadgeIcon 
-                  key={userBadge.id} 
-                  badge={userBadge.badge} 
-                  size="sm" 
-                />
-              ))}
-              {userBadges.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{userBadges.length - 3} more
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Climbing Level and Experience - respect privacy settings */}
         {shouldShowClimbingLevel && (safeMember.climbing_level || safeMember.climbing_experience.length > 0) && (
@@ -197,7 +171,7 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
           </div>
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1 flex-shrink-0" aria-hidden="true" />
-            <span>{displayEventsCount} events joined</span>
+            <span>{safeMember.events_count} events joined</span>
           </div>
         </div>
       </CardContent>
