@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,23 +63,6 @@ const ActiveSessionForm = () => {
   const removeTechnique = (index: number) => {
     const newTechniques = activeSession.techniques.filter((_, i) => i !== index);
     updateLocalSession({ techniques: newTechniques });
-  };
-
-  const addGear = () => {
-    updateLocalSession({
-      gear: [...activeSession.gear, '']
-    });
-  };
-
-  const updateGear = (index: number, value: string) => {
-    const newGear = [...activeSession.gear];
-    newGear[index] = value;
-    updateLocalSession({ gear: newGear });
-  };
-
-  const removeGear = (index: number) => {
-    const newGear = activeSession.gear.filter((_, i) => i !== index);
-    updateLocalSession({ gear: newGear });
   };
 
   const handleEndSession = () => {
@@ -162,15 +146,6 @@ const ActiveSessionForm = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label htmlFor="gearUsed">Used gear?</Label>
-              <Switch
-                id="gearUsed"
-                checked={activeSession.gearUsed}
-                onCheckedChange={(checked) => updateLocalSession({ gearUsed: checked })}
-              />
-            </div>
-
             <div>
               <Label htmlFor="feltAfterSession">How did you feel after?</Label>
               <Select
@@ -216,35 +191,6 @@ const ActiveSessionForm = () => {
                     <Button
                       type="button"
                       onClick={() => removeTechnique(index)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Gear */}
-            {activeSession.gearUsed && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label>Gear Used</Label>
-                  <Button type="button" onClick={addGear} size="sm" variant="outline">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {activeSession.gear.map((item, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <Input
-                      value={item}
-                      onChange={(e) => updateGear(index, e.target.value)}
-                      placeholder="Gear item"
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => removeGear(index)}
                       size="sm"
                       variant="outline"
                     >

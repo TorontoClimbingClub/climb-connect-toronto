@@ -26,7 +26,6 @@ export function useStartSession(setLocalSession: (session: ActiveSessionData) =>
           total_climbs: 0,
           max_grade_climbed: null,
           new_techniques_tried: false,
-          gear_used: false,
           user_id: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
@@ -41,10 +40,8 @@ export function useStartSession(setLocalSession: (session: ActiveSessionData) =>
         warmUpDone: false,
         feltTiredAtEnd: false,
         newTechniquesTried: false,
-        gearUsed: false,
         climbs: [],
-        techniques: [],
-        gear: []
+        techniques: []
       };
 
       setLocalSession(newSession);

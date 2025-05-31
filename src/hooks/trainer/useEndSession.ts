@@ -36,8 +36,7 @@ export function useEndSession(
           would_change_next_time: localSession.wouldChangeNextTime,
           total_climbs: totalClimbs,
           max_grade_climbed: maxGrade || null,
-          new_techniques_tried: localSession.newTechniquesTried,
-          gear_used: localSession.gearUsed
+          new_techniques_tried: localSession.newTechniquesTried
         })
         .eq('id', activeDbSession.id);
 
@@ -77,21 +76,6 @@ export function useEndSession(
           .insert(techniquesData);
 
         if (techniquesError) throw techniquesError;
-      }
-
-      // Insert gear
-      if (localSession.gear.length > 0) {
-        const gearData = localSession.gear.map(item => ({
-          session_id: activeDbSession.id,
-          gear_name: item,
-          gear_type: 'Equipment'
-        }));
-
-        const { error: gearError } = await supabase
-          .from('session_gear')
-          .insert(gearData);
-
-        if (gearError) throw gearError;
       }
 
       // Clear local session first, then return
