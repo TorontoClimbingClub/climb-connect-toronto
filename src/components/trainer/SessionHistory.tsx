@@ -1,16 +1,26 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, Target, Users, Zap } from 'lucide-react';
+import { CalendarDays, Clock, Target, Users, Zap, Trash2 } from 'lucide-react';
 import { useTrainingSessions } from '@/hooks/trainer/useTrainingSessions';
 import { format, parseISO } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const SessionHistory = () => {
-  const { sessions, isLoading } = useTrainingSessions();
+  const { sessions, isLoading, deleteSession, isDeleting } = useTrainingSessions();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -59,6 +69,10 @@ const SessionHistory = () => {
       case 'Exhausted': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    deleteSession(sessionId);
   };
 
   return (
@@ -137,11 +151,42 @@ const SessionHistory = () => {
                       </span>
                     </CardDescription>
                   </div>
-                  {session.felt_after_session && (
-                    <Badge className={getFeelingColor(session.felt_after_session)}>
-                      {session.felt_after_session}
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {session.felt_after_session && (
+                      <Badge className={getFeelingColor(session.felt_after_session)}>
+                        {session.felt_after_session}
+                      </Badge>
+                    )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Training Session</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this training session? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteSession(session.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>

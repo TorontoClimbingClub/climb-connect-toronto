@@ -141,10 +141,38 @@ export function useTrainingSessions() {
     }
   });
 
+  const deleteSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase
+        .from('training_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      toast({
+        title: "Success",
+        description: "Training session deleted successfully!",
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete training session. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   return {
     sessions,
     isLoading,
     createSession: createSessionMutation.mutate,
-    isCreating: createSessionMutation.isPending
+    isCreating: createSessionMutation.isPending,
+    deleteSession: deleteSessionMutation.mutate,
+    isDeleting: deleteSessionMutation.isPending
   };
 }
