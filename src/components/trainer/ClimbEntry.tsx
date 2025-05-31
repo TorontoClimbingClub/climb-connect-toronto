@@ -13,6 +13,7 @@ interface ClimbData {
   id: string;
   routeGrade: string;
   climbingStyle: string;
+  climbingType: string;
   attemptsMade: number;
   completed: boolean;
   fallsCount: number;
@@ -28,10 +29,8 @@ interface ClimbEntryProps {
 }
 
 const ClimbEntry: React.FC<ClimbEntryProps> = ({ climb, onUpdate, onRemove }) => {
-  const climbingStyles = [
-    'Sport', 'Trad', 'Top Rope', 'Bouldering', 'Slab', 'Overhang', 
-    'Crack', 'Face', 'Arete', 'Chimney', 'Roof', 'Corner'
-  ];
+  const protectionStyles = ['Sport', 'Trad', 'Top Rope'];
+  const climbingTypes = ['Bouldering', 'Slab', 'Overhang', 'Crack', 'Face', 'Arete', 'Chimney', 'Roof', 'Corner'];
 
   return (
     <Card>
@@ -61,22 +60,41 @@ const ClimbEntry: React.FC<ClimbEntryProps> = ({ climb, onUpdate, onRemove }) =>
           </div>
 
           <div>
-            <Label htmlFor={`style-${climb.id}`}>Style</Label>
+            <Label htmlFor={`protection-${climb.id}`}>Protection Style</Label>
             <Select
               value={climb.climbingStyle}
               onValueChange={(value) => onUpdate({ climbingStyle: value })}
             >
-              <SelectTrigger id={`style-${climb.id}`}>
-                <SelectValue />
+              <SelectTrigger id={`protection-${climb.id}`}>
+                <SelectValue placeholder="Select protection" />
               </SelectTrigger>
               <SelectContent>
-                {climbingStyles.map((style) => (
+                {protectionStyles.map((style) => (
                   <SelectItem key={style} value={style}>{style}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
+          <div>
+            <Label htmlFor={`type-${climb.id}`}>Climbing Type</Label>
+            <Select
+              value={climb.climbingType || ''}
+              onValueChange={(value) => onUpdate({ climbingType: value })}
+            >
+              <SelectTrigger id={`type-${climb.id}`}>
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                {climbingTypes.map((type) => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div>
             <Label htmlFor={`attempts-${climb.id}`}>Attempts</Label>
             <Input
@@ -87,9 +105,7 @@ const ClimbEntry: React.FC<ClimbEntryProps> = ({ climb, onUpdate, onRemove }) =>
               onChange={(e) => onUpdate({ attemptsMade: parseInt(e.target.value) || 1 })}
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <Label htmlFor={`falls-${climb.id}`}>Falls</Label>
             <Input
@@ -112,23 +128,27 @@ const ClimbEntry: React.FC<ClimbEntryProps> = ({ climb, onUpdate, onRemove }) =>
             />
           </div>
 
-          <div className="flex items-center justify-between pt-6">
-            <Label htmlFor={`hardest-${climb.id}`}>Hardest climb?</Label>
-            <Switch
-              id={`hardest-${climb.id}`}
-              checked={climb.isHardestClimb}
-              onCheckedChange={(checked) => onUpdate({ isHardestClimb: checked })}
-            />
+          <div className="flex flex-col justify-end">
+            <div className="flex items-center justify-between h-10">
+              <Label htmlFor={`hardest-${climb.id}`} className="text-sm">Hardest climb?</Label>
+              <Switch
+                id={`hardest-${climb.id}`}
+                checked={climb.isHardestClimb}
+                onCheckedChange={(checked) => onUpdate({ isHardestClimb: checked })}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <Label htmlFor={`completed-${climb.id}`}>Completed?</Label>
-          <Switch
-            id={`completed-${climb.id}`}
-            checked={climb.completed}
-            onCheckedChange={(checked) => onUpdate({ completed: checked })}
-          />
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor={`completed-${climb.id}`}>Completed successfully?</Label>
+            <Switch
+              id={`completed-${climb.id}`}
+              checked={climb.completed}
+              onCheckedChange={(checked) => onUpdate({ completed: checked })}
+            />
+          </div>
         </div>
 
         <div>

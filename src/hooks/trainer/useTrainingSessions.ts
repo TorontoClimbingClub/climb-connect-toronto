@@ -76,6 +76,7 @@ export function useTrainingSessions() {
           session_id: session.id,
           route_grade: climb.routeGrade,
           climbing_style: climb.climbingStyle,
+          climbing_type: climb.climbingType || null,
           attempts_made: climb.attemptsMade,
           completed: climb.completed,
           falls_count: climb.fallsCount,

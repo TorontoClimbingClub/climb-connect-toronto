@@ -1,16 +1,14 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Activity } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Label } from '@/components/ui/label';
+import SessionGoals from './SessionGoals';
+import { format } from 'date-fns';
 
 interface StartSessionDialogProps {
-  onStartSession: (data: { sessionGoal?: string; customGoal?: string }) => void;
+  onStartSession: (sessionData: any) => void;
   isStarting: boolean;
 }
 
@@ -19,25 +17,17 @@ const StartSessionDialog: React.FC<StartSessionDialogProps> = ({ onStartSession,
   const [sessionGoal, setSessionGoal] = useState('');
   const [customGoal, setCustomGoal] = useState('');
 
-  const { data: goals } = useQuery({
-    queryKey: ['session-goals'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('session_goals_ref')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
   const handleStartSession = () => {
-    onStartSession({
-      sessionGoal: sessionGoal === 'custom' ? undefined : sessionGoal,
-      customGoal: sessionGoal === 'custom' ? customGoal : undefined
-    });
+    const sessionData = {
+      sessionDate: format(new Date(), 'yyyy-MM-dd'),
+      sessionGoal: sessionGoal === 'custom' ? null : sessionGoal,
+      customGoal: sessionGoal === 'custom' ? customGoal : null,
+    };
+    
+    onStartSession(sessionData);
     setOpen(false);
+    
+    // Reset form
     setSessionGoal('');
     setCustomGoal('');
   };
@@ -45,57 +35,39 @@ const StartSessionDialog: React.FC<StartSessionDialogProps> = ({ onStartSession,
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#E55A2B] hover:bg-[#d14919] text-white" size="lg">
-          <Activity className="h-5 w-5 mr-2" />
-          Start New Session
+        <Button size="lg" className="bg-[#E55A2B] hover:bg-[#E55A2B]/90 text-white">
+          Start Training Session
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Start Training Session</DialogTitle>
+          <DialogTitle>Start New Training Session</DialogTitle>
           <DialogDescription>
-            Set your goal for this climbing session. You can modify details as you climb.
+            Set your goal for today's climbing session. You can track your progress and add climbs once the session starts.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="sessionGoal">Session Goal (Optional)</Label>
-            <Select value={sessionGoal} onValueChange={setSessionGoal}>
-              <SelectTrigger id="sessionGoal">
-                <SelectValue placeholder="Select your main goal for this session" />
-              </SelectTrigger>
-              <SelectContent>
-                {goals?.map((goal) => (
-                  <SelectItem key={goal.id} value={goal.name}>
-                    {goal.name}
-                  </SelectItem>
-                ))}
-                <SelectItem value="custom">Custom Goal</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {sessionGoal === 'custom' && (
-            <div>
-              <Label htmlFor="customGoal">Custom Goal</Label>
-              <Input
-                id="customGoal"
-                value={customGoal}
-                onChange={(e) => setCustomGoal(e.target.value)}
-                placeholder="Describe your custom goal..."
-              />
-            </div>
-          )}
+        
+        <div className="space-y-4 py-4">
+          <SessionGoals
+            value={sessionGoal}
+            customValue={customGoal}
+            onGoalChange={setSessionGoal}
+            onCustomGoalChange={setCustomGoal}
+          />
         </div>
-        <DialogFooter>
+
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button 
-            onClick={handleStartSession} 
+            onClick={handleStartSession}
             disabled={isStarting}
-            className="bg-[#E55A2B] hover:bg-[#d14919]"
+            className="bg-[#E55A2B] hover:bg-[#E55A2B]/90"
           >
             {isStarting ? 'Starting...' : 'Start Session'}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

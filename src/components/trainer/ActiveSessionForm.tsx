@@ -22,6 +22,7 @@ const ActiveSessionForm = () => {
       id: Date.now().toString(),
       routeGrade: '',
       climbingStyle: 'Sport',
+      climbingType: '',
       attemptsMade: 1,
       completed: true,
       fallsCount: 0,
