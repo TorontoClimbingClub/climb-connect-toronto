@@ -17,12 +17,16 @@ interface RouteDetailsCardProps {
 
 const RouteDetailsCard: React.FC<RouteDetailsCardProps> = ({ route }) => {
   const { user } = useAuth();
-  const { isCompleted, toggleCompletion, loading } = useClimbCompletions(route.id);
+  const { isCompleted, toggleCompletion, loading } = useClimbCompletions();
   const { betaGrade, fetchSubmissions } = useGradeSubmissions(route.id);
 
   useEffect(() => {
     fetchSubmissions();
   }, [fetchSubmissions]);
+
+  const handleToggleCompletion = () => {
+    toggleCompletion(route.id);
+  };
 
   const getStyleColor = (style: string) => {
     switch (style) {
@@ -37,6 +41,8 @@ const RouteDetailsCard: React.FC<RouteDetailsCardProps> = ({ route }) => {
     }
   };
 
+  const routeCompleted = isCompleted(route.id);
+
   return (
     <div className="space-y-4">
       <Card>
@@ -47,13 +53,13 @@ const RouteDetailsCard: React.FC<RouteDetailsCardProps> = ({ route }) => {
               <div className="flex items-center gap-2">
                 <GradeSubmissionForm route={route} />
                 <Button
-                  variant={isCompleted ? "default" : "outline"}
+                  variant={routeCompleted ? "default" : "outline"}
                   size="sm"
-                  onClick={toggleCompletion}
+                  onClick={handleToggleCompletion}
                   disabled={loading}
                   className="flex items-center gap-2"
                 >
-                  {isCompleted ? (
+                  {routeCompleted ? (
                     <>
                       <Check className="h-4 w-4" />
                       Completed

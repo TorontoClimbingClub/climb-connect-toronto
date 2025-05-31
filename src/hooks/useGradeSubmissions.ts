@@ -43,8 +43,19 @@ export const useGradeSubmissions = (routeId: string) => {
 
       if (betaGradeError && betaGradeError.code !== 'PGRST116') { // PGRST116 is "not found"
         console.error('Error fetching beta grade:', betaGradeError);
+      } else if (betaGradeData) {
+        // Convert the Json type to our expected Record<string, number>
+        const gradeDistribution = betaGradeData.grade_distribution as Record<string, number>;
+        
+        setBetaGrade({
+          route_id: betaGradeData.route_id,
+          beta_grade: betaGradeData.beta_grade,
+          submission_count: betaGradeData.submission_count,
+          grade_distribution: gradeDistribution,
+          last_updated: betaGradeData.last_updated
+        });
       } else {
-        setBetaGrade(betaGradeData || null);
+        setBetaGrade(null);
       }
     } catch (error) {
       console.error('Error fetching grade submissions:', error);

@@ -1,7 +1,8 @@
+
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { RouteHeader } from "@/components/route-detail/RouteHeader";
-import { RouteDetailsCard } from "@/components/route-detail/RouteDetailsCard";
+import RouteDetailsCard from "@/components/route-detail/RouteDetailsCard";
 import { PhotosSection } from "@/components/route-detail/PhotosSection";
 import { CommentsSection } from "@/components/route-detail/CommentsSection";
 import { useRouteData } from "@/hooks/useRouteData";
