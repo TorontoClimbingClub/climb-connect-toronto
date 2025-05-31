@@ -16,8 +16,7 @@ const MetricsCharts = () => {
           total_climbs,
           max_grade_climbed,
           felt_after_session,
-          partner_count,
-          session_climbs(attempts_made, rest_time_minutes)
+          session_climbs(attempts_made, rest_time_minutes, completed)
         `)
         .order('session_date', { ascending: true });
 
@@ -31,6 +30,9 @@ const MetricsCharts = () => {
         const totalRestTime = session.session_climbs?.reduce((sum, climb) => sum + (climb.rest_time_minutes || 0), 0) || 0;
         const avgRestTime = session.session_climbs?.length > 0 ? totalRestTime / session.session_climbs.length : 0;
 
+        const completedClimbs = session.session_climbs?.filter(climb => climb.completed).length || 0;
+        const completionRate = session.session_climbs?.length > 0 ? (completedClimbs / session.session_climbs.length) * 100 : 0;
+
         return {
           date: new Date(session.session_date).toLocaleDateString(),
           session: index + 1,
@@ -38,7 +40,7 @@ const MetricsCharts = () => {
           avgAttempts: parseFloat(avgAttempts.toFixed(1)),
           avgRestTime: parseFloat(avgRestTime.toFixed(1)),
           feeling: session.felt_after_session,
-          partners: session.partner_count
+          completionRate: parseFloat(completionRate.toFixed(1))
         };
       }) || [];
 
@@ -131,21 +133,27 @@ const MetricsCharts = () => {
         </CardContent>
       </Card>
 
-      {/* Partner Count */}
+      {/* Completion Rate */}
       <Card>
         <CardHeader>
-          <CardTitle>Training Partners</CardTitle>
-          <CardDescription>Number of people you climbed with</CardDescription>
+          <CardTitle>Completion Rate</CardTitle>
+          <CardDescription>Percentage of climbs completed successfully</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={chartData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" fontSize={12} />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="partners" fill="#F59E0B" />
-            </BarChart>
+              <YAxis domain={[0, 100]} />
+              <Tooltip formatter={(value) => [`${value}%`, 'Completion Rate']} />
+              <Line 
+                type="monotone" 
+                dataKey="completionRate" 
+                stroke="#F59E0B" 
+                strokeWidth={2}
+                dot={{ fill: '#F59E0B' }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

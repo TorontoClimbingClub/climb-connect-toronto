@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTrainingMetrics } from '@/hooks/trainer/useTrainingMetrics';
 import MetricsCharts from './MetricsCharts';
 import ProgressTrends from './ProgressTrends';
-import { Activity, TrendingUp, Target, Clock } from 'lucide-react';
+import { Activity, TrendingUp, Target, CheckCircle } from 'lucide-react';
 
 const TrainingDashboard = () => {
   const { metrics, isLoading } = useTrainingMetrics();
@@ -63,13 +63,13 @@ const TrainingDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Session Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.avgSessionDuration || 'N/A'}</div>
+            <div className="text-2xl font-bold">{metrics?.completionRate || 'N/A'}</div>
             <p className="text-xs text-muted-foreground">
-              Hours:minutes
+              Routes completed successfully
             </p>
           </CardContent>
         </Card>

@@ -24,7 +24,7 @@ export function useTrainingMetrics() {
           hardestGrade: null,
           totalClimbs: 0,
           avgClimbsPerSession: 0,
-          avgSessionDuration: null
+          completionRate: null
         };
       }
 
@@ -51,23 +51,11 @@ export function useTrainingMetrics() {
       // Average climbs per session
       const avgClimbsPerSession = totalSessions > 0 ? totalClimbs / totalSessions : 0;
 
-      // Average session duration
-      const sessionsWithDuration = sessions.filter(s => s.start_time && s.end_time);
-      let avgDurationMinutes = 0;
-      
-      if (sessionsWithDuration.length > 0) {
-        const totalMinutes = sessionsWithDuration.reduce((sum, session) => {
-          const start = new Date(session.start_time);
-          const end = new Date(session.end_time);
-          const duration = (end.getTime() - start.getTime()) / (1000 * 60); // minutes
-          return sum + duration;
-        }, 0);
-        
-        avgDurationMinutes = totalMinutes / sessionsWithDuration.length;
-      }
-
-      const avgSessionDuration = avgDurationMinutes > 0 
-        ? `${Math.floor(avgDurationMinutes / 60)}:${String(Math.round(avgDurationMinutes % 60)).padStart(2, '0')}`
+      // Completion rate
+      const allClimbs = sessions.flatMap(session => session.session_climbs || []);
+      const completedClimbs = allClimbs.filter(climb => climb.completed);
+      const completionRate = allClimbs.length > 0 
+        ? `${Math.round((completedClimbs.length / allClimbs.length) * 100)}%`
         : null;
 
       return {
@@ -76,7 +64,7 @@ export function useTrainingMetrics() {
         hardestGrade: hardestGrade || null,
         totalClimbs,
         avgClimbsPerSession,
-        avgSessionDuration
+        completionRate
       };
     }
   });
