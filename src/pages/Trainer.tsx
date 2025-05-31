@@ -3,20 +3,38 @@ import React, { useState } from 'react';
 import { useResponsiveContainer } from '@/hooks/useResponsiveContainer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, BarChart3, History, ArrowLeft } from 'lucide-react';
+import { Activity, BarChart3, History, ArrowLeft, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import SessionForm from '@/components/trainer/SessionForm';
 import TrainingDashboard from '@/components/trainer/TrainingDashboard';
 import SessionHistory from '@/components/trainer/SessionHistory';
 import Navigation from '@/components/Navigation';
-import { useActiveSession } from '@/hooks/trainer/useActiveSession';
+import { useOfflineTrainer } from '@/hooks/trainer/useOfflineTrainer';
+import { Badge } from '@/components/ui/badge';
 
 const Trainer = () => {
   const { containerClass, paddingClass } = useResponsiveContainer('wide');
   const [activeTab, setActiveTab] = useState('log');
-  const { hasActiveSession } = useActiveSession();
+  const { hasActiveSession, isLoading } = useOfflineTrainer();
   const navigate = useNavigate();
+  const [isOnline] = useState(navigator.onLine);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
+        <div className={`${containerClass} ${paddingClass}`}>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E55A2B] mx-auto mb-4" aria-hidden="true"></div>
+              <p className="text-gray-600">Loading trainer...</p>
+            </div>
+          </div>
+        </div>
+        <Navigation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
@@ -32,6 +50,10 @@ const Trainer = () => {
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
+            <Badge variant={isOnline ? "default" : "secondary"} className="ml-auto">
+              {isOnline ? <Wifi className="h-3 w-3 mr-1" /> : <WifiOff className="h-3 w-3 mr-1" />}
+              {isOnline ? "Online" : "Offline Mode"}
+            </Badge>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Training Tracker</h1>
           <p className="text-gray-600">
@@ -40,6 +62,12 @@ const Trainer = () => {
               : "Start a new climbing session and track your progress"
             }
           </p>
+          <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-800">
+              <strong>Offline Mode:</strong> Your training data is stored locally on your device. 
+              You can use this trainer without an internet connection.
+            </p>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -66,7 +94,7 @@ const Trainer = () => {
                 <CardHeader>
                   <CardTitle>New Training Session</CardTitle>
                   <CardDescription>
-                    Start a climbing session that will track your progress in real-time
+                    Start a climbing session that will track your progress locally
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

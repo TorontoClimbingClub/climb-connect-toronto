@@ -1,257 +1,271 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, Target, Zap, Trash2 } from 'lucide-react';
-import { useTrainingSessions } from '@/hooks/trainer/useTrainingSessions';
-import { format, parseISO } from 'date-fns';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, Clock, Mountain, Target, Search, Filter } from 'lucide-react';
+import { useOfflineTrainer } from '@/hooks/trainer/useOfflineTrainer';
 
 const SessionHistory = () => {
-  const { sessions, isLoading, deleteSession, isDeleting } = useTrainingSessions();
+  const { allSessions } = useOfflineTrainer();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [filterGoal, setFilterGoal] = useState('all');
+  const [sortBy, setSortBy] = useState('date-desc');
 
-  const filteredSessions = sessions?.filter(session => {
-    const matchesSearch = !searchTerm || 
-      session.session_goal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      session.custom_goal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      session.max_grade_climbed?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDate = !selectedDate || session.session_date === selectedDate;
-    
-    return matchesSearch && matchesDate;
-  }) || [];
+  // Filter and sort sessions
+  const filteredSessions = allSessions
+    .filter(session => {
+      const matchesSearch = session.sessionGoal?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           session.customGoal?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesGoal = filterGoal === 'all' || session.sessionGoal === filterGoal;
+      return matchesSearch && matchesGoal;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'date-asc':
+          return new Date(a.sessionDate).getTime() - new Date(b.sessionDate).getTime();
+        case 'date-desc':
+          return new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime();
+        case 'climbs-desc':
+          return b.climbs.length - a.climbs.length;
+        case 'climbs-asc':
+          return a.climbs.length - b.climbs.length;
+        default:
+          return 0;
+      }
+    });
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading session history...</div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Get unique session goals for filter
+  const uniqueGoals = [...new Set(allSessions.map(s => s.sessionGoal).filter(Boolean))];
 
-  const formatSessionDuration = (startTime: string, endTime: string | null) => {
-    if (!endTime) return 'Ongoing';
-    
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const durationMs = end.getTime() - start.getTime();
-    const hours = Math.floor(durationMs / (1000 * 60 * 60));
-    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+  const formatSessionDuration = (session: any) => {
+    if (!session.startTime || !session.endTime) return 'N/A';
+    const duration = new Date(session.endTime).getTime() - new Date(session.startTime).getTime();
+    const minutes = Math.round(duration / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
     
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${remainingMinutes}m`;
     }
     return `${minutes}m`;
   };
 
-  const getFeelingColor = (feeling: string | null) => {
-    switch (feeling) {
-      case 'Great': return 'bg-green-100 text-green-800';
-      case 'Good': return 'bg-blue-100 text-blue-800';
-      case 'Okay': return 'bg-yellow-100 text-yellow-800';
-      case 'Tired': return 'bg-orange-100 text-orange-800';
-      case 'Exhausted': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getMaxGrade = (climbs: any[]) => {
+    if (climbs.length === 0) return 'N/A';
+    const grades = climbs.map(c => c.routeGrade).filter(Boolean);
+    if (grades.length === 0) return 'N/A';
+    
+    // Simple grade comparison (works for 5.x format)
+    return grades.sort((a, b) => {
+      const aNum = parseFloat(a.replace('5.', ''));
+      const bNum = parseFloat(b.replace('5.', ''));
+      return bNum - aNum;
+    })[0];
   };
 
-  const handleDeleteSession = (sessionId: string) => {
-    deleteSession(sessionId);
-  };
+  if (allSessions.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Session History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Mountain className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Sessions Yet</h3>
+            <p className="text-gray-500">
+              Complete your first training session to see it appear here.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filter Sessions</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filter & Search
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <Label htmlFor="search">Search</Label>
-              <Input
-                id="search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by goal, grade, or notes..."
-              />
+              <label className="text-sm font-medium mb-2 block">Search</label>
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+                <Input
+                  placeholder="Search sessions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
+
             <div>
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
+              <label className="text-sm font-medium mb-2 block">Filter by Goal</label>
+              <Select value={filterGoal} onValueChange={setFilterGoal}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Goals</SelectItem>
+                  {uniqueGoals.map(goal => (
+                    <SelectItem key={goal} value={goal}>{goal}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Sort by</label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Newest First</SelectItem>
+                  <SelectItem value="date-asc">Oldest First</SelectItem>
+                  <SelectItem value="climbs-desc">Most Climbs</SelectItem>
+                  <SelectItem value="climbs-asc">Fewest Climbs</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          {(searchTerm || selectedDate) && (
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedDate('');
-              }}
-            >
-              Clear Filters
-            </Button>
-          )}
         </CardContent>
       </Card>
 
       {/* Sessions List */}
       <div className="space-y-4">
-        {filteredSessions.length === 0 ? (
+        {filteredSessions.map((session) => (
+          <Card key={session.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-lg">
+                    {new Date(session.sessionDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </h3>
+                  <p className="text-gray-600">{session.sessionGoal}</p>
+                  {session.customGoal && session.sessionGoal !== session.customGoal && (
+                    <p className="text-sm text-gray-500 italic">{session.customGoal}</p>
+                  )}
+                </div>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatSessionDuration(session)}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <Mountain className="h-5 w-5 mx-auto mb-1 text-[#E55A2B]" />
+                  <p className="text-2xl font-bold">{session.climbs.length}</p>
+                  <p className="text-sm text-gray-600">Climbs</p>
+                </div>
+
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <Target className="h-5 w-5 mx-auto mb-1 text-[#E55A2B]" />
+                  <p className="text-2xl font-bold">{getMaxGrade(session.climbs)}</p>
+                  <p className="text-sm text-gray-600">Max Grade</p>
+                </div>
+
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <p className="text-2xl font-bold">{session.techniques.length}</p>
+                  <p className="text-sm text-gray-600">Techniques</p>
+                </div>
+
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <p className="text-2xl font-bold">{session.gear.length}</p>
+                  <p className="text-sm text-gray-600">Gear Items</p>
+                </div>
+              </div>
+
+              {/* Session Details */}
+              {(session.climbs.length > 0 || session.techniques.length > 0 || session.gear.length > 0) && (
+                <div className="space-y-3">
+                  {session.climbs.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Climbs</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {session.climbs.map((climb, index) => (
+                          <Badge key={index} variant="secondary">
+                            {climb.routeGrade} {climb.climbingStyle}
+                            {!climb.completed && ' (attempt)'}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {session.techniques.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Techniques Practiced</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {session.techniques.map((technique, index) => (
+                          <Badge key={index} variant="outline">{technique}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {session.gear.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Gear Used</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {session.gear.map((gear, index) => (
+                          <Badge key={index} variant="outline">{gear}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Session Flags */}
+              <div className="flex flex-wrap gap-2 mt-4">
+                {session.warmUpDone && (
+                  <Badge variant="default" className="text-xs">Warmed Up</Badge>
+                )}
+                {session.newTechniquesTried && (
+                  <Badge variant="default" className="text-xs">New Techniques</Badge>
+                )}
+                {session.gearUsed && (
+                  <Badge variant="default" className="text-xs">Used Gear</Badge>
+                )}
+                {session.feltTiredAtEnd && (
+                  <Badge variant="secondary" className="text-xs">Felt Tired</Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {filteredSessions.length === 0 && (
           <Card>
             <CardContent className="text-center py-8">
+              <Search className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">No Sessions Found</h3>
               <p className="text-gray-500">
-                {sessions?.length === 0 
-                  ? "No training sessions recorded yet. Start by logging your first session!"
-                  : "No sessions match your current filters."
-                }
+                Try adjusting your search or filter criteria.
               </p>
             </CardContent>
           </Card>
-        ) : (
-          filteredSessions.map((session) => (
-            <Card key={session.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <CalendarDays className="h-5 w-5" />
-                      {format(parseISO(session.session_date), 'EEEE, MMMM d, yyyy')}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {format(parseISO(session.start_time), 'h:mm a')} - 
-                        {session.end_time ? format(parseISO(session.end_time), 'h:mm a') : 'Ongoing'}
-                      </span>
-                      <span>
-                        Duration: {formatSessionDuration(session.start_time, session.end_time)}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {session.felt_after_session && (
-                      <Badge className={getFeelingColor(session.felt_after_session)}>
-                        {session.felt_after_session}
-                      </Badge>
-                    )}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          disabled={isDeleting}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Training Session</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete this training session? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteSession(session.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">
-                      <strong>Goal:</strong> {session.session_goal || session.custom_goal || 'None specified'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">
-                      <strong>Climbs:</strong> {session.total_climbs}
-                      {session.max_grade_climbed && ` • Max: ${session.max_grade_climbed}`}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {session.warm_up_done && (
-                    <Badge variant="outline">Warmed Up</Badge>
-                  )}
-                  {session.new_techniques_tried && (
-                    <Badge variant="outline">New Techniques</Badge>
-                  )}
-                  {session.gear_used && (
-                    <Badge variant="outline">Used Gear</Badge>
-                  )}
-                  {session.felt_tired_at_end && (
-                    <Badge variant="outline">Tired at End</Badge>
-                  )}
-                </div>
-
-                {session.would_change_next_time && (
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm">
-                      <strong>Reflection:</strong> {session.would_change_next_time}
-                    </p>
-                  </div>
-                )}
-
-                {/* Show climb details if available */}
-                {session.session_climbs && session.session_climbs.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">Climbs:</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {session.session_climbs.map((climb, index) => (
-                        <div key={climb.id} className="text-xs bg-gray-50 p-2 rounded">
-                          <div className="font-medium">
-                            {climb.route_grade} • {climb.climbing_style}
-                          </div>
-                          <div className="text-gray-600">
-                            {climb.attempts_made} attempt{climb.attempts_made !== 1 ? 's' : ''}
-                            {climb.falls_count > 0 && ` • ${climb.falls_count} falls`}
-                            {climb.is_hardest_climb && ' • Hardest'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))
         )}
       </div>
     </div>
