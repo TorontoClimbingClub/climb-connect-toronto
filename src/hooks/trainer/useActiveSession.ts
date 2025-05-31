@@ -11,8 +11,14 @@ export function useActiveSession() {
   const startSessionMutation = useStartSession(setLocalSession);
   const endSessionMutation = useEndSession(activeDbSession, localSession, setLocalSession);
 
-  // Determine if there's an active session - both DB session and local session must exist
-  const hasActiveSession = !!(activeDbSession && localSession && !isLoadingSession);
+  // Determine if there's an active session - require both DB session and local session
+  // Also ensure the DB session hasn't ended (end_time is null)
+  const hasActiveSession = !!(
+    activeDbSession && 
+    localSession && 
+    !activeDbSession.end_time && 
+    !isLoadingSession
+  );
 
   return {
     activeSession: localSession,

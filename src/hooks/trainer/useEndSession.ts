@@ -94,12 +94,15 @@ export function useEndSession(
         if (gearError) throw gearError;
       }
 
+      // Clear local session first, then return
       setLocalSession(null);
       return activeDbSession;
     },
     onSuccess: () => {
+      // Invalidate queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['active-session'] });
       queryClient.invalidateQueries({ queryKey: ['training-sessions'] });
+      
       toast({
         title: "Session Completed",
         description: "Your training session has been saved successfully!",
