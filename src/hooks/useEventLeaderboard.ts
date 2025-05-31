@@ -1,9 +1,4 @@
-// Define the type locally since we removed useLeaderboardData
-export interface LeaderboardUser {
-  id: string;
-  full_name: string;
-  metric_value: number;
-}
+import type { LeaderboardUser } from "@/hooks/types/leaderboard";
 
 export const processEventData = (
   profilesData: any[],

@@ -1,9 +1,4 @@
-// Define the type locally since we removed useLeaderboardData
-export interface LeaderboardUser {
-  id: string;
-  full_name: string;
-  metric_value: number | string;
-}
+import type { LeaderboardUser } from "@/hooks/types/leaderboard";
 
 // Grade mapping for sorting
 const gradeOrder: { [key: string]: number } = {
