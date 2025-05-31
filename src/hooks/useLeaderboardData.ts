@@ -75,12 +75,12 @@ export function useLeaderboardData() {
       const climbingResults = processClimbingData(profilesData || [], completionsData || []);
       const gearResults = processGearData(profilesData || [], gearData || []);
 
-      // Update all leaderboards
+      // Update all leaderboards - fix property names to match the actual structure
       setEventLeaderboard(eventResults);
-      setTopGradeLeaderboard(climbingResults.topGrade);
-      setTradLeaderboard(climbingResults.trad);
-      setSportLeaderboard(climbingResults.sport);
-      setTopRopeLeaderboard(climbingResults.topRope);
+      setTopGradeLeaderboard(climbingResults.topGradeClimbers);
+      setTradLeaderboard(climbingResults.topTradClimbers);
+      setSportLeaderboard(climbingResults.topSportClimbers);
+      setTopRopeLeaderboard(climbingResults.topTopRopeClimbers);
       setGearLeaderboard(gearResults);
 
       console.log('🏆 [LEADERBOARDS] All leaderboards updated successfully');
