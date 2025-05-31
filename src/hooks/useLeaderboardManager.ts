@@ -20,10 +20,18 @@ export function useLeaderboardManager() {
   const [topGearOwners, setTopGearOwners] = useState<LeaderboardUser[]>([]);
   const [topEventAttendees, setTopEventAttendees] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastSync, setLastSync] = useState<number>(0);
   const { toast } = useToast();
 
-  const fetchAllLeaderboardData = useCallback(async () => {
+  const fetchAllLeaderboardData = useCallback(async (forceRefresh = false) => {
     try {
+      // Prevent excessive fetching with debounce mechanism
+      const now = Date.now();
+      if (!forceRefresh && now - lastSync < 2000) {
+        console.log('🔄 [LEADERBOARD] Skipping fetch due to debounce');
+        return;
+      }
+
       setLoading(true);
       console.log('🔍 [LEADERBOARD] Starting comprehensive leaderboard data fetch...');
 
@@ -63,13 +71,19 @@ export function useLeaderboardManager() {
       }).filter(item => item.routes !== null) || [];
 
       // ENHANCED: Also fetch archived attendance data for event leaderboard
-      const { data: archivedEventData } = await supabase
-        .from('archived_event_attendance')
-        .select('user_id, event_id, attended_at');
+      let archivedEventData: any[] = [];
+      try {
+        const { data: archived } = await supabase
+          .from('archived_event_attendance')
+          .select('user_id, event_id, attended_at');
+        archivedEventData = archived || [];
+      } catch (error) {
+        console.log('📊 [LEADERBOARD] No archived attendance data available');
+      }
 
       // Combine current and archived event data
       const combinedEventData = [...(eventData || [])];
-      if (archivedEventData) {
+      if (archivedEventData.length > 0) {
         const currentEventMap = new Map();
         eventData?.forEach(record => {
           const key = `${record.user_id}-${record.event_id}`;
@@ -102,13 +116,26 @@ export function useLeaderboardManager() {
       const gearOwners = processGearData(profilesData || [], gearData || []);
       const eventAttendees = processEventData(profilesData || [], combinedEventData);
 
-      // Update all leaderboard states
+      // Update all leaderboard states atomically
       setTopGradeClimbers(climbingResults.topGradeClimbers);
       setTopTradClimbers(climbingResults.topTradClimbers);
       setTopSportClimbers(climbingResults.topSportClimbers);
       setTopTopRopeClimbers(climbingResults.topTopRopeClimbers);
       setTopGearOwners(gearOwners);
       setTopEventAttendees(eventAttendees);
+      setLastSync(now);
+
+      // Broadcast state sync event for cross-client synchronization
+      const syncChannel = supabase.channel('leaderboard-sync');
+      syncChannel.send({
+        type: 'broadcast',
+        event: 'state_sync',
+        payload: {
+          timestamp: now,
+          event_attendees_count: eventAttendees.length,
+          sync_source: 'data_fetch'
+        }
+      });
 
     } catch (error: any) {
       console.error('❌ [LEADERBOARD] Error fetching leaderboard data:', error);
@@ -120,13 +147,15 @@ export function useLeaderboardManager() {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, lastSync]);
 
-  // ENHANCED: Set up real-time subscriptions for all relevant tables
+  // ENHANCED: Set up comprehensive real-time subscriptions
   useEffect(() => {
-    // Event attendance real-time updates
-    const eventAttendanceChannel = supabase
-      .channel('leaderboards-event-attendance')
+    console.log('🔄 [LEADERBOARD] Setting up real-time subscriptions');
+
+    // Multi-table subscription channel
+    const mainChannel = supabase
+      .channel('leaderboards-comprehensive')
       .on(
         'postgres_changes',
         {
@@ -135,15 +164,10 @@ export function useLeaderboardManager() {
           table: 'event_attendance_approvals'
         },
         (payload) => {
-          console.log('🔄 [LEADERBOARD] Event attendance updated, refreshing leaderboards:', payload);
-          fetchAllLeaderboardData();
+          console.log('🔄 [LEADERBOARD] Event attendance updated:', payload);
+          fetchAllLeaderboardData(true);
         }
       )
-      .subscribe();
-
-    // Gear equipment real-time updates
-    const gearChannel = supabase
-      .channel('leaderboards-gear')
       .on(
         'postgres_changes',
         {
@@ -152,15 +176,10 @@ export function useLeaderboardManager() {
           table: 'user_equipment'
         },
         (payload) => {
-          console.log('🔄 [LEADERBOARD] Gear updated, refreshing leaderboards:', payload);
-          fetchAllLeaderboardData();
+          console.log('🔄 [LEADERBOARD] Gear updated:', payload);
+          fetchAllLeaderboardData(true);
         }
       )
-      .subscribe();
-
-    // Climb completions real-time updates
-    const climbingChannel = supabase
-      .channel('leaderboards-climbing')
       .on(
         'postgres_changes',
         {
@@ -169,21 +188,75 @@ export function useLeaderboardManager() {
           table: 'climb_completions'
         },
         (payload) => {
-          console.log('🔄 [LEADERBOARD] Climbing completion updated, refreshing leaderboards:', payload);
-          fetchAllLeaderboardData();
+          console.log('🔄 [LEADERBOARD] Climbing completion updated:', payload);
+          fetchAllLeaderboardData(true);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('🔄 [LEADERBOARD] Profile updated:', payload);
+          fetchAllLeaderboardData(true);
+        }
+      )
+      .subscribe();
+
+    // Cross-client state synchronization channel
+    const syncChannel = supabase
+      .channel('leaderboard-sync')
+      .on(
+        'broadcast',
+        { event: 'state_sync' },
+        (payload) => {
+          console.log('🔄 [LEADERBOARD] Received sync broadcast:', payload);
+          // If another client has newer data, refresh our state
+          if (payload.payload.timestamp > lastSync) {
+            console.log('🔄 [LEADERBOARD] Syncing with newer client state');
+            fetchAllLeaderboardData(true);
+          }
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'force_refresh' },
+        (payload) => {
+          console.log('🔄 [LEADERBOARD] Force refresh requested:', payload);
+          fetchAllLeaderboardData(true);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(eventAttendanceChannel);
-      supabase.removeChannel(gearChannel);
-      supabase.removeChannel(climbingChannel);
+      console.log('🔄 [LEADERBOARD] Cleaning up real-time subscriptions');
+      supabase.removeChannel(mainChannel);
+      supabase.removeChannel(syncChannel);
     };
-  }, [fetchAllLeaderboardData]);
+  }, [fetchAllLeaderboardData, lastSync]);
 
   useEffect(() => {
-    fetchAllLeaderboardData();
+    fetchAllLeaderboardData(true);
+  }, []);
+
+  // Enhanced refresh function that notifies other clients
+  const refreshLeaderboards = useCallback(async () => {
+    console.log('🔄 [LEADERBOARD] Manual refresh requested');
+    await fetchAllLeaderboardData(true);
+    
+    // Notify other clients to refresh
+    const syncChannel = supabase.channel('leaderboard-sync');
+    syncChannel.send({
+      type: 'broadcast',
+      event: 'force_refresh',
+      payload: {
+        timestamp: Date.now(),
+        source: 'manual_refresh'
+      }
+    });
   }, [fetchAllLeaderboardData]);
 
   return {
@@ -194,6 +267,6 @@ export function useLeaderboardManager() {
     topGearOwners,
     topEventAttendees,
     loading,
-    refreshLeaderboards: fetchAllLeaderboardData
+    refreshLeaderboards
   };
 }

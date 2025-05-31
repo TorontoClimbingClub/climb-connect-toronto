@@ -1,10 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Mountain, Users, Package, Star } from "lucide-react";
+import { Trophy, Mountain, Users, Package, Star, RefreshCw } from "lucide-react";
 import { useLeaderboardManager } from "@/hooks/useLeaderboardManager";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 export function Leaderboards() {
   const { 
@@ -18,28 +19,56 @@ export function Leaderboards() {
     refreshLeaderboards
   } = useLeaderboardManager();
 
-  // Set up real-time subscription to refresh leaderboards when attendance changes
+  const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Handle manual refresh
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshLeaderboards();
+      setLastUpdateTime(new Date().toLocaleTimeString());
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Set up cross-client synchronization listener
   useEffect(() => {
-    const channel = supabase
-      .channel('leaderboards-realtime')
+    const syncChannel = supabase
+      .channel('leaderboards-ui-sync')
       .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_attendance_approvals'
-        },
+        'broadcast',
+        { event: 'ui_update' },
         (payload) => {
-          console.log('🔄 Attendance approval updated, refreshing leaderboards:', payload);
-          refreshLeaderboards();
+          console.log('🔄 [LEADERBOARDS UI] Received UI sync:', payload);
+          setLastUpdateTime(new Date().toLocaleTimeString());
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(syncChannel);
     };
-  }, [refreshLeaderboards]);
+  }, []);
+
+  // Update timestamp when data changes
+  useEffect(() => {
+    if (!loading && topEventAttendees.length > 0) {
+      setLastUpdateTime(new Date().toLocaleTimeString());
+      
+      // Broadcast UI update to other clients
+      const syncChannel = supabase.channel('leaderboards-ui-sync');
+      syncChannel.send({
+        type: 'broadcast',
+        event: 'ui_update',
+        payload: {
+          timestamp: Date.now(),
+          attendees_count: topEventAttendees.length
+        }
+      });
+    }
+  }, [loading, topEventAttendees.length]);
 
   if (loading) {
     return (
@@ -117,6 +146,23 @@ export function Leaderboards() {
           <h2 className="text-2xl font-bold text-[#E55A2B]">Community Leaderboards</h2>
         </div>
         <p className="text-stone-600">Celebrating our most active climbers</p>
+        <div className="flex items-center justify-center gap-4 mt-3">
+          {lastUpdateTime && (
+            <span className="text-xs text-stone-500">
+              Last updated: {lastUpdateTime}
+            </span>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="text-xs"
+          >
+            <RefreshCw className={`h-3 w-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Event Enthusiasts - Prominent Display */}

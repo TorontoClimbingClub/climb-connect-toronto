@@ -7,6 +7,24 @@ export const useAttendanceManagement = () => {
   const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
   const { toast } = useToast();
 
+  // Helper function to trigger cross-client sync
+  const triggerLeaderboardSync = async () => {
+    try {
+      const syncChannel = supabase.channel('leaderboard-sync');
+      await syncChannel.send({
+        type: 'broadcast',
+        event: 'force_refresh',
+        payload: {
+          timestamp: Date.now(),
+          source: 'attendance_change'
+        }
+      });
+      console.log('🔄 [ATTENDANCE] Triggered leaderboard sync for all clients');
+    } catch (error) {
+      console.error('❌ [ATTENDANCE] Failed to trigger sync:', error);
+    }
+  };
+
   const handleConfirmAttendance = async (participantUserId: string, eventId: string) => {
     try {
       console.log('Confirming attendance for user:', participantUserId, 'event:', eventId);
@@ -38,6 +56,10 @@ export const useAttendanceManagement = () => {
 
         await refreshApprovals();
       }
+
+      // Trigger cross-client synchronization
+      await triggerLeaderboardSync();
+
     } catch (error: any) {
       console.error('Error confirming attendance:', error);
       toast({
@@ -78,6 +100,10 @@ export const useAttendanceManagement = () => {
 
         await refreshApprovals();
       }
+
+      // Trigger cross-client synchronization
+      await triggerLeaderboardSync();
+
     } catch (error: any) {
       console.error('Error rejecting attendance:', error);
       toast({
@@ -112,6 +138,10 @@ export const useAttendanceManagement = () => {
 
         await refreshApprovals();
       }
+
+      // Trigger cross-client synchronization
+      await triggerLeaderboardSync();
+
     } catch (error: any) {
       console.error('Error resetting attendance:', error);
       toast({
