@@ -20,7 +20,7 @@ const Navigation = () => {
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/events', icon: Calendar, label: 'Events' },
-    { path: '/routes', icon: Mountain, label: 'Routes' },
+    { path: '/routes', icon: Mountain, label: 'BetaBoards' },
     { path: '/trainer', icon: Activity, label: 'Trainer' },
   ];
 
