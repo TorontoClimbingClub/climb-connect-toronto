@@ -25,7 +25,6 @@ interface SessionFormData {
   feltAfterSession: string;
   feltTiredAtEnd: boolean;
   wouldChangeNextTime: string;
-  partnerCount: number;
   newTechniquesTried: boolean;
   gearUsed: boolean;
 }
@@ -55,7 +54,6 @@ const SessionForm = () => {
       startTime: new Date().toTimeString().slice(0, 5),
       warmUpDone: false,
       feltTiredAtEnd: false,
-      partnerCount: 0,
       newTechniquesTried: false,
       gearUsed: false,
     }
@@ -116,18 +114,17 @@ const SessionForm = () => {
 
   const onSubmit = async (data: SessionFormData) => {
     try {
-      // Calculate metrics from climbs
       const totalClimbs = climbs.length;
       const maxGrade = climbs.reduce((max, climb) => {
-        // Simple grade comparison (would need proper grade sorting logic)
         return climb.routeGrade > max ? climb.routeGrade : max;
       }, '');
 
       const sessionData = {
         ...data,
+        partnerCount: 0, // Set to 0 since we removed the field
         totalClimbs,
         maxGradeClimbed: maxGrade,
-        climbs: climbs.filter(climb => climb.routeGrade), // Only include climbs with grades
+        climbs: climbs.filter(climb => climb.routeGrade),
         techniques: techniques.filter(Boolean),
         gear: gear.filter(Boolean)
       };
@@ -139,7 +136,6 @@ const SessionForm = () => {
         description: "Your training session has been successfully recorded!",
       });
 
-      // Reset form
       reset();
       setClimbs([]);
       setTechniques([]);
@@ -259,16 +255,6 @@ const SessionForm = () => {
                 id="gearUsed"
                 checked={watch('gearUsed')}
                 onCheckedChange={(checked) => setValue('gearUsed', checked)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="partnerCount">Number of Partners</Label>
-              <Input
-                id="partnerCount"
-                type="number"
-                min="0"
-                {...register('partnerCount', { valueAsNumber: true })}
               />
             </div>
 

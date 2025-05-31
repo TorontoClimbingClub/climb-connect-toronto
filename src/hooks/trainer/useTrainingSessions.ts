@@ -13,7 +13,6 @@ interface CreateSessionData {
   feltAfterSession?: string;
   feltTiredAtEnd: boolean;
   wouldChangeNextTime?: string;
-  partnerCount: number;
   newTechniquesTried: boolean;
   gearUsed: boolean;
   totalClimbs: number;
@@ -47,7 +46,6 @@ export function useTrainingSessions() {
 
   const createSessionMutation = useMutation({
     mutationFn: async (sessionData: CreateSessionData) => {
-      // Start a transaction-like operation
       const { data: session, error: sessionError } = await supabase
         .from('training_sessions')
         .insert({
@@ -60,7 +58,7 @@ export function useTrainingSessions() {
           felt_after_session: sessionData.feltAfterSession,
           felt_tired_at_end: sessionData.feltTiredAtEnd,
           would_change_next_time: sessionData.wouldChangeNextTime,
-          partner_count: sessionData.partnerCount,
+          partner_count: 0, // Always set to 0 since we removed the field
           total_climbs: sessionData.totalClimbs,
           max_grade_climbed: sessionData.maxGradeClimbed,
           new_techniques_tried: sessionData.newTechniquesTried,
