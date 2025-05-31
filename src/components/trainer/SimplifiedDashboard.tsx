@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useSimplifiedTrainer } from '@/hooks/trainer/useSimplifiedTrainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,9 +97,9 @@ const SimplifiedDashboard = () => {
     <TooltipProvider>
       <UITooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
-            <Info className="h-3 w-3 mr-1" />
-            Formula
+          <Button variant="outline" size="sm" className="h-10 px-4 text-sm">
+            <Info className="h-4 w-4 mr-2" />
+            SII Formula
           </Button>
         </TooltipTrigger>
         <TooltipContent className="max-w-sm">
@@ -119,27 +120,29 @@ const SimplifiedDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* SII Formula Info - Top Right */}
+      <div className="flex justify-end">
+        <SIIFormulaTooltip />
+      </div>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sessions with SII</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sessionsWithSII.length}</div>
+            <div className="text-2xl font-bold">{stats.totalSessions}</div>
             <p className="text-xs text-muted-foreground">
-              of {stats.totalSessions} total sessions
+              training sessions tracked
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              Average SII
-              <SIIFormulaTooltip />
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Average SII</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -211,7 +214,6 @@ const SimplifiedDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               Session Intensity Timeline
-              <SIIFormulaTooltip />
             </CardTitle>
           </CardHeader>
           <CardContent>
