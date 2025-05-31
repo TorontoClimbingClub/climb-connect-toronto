@@ -1,11 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Mountain, Users, Package, Star, RefreshCw } from "lucide-react";
+import { Trophy, Mountain, Users, Package, Star } from "lucide-react";
 import { useLeaderboardManager } from "@/hooks/useLeaderboardManager";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 
 export function Leaderboards() {
   const {
@@ -15,47 +11,8 @@ export function Leaderboards() {
     topTopRopeClimbers,
     topGearOwners,
     topEventAttendees,
-    loading,
-    refreshLeaderboards
+    loading
   } = useLeaderboardManager();
-  
-  const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Handle manual refresh with enhanced logging
-  const handleManualRefresh = async () => {
-    console.log('🔄 [LEADERBOARDS UI] Manual refresh triggered');
-    setIsRefreshing(true);
-    try {
-      await refreshLeaderboards();
-      setLastUpdateTime(new Date().toLocaleTimeString());
-      console.log('✅ [LEADERBOARDS UI] Manual refresh completed');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  // Real-time sync listener
-  useEffect(() => {
-    const syncChannel = supabase.channel('leaderboards-ui-sync').on('broadcast', {
-      event: 'ui_update'
-    }, payload => {
-      console.log('🔄 [LEADERBOARDS UI] Received UI sync:', payload);
-      setLastUpdateTime(new Date().toLocaleTimeString());
-    }).subscribe();
-
-    return () => {
-      supabase.removeChannel(syncChannel);
-    };
-  }, []);
-
-  // Update timestamp when data changes
-  useEffect(() => {
-    if (!loading && topEventAttendees.length > 0) {
-      setLastUpdateTime(new Date().toLocaleTimeString());
-      console.log('📊 [LEADERBOARDS UI] Data updated, event attendees:', topEventAttendees.length);
-    }
-  }, [loading, topEventAttendees.length]);
 
   if (loading) {
     return (
@@ -133,21 +90,6 @@ export function Leaderboards() {
           <h2 className="text-2xl font-bold text-[#E55A2B]">Community Leaderboards</h2>
         </div>
         <p className="text-stone-600">Celebrating our most active climbers</p>
-        
-        {/* Debug info and refresh button */}
-        <div className="flex items-center justify-center gap-4 mt-4 text-sm text-stone-500">
-          {lastUpdateTime && <span>Last updated: {lastUpdateTime}</span>}
-          <Button 
-            onClick={handleManualRefresh} 
-            disabled={isRefreshing}
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </Button>
-        </div>
       </div>
 
       {/* Event Enthusiasts - Prominent Display */}

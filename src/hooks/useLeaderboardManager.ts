@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useLeaderboardDataFetcher } from "@/hooks/leaderboard/useLeaderboardData";
 import { useLeaderboardSubscriptions } from "@/hooks/leaderboard/useLeaderboardSubscriptions";
 import type { LeaderboardUser, LeaderboardState } from "@/hooks/types/leaderboard";
@@ -23,10 +22,9 @@ export function useLeaderboardManager() {
 
   const fetchData = useCallback(async (forceRefresh = false) => {
     try {
-      // Enhanced debounce mechanism to prevent rapid fetching
       const now = Date.now();
       if (!forceRefresh && now - state.lastSync < 5000) {
-        console.log('🔄 [LEADERBOARD] Skipping fetch due to enhanced debounce');
+        console.log('🔄 [LEADERBOARD] Skipping fetch due to debounce');
         return;
       }
 
@@ -34,7 +32,6 @@ export function useLeaderboardManager() {
       
       const data = await fetchAllLeaderboardData();
       
-      // Update all leaderboard states atomically to prevent flashing
       setState(prev => ({
         ...prev,
         ...data,
@@ -48,8 +45,7 @@ export function useLeaderboardManager() {
     }
   }, [fetchAllLeaderboardData, handleFetchError, state.lastSync]);
 
-  // Set up real-time subscriptions
-  const { triggerLeaderboardSync } = useLeaderboardSubscriptions({
+  useLeaderboardSubscriptions({
     onDataChange: () => fetchData(true),
     lastSync: state.lastSync
   });
@@ -58,18 +54,6 @@ export function useLeaderboardManager() {
     fetchData(true);
   }, []);
 
-  // Optimized refresh function with reduced broadcast frequency
-  const refreshLeaderboards = useCallback(async () => {
-    console.log('🔄 [LEADERBOARD] Manual refresh requested');
-    await fetchData(true);
-    
-    // Only notify other clients if enough time has passed
-    const now = Date.now();
-    if (now - state.lastSync > 2000) {
-      await triggerLeaderboardSync();
-    }
-  }, [fetchData, triggerLeaderboardSync, state.lastSync]);
-
   return {
     topGradeClimbers: state.topGradeClimbers,
     topTradClimbers: state.topTradClimbers,
@@ -77,7 +61,6 @@ export function useLeaderboardManager() {
     topTopRopeClimbers: state.topTopRopeClimbers,
     topGearOwners: state.topGearOwners,
     topEventAttendees: state.topEventAttendees,
-    loading: state.loading,
-    refreshLeaderboards
+    loading: state.loading
   };
 }
