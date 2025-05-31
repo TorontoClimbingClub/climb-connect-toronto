@@ -183,7 +183,7 @@ export default function Routes() {
             </>
           )}
 
-          {selectedCrag && !selectedSector && (
+          {selectedCrag && (
             <>
               <MapWidget />
               <EnhancedRouteFilters 
@@ -192,15 +192,18 @@ export default function Routes() {
                 isExpanded={isFiltersExpanded}
                 onExpandedChange={setIsFiltersExpanded}
               />
-              {sectors.map((sector) => (
-                <SectorCard
-                  key={sector}
-                  name={sector}
-                  routeCount={filteredRoutes.filter(route => route.sector === sector).length}
-                  onClick={() => setSelectedSector(sector)}
-                />
-              ))}
             </>
+          )}
+
+          {selectedCrag && !selectedSector && (
+            sectors.map((sector) => (
+              <SectorCard
+                key={sector}
+                name={sector}
+                routeCount={filteredRoutes.filter(route => route.sector === sector).length}
+                onClick={() => setSelectedSector(sector)}
+              />
+            ))
           )}
 
           {selectedSector && (

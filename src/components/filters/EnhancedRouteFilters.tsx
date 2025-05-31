@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Filter, X, ChevronDown } from "lucide-react";
 import { ClimbingRoute } from "@/types/routes";
@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { sortGrades } from "./GradeSorter";
-import { useFilterPersistence } from "@/hooks/useFilterPersistence";
 
 interface EnhancedRouteFiltersProps {
   routes: ClimbingRoute[];
@@ -26,7 +25,12 @@ export const EnhancedRouteFilters = ({
   isExpanded: externalExpanded,
   onExpandedChange 
 }: EnhancedRouteFiltersProps) => {
-  const { filters, updateFilters, clearAllFilters } = useFilterPersistence();
+  const [selectedGrade, setSelectedGrade] = useState<string>("");
+  const [gradeDirection, setGradeDirection] = useState<GradeDirection>('exact');
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [selectedArea, setSelectedArea] = useState<string>("");
+  const [selectedSector, setSelectedSector] = useState<string>("");
+
   const isExpanded = externalExpanded ?? false;
 
   // Get unique values for filter options with proper sorting
@@ -36,36 +40,36 @@ export const EnhancedRouteFilters = ({
   const sectors = [...new Set(routes.map(route => route.sector))].sort();
 
   // Check for area/sector conflicts
-  const hasAreaSectorConflict = filters.selectedArea && filters.selectedSector && 
-    !routes.some(route => route.area === filters.selectedArea && route.sector === filters.selectedSector);
+  const hasAreaSectorConflict = selectedArea && selectedSector && 
+    !routes.some(route => route.area === selectedArea && route.sector === selectedSector);
 
   const applyFilters = () => {
     let filtered = routes;
 
-    if (filters.selectedGrade) {
-      if (filters.gradeDirection === 'exact') {
-        filtered = filtered.filter(route => route.grade === filters.selectedGrade);
-      } else if (filters.gradeDirection === 'above') {
-        const gradeIndex = grades.indexOf(filters.selectedGrade);
+    if (selectedGrade) {
+      if (gradeDirection === 'exact') {
+        filtered = filtered.filter(route => route.grade === selectedGrade);
+      } else if (gradeDirection === 'above') {
+        const gradeIndex = grades.indexOf(selectedGrade);
         const validGrades = grades.slice(gradeIndex);
         filtered = filtered.filter(route => validGrades.includes(route.grade));
-      } else if (filters.gradeDirection === 'below') {
-        const gradeIndex = grades.indexOf(filters.selectedGrade);
+      } else if (gradeDirection === 'below') {
+        const gradeIndex = grades.indexOf(selectedGrade);
         const validGrades = grades.slice(0, gradeIndex + 1);
         filtered = filtered.filter(route => validGrades.includes(route.grade));
       }
     }
 
-    if (filters.selectedStyles.length > 0) {
-      filtered = filtered.filter(route => filters.selectedStyles.includes(route.style));
+    if (selectedStyles.length > 0) {
+      filtered = filtered.filter(route => selectedStyles.includes(route.style));
     }
 
-    if (filters.selectedArea) {
-      filtered = filtered.filter(route => route.area === filters.selectedArea);
+    if (selectedArea) {
+      filtered = filtered.filter(route => route.area === selectedArea);
     }
 
-    if (filters.selectedSector) {
-      filtered = filtered.filter(route => route.sector === filters.selectedSector);
+    if (selectedSector) {
+      filtered = filtered.filter(route => route.sector === selectedSector);
     }
 
     onFiltersChange(filtered);
@@ -74,46 +78,55 @@ export const EnhancedRouteFilters = ({
   // Apply filters whenever any filter changes
   useEffect(() => {
     applyFilters();
-  }, [filters.selectedGrade, filters.gradeDirection, filters.selectedStyles, filters.selectedArea, filters.selectedSector]);
+  }, [selectedGrade, gradeDirection, selectedStyles, selectedArea, selectedSector]);
+
+  const clearAllFilters = () => {
+    setSelectedGrade("");
+    setGradeDirection('exact');
+    setSelectedStyles([]);
+    setSelectedArea("");
+    setSelectedSector("");
+  };
 
   const clearIndividualFilter = (filterType: string) => {
     switch (filterType) {
       case 'grade':
-        updateFilters({ selectedGrade: "", gradeDirection: 'exact' });
+        setSelectedGrade("");
+        setGradeDirection('exact');
         break;
       case 'styles':
-        updateFilters({ selectedStyles: [] });
+        setSelectedStyles([]);
         break;
       case 'area':
-        updateFilters({ selectedArea: "" });
+        setSelectedArea("");
         break;
       case 'sector':
-        updateFilters({ selectedSector: "" });
+        setSelectedSector("");
         break;
     }
   };
 
   const handleStyleChange = (style: string, checked: boolean) => {
     const newStyles = checked 
-      ? [...filters.selectedStyles, style]
-      : filters.selectedStyles.filter(s => s !== style);
-    updateFilters({ selectedStyles: newStyles });
+      ? [...selectedStyles, style]
+      : selectedStyles.filter(s => s !== style);
+    setSelectedStyles(newStyles);
   };
 
-  const hasActiveFilters = Boolean(filters.selectedGrade || filters.selectedStyles.length > 0 || filters.selectedArea || filters.selectedSector);
+  const hasActiveFilters = Boolean(selectedGrade || selectedStyles.length > 0 || selectedArea || selectedSector);
   const activeFilters = [
-    filters.selectedGrade && { 
+    selectedGrade && { 
       type: 'grade', 
       label: 'Grade', 
-      value: filters.gradeDirection === 'exact' ? filters.selectedGrade : `${filters.selectedGrade} ${filters.gradeDirection}` 
+      value: gradeDirection === 'exact' ? selectedGrade : `${selectedGrade} ${gradeDirection}` 
     },
-    filters.selectedStyles.length > 0 && { 
+    selectedStyles.length > 0 && { 
       type: 'styles', 
       label: 'Styles', 
-      value: filters.selectedStyles.join(', ') 
+      value: selectedStyles.join(', ') 
     },
-    filters.selectedArea && { type: 'area', label: 'Area', value: filters.selectedArea },
-    filters.selectedSector && { type: 'sector', label: 'Sector', value: filters.selectedSector },
+    selectedArea && { type: 'area', label: 'Area', value: selectedArea },
+    selectedSector && { type: 'sector', label: 'Sector', value: selectedSector },
   ].filter(Boolean);
 
   const toggleExpanded = () => {
@@ -169,7 +182,7 @@ export const EnhancedRouteFilters = ({
         {hasAreaSectorConflict && (
           <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
-              ⚠️ Warning: The selected area "{filters.selectedArea}" is not in sector "{filters.selectedSector}". 
+              ⚠️ Warning: The selected area "{selectedArea}" is not in sector "{selectedSector}". 
               This combination will show no results.
             </p>
           </div>
@@ -182,7 +195,7 @@ export const EnhancedRouteFilters = ({
           <div className="space-y-2">
             <Label>Grade</Label>
             <div className="flex gap-2">
-              <Select value={filters.selectedGrade} onValueChange={(value) => updateFilters({ selectedGrade: value })}>
+              <Select value={selectedGrade} onValueChange={setSelectedGrade}>
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Any grade" />
                 </SelectTrigger>
@@ -194,8 +207,8 @@ export const EnhancedRouteFilters = ({
                   ))}
                 </SelectContent>
               </Select>
-              {filters.selectedGrade && (
-                <Select value={filters.gradeDirection} onValueChange={(value: GradeDirection) => updateFilters({ gradeDirection: value })}>
+              {selectedGrade && (
+                <Select value={gradeDirection} onValueChange={(value: GradeDirection) => setGradeDirection(value)}>
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -217,7 +230,7 @@ export const EnhancedRouteFilters = ({
                 <div key={style} className="flex items-center space-x-2">
                   <Checkbox
                     id={style}
-                    checked={filters.selectedStyles.includes(style)}
+                    checked={selectedStyles.includes(style)}
                     onCheckedChange={(checked) => handleStyleChange(style, checked as boolean)}
                   />
                   <Label htmlFor={style} className="text-sm cursor-pointer">
@@ -232,7 +245,7 @@ export const EnhancedRouteFilters = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Area</Label>
-              <Select value={filters.selectedArea} onValueChange={(value) => updateFilters({ selectedArea: value })}>
+              <Select value={selectedArea} onValueChange={setSelectedArea}>
                 <SelectTrigger>
                   <SelectValue placeholder="Any area" />
                 </SelectTrigger>
@@ -248,7 +261,7 @@ export const EnhancedRouteFilters = ({
 
             <div>
               <Label>Sector</Label>
-              <Select value={filters.selectedSector} onValueChange={(value) => updateFilters({ selectedSector: value })}>
+              <Select value={selectedSector} onValueChange={setSelectedSector}>
                 <SelectTrigger>
                   <SelectValue placeholder="Any sector" />
                 </SelectTrigger>
