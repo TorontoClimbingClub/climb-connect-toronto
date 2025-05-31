@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -7,6 +8,7 @@ import { CragCard } from "@/components/routes/CragCard";
 import { SectorCard } from "@/components/routes/SectorCard";
 import { AreaCard } from "@/components/routes/AreaCard";
 import { MapWidget } from "@/components/routes/MapWidget";
+import { RecentGradeSubmissions } from "@/components/routes/RecentGradeSubmissions";
 import { ClimbingRoute } from "@/types/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
@@ -38,6 +40,7 @@ export default function Routes() {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
   const [filteredRoutes, setFilteredRoutes] = useState<ClimbingRoute[]>(routes);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
 
   console.log('🏔️ Routes page loaded:', {
     userId: user?.id,
@@ -49,9 +52,9 @@ export default function Routes() {
   });
 
   // Update filtered routes when routes change
-  useState(() => {
+  useEffect(() => {
     setFilteredRoutes(routes);
-  });
+  }, [routes]);
 
   // Show loading state
   if (loading) {
@@ -137,7 +140,7 @@ export default function Routes() {
       }
       return selectedCrag;
     }
-    return 'Beta Boards';
+    return 'BetaBoards';
   };
 
   const getPageSubtitle = () => {
@@ -170,11 +173,14 @@ export default function Routes() {
 
         <div className="space-y-4">
           {!selectedCrag && (
-            <CragCard
-              name="Rattlesnake Point"
-              location="Milton, Ontario"
-              onClick={() => setSelectedCrag('Rattlesnake Point')}
-            />
+            <>
+              <CragCard
+                name="Rattlesnake Point"
+                location="Milton, Ontario"
+                onClick={() => setSelectedCrag('Rattlesnake Point')}
+              />
+              <RecentGradeSubmissions onRouteClick={handleRouteClick} />
+            </>
           )}
 
           {selectedCrag && !selectedSector && (
@@ -183,6 +189,8 @@ export default function Routes() {
               <EnhancedRouteFilters 
                 routes={routes} 
                 onFiltersChange={handleFiltersChange}
+                isExpanded={isFiltersExpanded}
+                onExpandedChange={setIsFiltersExpanded}
               />
               {sectors.map((sector) => (
                 <SectorCard
