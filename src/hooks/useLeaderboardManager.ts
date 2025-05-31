@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { processClimbingData, processGearData } from "@/hooks/useClimbingLeaderboards";
+import { processClimbingData } from "@/hooks/useClimbingLeaderboards";
+import { processGearData } from "@/hooks/useGearLeaderboard";
 import { processEventData } from "@/hooks/useEventLeaderboard";
 
 export interface LeaderboardUser {
@@ -70,15 +71,15 @@ export function useLeaderboardManager() {
       });
 
       // Process all leaderboard data
-      const [gradeClimbers, tradClimbers, sportClimbers, topRopeClimbers] = processClimbingData(profilesData || [], completionsWithRoutes);
+      const climbingResults = processClimbingData(profilesData || [], completionsWithRoutes);
       const gearOwners = processGearData(profilesData || [], gearData || []);
       const eventAttendees = processEventData(profilesData || [], eventData || []);
 
       // Update all leaderboard states
-      setTopGradeClimbers(gradeClimbers);
-      setTopTradClimbers(tradClimbers);
-      setTopSportClimbers(sportClimbers);
-      setTopTopRopeClimbers(topRopeClimbers);
+      setTopGradeClimbers(climbingResults.topGradeClimbers);
+      setTopTradClimbers(climbingResults.topTradClimbers);
+      setTopSportClimbers(climbingResults.topSportClimbers);
+      setTopTopRopeClimbers(climbingResults.topTopRopeClimbers);
       setTopGearOwners(gearOwners);
       setTopEventAttendees(eventAttendees);
 
