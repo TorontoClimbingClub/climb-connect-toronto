@@ -81,6 +81,10 @@ const ActiveSessionForm = () => {
     updateLocalSession({ gear: newGear });
   };
 
+  const handleEndSession = () => {
+    endSession();
+  };
+
   return (
     <div className="space-y-6">
       {/* Session Header */}
@@ -203,7 +207,7 @@ const ActiveSessionForm = () => {
                   </Button>
                 </div>
                 {activeSession.techniques.map((technique, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 mb-2">
                     <Input
                       value={technique}
                       onChange={(e) => updateTechnique(index, e.target.value)}
@@ -232,7 +236,7 @@ const ActiveSessionForm = () => {
                   </Button>
                 </div>
                 {activeSession.gear.map((item, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 mb-2">
                     <Input
                       value={item}
                       onChange={(e) => updateGear(index, e.target.value)}
@@ -269,7 +273,7 @@ const ActiveSessionForm = () => {
 
       <div className="flex justify-end">
         <Button 
-          onClick={endSession} 
+          onClick={handleEndSession}
           disabled={isEnding} 
           className="bg-red-600 hover:bg-red-700 text-white"
         >
