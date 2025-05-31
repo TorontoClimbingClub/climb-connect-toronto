@@ -1,29 +1,54 @@
-
 import { useState, useEffect } from 'react';
 import { SimplifiedSession, SimplifiedClimb, SessionStats, WorkoutMetrics, SIIComponents, RecoveryRecommendation } from '@/types/training';
+import { useTrainerDatabase } from './useTrainerDatabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useSimplifiedTrainer() {
   const [activeSession, setActiveSession] = useState<SimplifiedSession | null>(null);
   const [allSessions, setAllSessions] = useState<SimplifiedSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  const { saveSessionToDatabase, loadSessionsFromDatabase, deleteSessionFromDatabase } = useTrainerDatabase();
+  const { user } = useAuth();
 
-  // Load data from localStorage on mount
+  // Load data from both localStorage and database on mount
   useEffect(() => {
-    try {
-      const storedActiveSession = localStorage.getItem('simplified_trainer_active_session');
-      if (storedActiveSession) {
-        setActiveSession(JSON.parse(storedActiveSession));
-      }
+    const loadData = async () => {
+      if (!user || isInitialized) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Load from localStorage first for immediate display
+        const storedActiveSession = localStorage.getItem('simplified_trainer_active_session');
+        if (storedActiveSession) {
+          setActiveSession(JSON.parse(storedActiveSession));
+        }
 
-      const storedSessions = localStorage.getItem('simplified_trainer_all_sessions');
-      if (storedSessions) {
-        setAllSessions(JSON.parse(storedSessions));
+        const storedSessions = localStorage.getItem('simplified_trainer_all_sessions');
+        if (storedSessions) {
+          setAllSessions(JSON.parse(storedSessions));
+        }
+
+        // Load from database and merge/update
+        const databaseSessions = await loadSessionsFromDatabase();
+        if (databaseSessions.length > 0) {
+          setAllSessions(databaseSessions);
+          // Update localStorage with database data
+          localStorage.setItem('simplified_trainer_all_sessions', JSON.stringify(databaseSessions));
+        }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to load trainer data:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to load simplified trainer data from localStorage:', error);
-    }
-    setIsLoading(false);
-  }, []);
+    };
+
+    loadData();
+  }, [user, isInitialized, loadSessionsFromDatabase]);
 
   // Save active session to localStorage
   useEffect(() => {
@@ -36,8 +61,10 @@ export function useSimplifiedTrainer() {
 
   // Save all sessions to localStorage
   useEffect(() => {
-    localStorage.setItem('simplified_trainer_all_sessions', JSON.stringify(allSessions));
-  }, [allSessions]);
+    if (isInitialized) {
+      localStorage.setItem('simplified_trainer_all_sessions', JSON.stringify(allSessions));
+    }
+  }, [allSessions, isInitialized]);
 
   const startSession = () => {
     const newSession: SimplifiedSession = {
@@ -122,7 +149,7 @@ export function useSimplifiedTrainer() {
     return { physicalLoad, performanceLoad, durationFactor, sii };
   };
 
-  const endSession = (workoutMetrics?: WorkoutMetrics, recoveryFeeling?: number) => {
+  const endSession = async (workoutMetrics?: WorkoutMetrics, recoveryFeeling?: number) => {
     if (!activeSession) return Promise.reject('No active session');
 
     const completedSession = {
@@ -136,12 +163,26 @@ export function useSimplifiedTrainer() {
     const siiComponents = calculateSII(completedSession);
     completedSession.sii = siiComponents.sii;
 
+    // Save to database in background
+    try {
+      await saveSessionToDatabase(completedSession);
+    } catch (error) {
+      console.error('Failed to save to database, keeping in localStorage:', error);
+    }
+
     setAllSessions(prev => [completedSession, ...prev]);
     setActiveSession(null);
     return Promise.resolve();
   };
 
-  const deleteSession = (sessionId: string) => {
+  const deleteSession = async (sessionId: string) => {
+    // Delete from database in background
+    try {
+      await deleteSessionFromDatabase(sessionId);
+    } catch (error) {
+      console.error('Failed to delete from database:', error);
+    }
+
     setAllSessions(prev => prev.filter(session => session.id !== sessionId));
     return Promise.resolve();
   };
@@ -228,10 +269,7 @@ export function useSimplifiedTrainer() {
     let reason = "";
     let confidenceLevel: 'low' | 'medium' | 'high' = 'medium';
 
-    if (lastSII < 0.8) {
-      recommendedRestDays = baseRest;
-      reason = "Low intensity session - minimal recovery needed";
-    } else if (lastSII < 1.2) {
+    if (lastSII < 1.2) {
       recommendedRestDays = baseRest + 1;
       reason = "Moderate intensity - standard recovery recommended";
     } else {

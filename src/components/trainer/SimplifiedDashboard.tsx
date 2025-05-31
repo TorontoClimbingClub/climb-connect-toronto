@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useSimplifiedTrainer } from '@/hooks/trainer/useSimplifiedTrainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, Cell } from 'recharts';
-import { TrendingUp, Target, Activity, Clock, AlertTriangle, Info } from 'lucide-react';
+import { TrendingUp, Target, Activity, Clock, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -47,15 +46,14 @@ const SimplifiedDashboard = () => {
       session: `S${index + 1}`,
       sii: parseFloat((session.sii || 0).toFixed(2)),
       date: sessionDate.toLocaleDateString(),
-      intensity: session.sii! < 0.8 ? 'Low' : session.sii! < 1.2 ? 'Moderate' : 'High'
+      intensity: session.sii! < 1.2 ? 'Moderate' : 'High'
     };
   });
 
-  // SII distribution
+  // SII distribution - removed "Low" category
   const siiDistribution = [
-    { range: 'Low (< 0.8)', count: sessionsWithSII.filter(s => s.sii! < 0.8).length, color: '#3B82F6' },
-    { range: 'Moderate (0.8-1.2)', count: sessionsWithSII.filter(s => s.sii! >= 0.8 && s.sii! < 1.2).length, color: '#10B981' },
-    { range: 'High (> 1.2)', count: sessionsWithSII.filter(s => s.sii! >= 1.2).length, color: '#F59E0B' }
+    { range: 'Moderate (< 1.2)', count: sessionsWithSII.filter(s => s.sii! < 1.2).length, color: '#10B981' },
+    { range: 'High (≥ 1.2)', count: sessionsWithSII.filter(s => s.sii! >= 1.2).length, color: '#F59E0B' }
   ];
 
   // Recovery correlation data (mock for now)
@@ -80,7 +78,6 @@ const SimplifiedDashboard = () => {
   const recommendation = getRecoveryRecommendation(latestSession?.sii);
 
   const getSIIColor = (sii: number) => {
-    if (sii < 0.8) return '#3B82F6';
     if (sii < 1.2) return '#10B981';
     return '#F59E0B';
   };
@@ -99,8 +96,9 @@ const SimplifiedDashboard = () => {
     <TooltipProvider>
       <UITooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-            <Info className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="h-8 px-2 text-xs">
+            <Info className="h-3 w-3 mr-1" />
+            Formula
           </Button>
         </TooltipTrigger>
         <TooltipContent className="max-w-sm">
@@ -180,9 +178,6 @@ const SimplifiedDashboard = () => {
               <Badge variant="outline" className="text-xs">
                 {recommendation.confidenceLevel}
               </Badge>
-              {recommendation.confidenceLevel === 'low' && (
-                <AlertTriangle className="h-3 w-3 text-amber-500" />
-              )}
             </div>
           </CardContent>
         </Card>
@@ -303,7 +298,7 @@ const SimplifiedDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 {siiDistribution.map((item) => (
                   <div key={item.range} className="text-center p-4 rounded-lg" style={{ backgroundColor: `${item.color}20` }}>
                     <div className="text-2xl font-bold" style={{ color: item.color }}>
