@@ -2,7 +2,7 @@
 import React from 'react';
 import { useSimplifiedTrainer } from '@/hooks/trainer/useSimplifiedTrainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, Cell } from 'recharts';
 import { TrendingUp, Target, Activity, Clock, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import EmptyState from './charts/EmptyState';
@@ -223,7 +223,11 @@ const SimplifiedDashboard = () => {
                 <XAxis dataKey="range" fontSize={12} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="count" fill={(entry) => entry.color} />
+                <Bar dataKey="count">
+                  {siiDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
