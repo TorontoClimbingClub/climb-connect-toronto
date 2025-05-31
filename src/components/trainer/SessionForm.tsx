@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Play, Square } from 'lucide-react';
+import { Plus, X, Play, Square, Edit2 } from 'lucide-react';
 import { useOfflineTrainer } from '@/hooks/trainer/useOfflineTrainer';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,23 +20,23 @@ const SessionForm = () => {
     endSession, 
     updateSession,
     addClimb,
+    updateClimb,
     removeClimb,
     addTechnique,
-    removeTechnique,
-    addGear,
-    removeGear
+    removeTechnique
   } = useOfflineTrainer();
   
   const { toast } = useToast();
   const [isStarting, setIsStarting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
+  const [editingClimbId, setEditingClimbId] = useState<string | null>(null);
 
   // Form states for new session
   const [sessionGoal, setSessionGoal] = useState('');
   const [customGoal, setCustomGoal] = useState('');
 
-  // Form states for adding items
-  const [newClimb, setNewClimb] = useState({
+  // Form states for adding/editing climbs
+  const [climbForm, setClimbForm] = useState({
     routeGrade: '',
     climbingStyle: 'Sport',
     attemptsMade: 1,
@@ -46,8 +46,9 @@ const SessionForm = () => {
     isHardestClimb: false,
     notes: ''
   });
-  const [newTechnique, setNewTechnique] = useState('');
-  const [newGearItem, setNewGearItem] = useState('');
+
+  // Form states for adding techniques
+  const [selectedTechnique, setSelectedTechnique] = useState('');
 
   const sessionGoals = [
     'Technique Practice',
@@ -61,6 +62,29 @@ const SessionForm = () => {
 
   const climbingStyles = ['Sport', 'Trad', 'Top Rope', 'Bouldering'];
   const grades = ['5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d'];
+  
+  const techniques = [
+    'Heel Hooks',
+    'Toe Hooks',
+    'Flagging',
+    'Stemming',
+    'Layback',
+    'Mantling',
+    'Crimping',
+    'Pinching',
+    'Slopers',
+    'Jugs',
+    'Crack Climbing',
+    'Face Climbing',
+    'Dynamic Moves',
+    'Dead Points',
+    'Foot Placement',
+    'Body Position',
+    'Rest Positions',
+    'Route Reading',
+    'Grip Strength',
+    'Core Engagement'
+  ];
 
   const handleStartSession = async () => {
     setIsStarting(true);
@@ -91,7 +115,7 @@ const SessionForm = () => {
       await endSession();
       toast({
         title: "Session Completed",
-        description: "Your training session has been saved locally!",
+        description: "Your training session has been saved!",
       });
     } catch (error) {
       toast({
@@ -104,10 +128,10 @@ const SessionForm = () => {
   };
 
   const handleAddClimb = () => {
-    if (!newClimb.routeGrade) return;
+    if (!climbForm.routeGrade) return;
     
-    addClimb(newClimb);
-    setNewClimb({
+    addClimb(climbForm);
+    setClimbForm({
       routeGrade: '',
       climbingStyle: 'Sport',
       attemptsMade: 1,
@@ -119,31 +143,62 @@ const SessionForm = () => {
     });
     toast({
       title: "Climb Added",
-      description: `${newClimb.routeGrade} ${newClimb.climbingStyle} climb logged!`,
+      description: `${climbForm.routeGrade} ${climbForm.climbingStyle} climb logged!`,
+    });
+  };
+
+  const handleEditClimb = (climbId: string) => {
+    const climb = activeSession?.climbs.find(c => c.id === climbId);
+    if (climb) {
+      setClimbForm(climb);
+      setEditingClimbId(climbId);
+    }
+  };
+
+  const handleUpdateClimb = () => {
+    if (!editingClimbId) return;
+    
+    updateClimb(editingClimbId, climbForm);
+    setEditingClimbId(null);
+    setClimbForm({
+      routeGrade: '',
+      climbingStyle: 'Sport',
+      attemptsMade: 1,
+      completed: true,
+      fallsCount: 0,
+      restTimeMinutes: 0,
+      isHardestClimb: false,
+      notes: ''
+    });
+    toast({
+      title: "Climb Updated",
+      description: "Climb details have been updated!",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingClimbId(null);
+    setClimbForm({
+      routeGrade: '',
+      climbingStyle: 'Sport',
+      attemptsMade: 1,
+      completed: true,
+      fallsCount: 0,
+      restTimeMinutes: 0,
+      isHardestClimb: false,
+      notes: ''
     });
   };
 
   const handleAddTechnique = () => {
-    if (!newTechnique.trim()) return;
+    if (!selectedTechnique) return;
     
-    addTechnique(newTechnique.trim());
-    setNewTechnique('');
+    addTechnique(selectedTechnique);
+    setSelectedTechnique('');
     updateSession({ newTechniquesTried: true });
     toast({
       title: "Technique Added",
-      description: `${newTechnique} technique logged!`,
-    });
-  };
-
-  const handleAddGear = () => {
-    if (!newGearItem.trim()) return;
-    
-    addGear(newGearItem.trim());
-    setNewGearItem('');
-    updateSession({ gearUsed: true });
-    toast({
-      title: "Gear Added",
-      description: `${newGearItem} gear logged!`,
+      description: `${selectedTechnique} technique logged!`,
     });
   };
 
@@ -240,17 +295,17 @@ const SessionForm = () => {
         </CardContent>
       </Card>
 
-      {/* Add Climb */}
+      {/* Add/Edit Climb */}
       <Card>
         <CardHeader>
-          <CardTitle>Log Climb</CardTitle>
+          <CardTitle>{editingClimbId ? 'Edit Climb' : 'Log Climb'}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Grade</Label>
-                <Select value={newClimb.routeGrade} onValueChange={(value) => setNewClimb({...newClimb, routeGrade: value})}>
+                <Select value={climbForm.routeGrade} onValueChange={(value) => setClimbForm({...climbForm, routeGrade: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select grade" />
                   </SelectTrigger>
@@ -264,7 +319,7 @@ const SessionForm = () => {
               
               <div>
                 <Label>Style</Label>
-                <Select value={newClimb.climbingStyle} onValueChange={(value) => setNewClimb({...newClimb, climbingStyle: value})}>
+                <Select value={climbForm.climbingStyle} onValueChange={(value) => setClimbForm({...climbForm, climbingStyle: value})}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -283,8 +338,8 @@ const SessionForm = () => {
                 <Input
                   type="number"
                   min="1"
-                  value={newClimb.attemptsMade}
-                  onChange={(e) => setNewClimb({...newClimb, attemptsMade: parseInt(e.target.value) || 1})}
+                  value={climbForm.attemptsMade}
+                  onChange={(e) => setClimbForm({...climbForm, attemptsMade: parseInt(e.target.value) || 1})}
                 />
               </div>
               
@@ -293,8 +348,8 @@ const SessionForm = () => {
                 <Input
                   type="number"
                   min="0"
-                  value={newClimb.fallsCount}
-                  onChange={(e) => setNewClimb({...newClimb, fallsCount: parseInt(e.target.value) || 0})}
+                  value={climbForm.fallsCount}
+                  onChange={(e) => setClimbForm({...climbForm, fallsCount: parseInt(e.target.value) || 0})}
                 />
               </div>
               
@@ -303,8 +358,8 @@ const SessionForm = () => {
                 <Input
                   type="number"
                   min="0"
-                  value={newClimb.restTimeMinutes}
-                  onChange={(e) => setNewClimb({...newClimb, restTimeMinutes: parseInt(e.target.value) || 0})}
+                  value={climbForm.restTimeMinutes}
+                  onChange={(e) => setClimbForm({...climbForm, restTimeMinutes: parseInt(e.target.value) || 0})}
                 />
               </div>
             </div>
@@ -313,8 +368,8 @@ const SessionForm = () => {
               <div className="flex items-center space-x-2">
                 <Switch
                   id="completed"
-                  checked={newClimb.completed}
-                  onCheckedChange={(checked) => setNewClimb({...newClimb, completed: checked})}
+                  checked={climbForm.completed}
+                  onCheckedChange={(checked) => setClimbForm({...climbForm, completed: checked})}
                 />
                 <Label htmlFor="completed">Completed</Label>
               </div>
@@ -322,8 +377,8 @@ const SessionForm = () => {
               <div className="flex items-center space-x-2">
                 <Switch
                   id="hardest"
-                  checked={newClimb.isHardestClimb}
-                  onCheckedChange={(checked) => setNewClimb({...newClimb, isHardestClimb: checked})}
+                  checked={climbForm.isHardestClimb}
+                  onCheckedChange={(checked) => setClimbForm({...climbForm, isHardestClimb: checked})}
                 />
                 <Label htmlFor="hardest">Hardest climb today</Label>
               </div>
@@ -332,17 +387,31 @@ const SessionForm = () => {
             <div>
               <Label>Notes</Label>
               <Textarea
-                value={newClimb.notes}
-                onChange={(e) => setNewClimb({...newClimb, notes: e.target.value})}
+                value={climbForm.notes}
+                onChange={(e) => setClimbForm({...climbForm, notes: e.target.value})}
                 placeholder="Any notes about this climb..."
                 rows={2}
               />
             </div>
 
-            <Button onClick={handleAddClimb} disabled={!newClimb.routeGrade} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add Climb
-            </Button>
+            <div className="flex gap-2">
+              {editingClimbId ? (
+                <>
+                  <Button onClick={handleUpdateClimb} className="flex items-center gap-2">
+                    <Edit2 className="h-4 w-4" />
+                    Update Climb
+                  </Button>
+                  <Button onClick={handleCancelEdit} variant="outline">
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={handleAddClimb} disabled={!climbForm.routeGrade} className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Climb
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -360,6 +429,10 @@ const SessionForm = () => {
                 {activeSession?.climbs.map((climb, index) => (
                   <Badge key={index} variant="secondary" className="flex items-center gap-1">
                     {climb.routeGrade} {climb.climbingStyle}
+                    <Edit2 
+                      className="h-3 w-3 cursor-pointer hover:text-blue-500" 
+                      onClick={() => handleEditClimb(climb.id)}
+                    />
                     <X 
                       className="h-3 w-3 cursor-pointer hover:text-red-500" 
                       onClick={() => removeClimb(climb.id)}
@@ -372,13 +445,17 @@ const SessionForm = () => {
             <div>
               <Label>Techniques ({activeSession?.techniques.length || 0})</Label>
               <div className="flex items-center gap-2 mt-2">
-                <Input
-                  value={newTechnique}
-                  onChange={(e) => setNewTechnique(e.target.value)}
-                  placeholder="Add technique practiced..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddTechnique()}
-                />
-                <Button onClick={handleAddTechnique} size="sm">
+                <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select technique practiced..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {techniques.map(technique => (
+                      <SelectItem key={technique} value={technique}>{technique}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddTechnique} size="sm" disabled={!selectedTechnique}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -389,32 +466,6 @@ const SessionForm = () => {
                     <X 
                       className="h-3 w-3 cursor-pointer hover:text-red-500" 
                       onClick={() => removeTechnique(technique)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label>Gear Used ({activeSession?.gear.length || 0})</Label>
-              <div className="flex items-center gap-2 mt-2">
-                <Input
-                  value={newGearItem}
-                  onChange={(e) => setNewGearItem(e.target.value)}
-                  placeholder="Add gear used..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddGear()}
-                />
-                <Button onClick={handleAddGear} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {activeSession?.gear.map((gear, index) => (
-                  <Badge key={index} variant="outline" className="flex items-center gap-1">
-                    {gear}
-                    <X 
-                      className="h-3 w-3 cursor-pointer hover:text-red-500" 
-                      onClick={() => removeGear(gear)}
                     />
                   </Badge>
                 ))}

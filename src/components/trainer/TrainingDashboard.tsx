@@ -28,6 +28,19 @@ const TrainingDashboard = () => {
     .map(([grade, count]) => ({ grade, count }))
     .sort((a, b) => a.grade.localeCompare(b.grade));
 
+  // Technique distribution
+  const techniqueDistribution = allSessions.reduce((acc, session) => {
+    session.techniques.forEach(technique => {
+      acc[technique] = (acc[technique] || 0) + 1;
+    });
+    return acc;
+  }, {} as Record<string, number>);
+
+  const techniqueChartData = Object.entries(techniqueDistribution)
+    .map(([technique, count]) => ({ technique, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10); // Top 10 techniques
+
   if (allSessions.length === 0) {
     return (
       <div className="space-y-6">
@@ -145,6 +158,26 @@ const TrainingDashboard = () => {
         </Card>
       )}
 
+      {/* Technique Distribution */}
+      {techniqueChartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Most Practiced Techniques</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={techniqueChartData} layout="horizontal">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis dataKey="technique" type="category" width={120} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#10B981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Sessions Summary */}
       <Card>
         <CardHeader>
@@ -159,7 +192,7 @@ const TrainingDashboard = () => {
                     {new Date(session.sessionDate).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {session.sessionGoal} • {session.climbs.length} climbs
+                    {session.sessionGoal} • {session.climbs.length} climbs • {session.techniques.length} techniques
                   </p>
                 </div>
                 <div className="text-right">

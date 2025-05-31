@@ -8,8 +8,6 @@ export interface ActiveSessionData {
   feltTiredAtEnd: boolean;
   wouldChangeNextTime?: string;
   newTechniquesTried: boolean;
-  gearUsed: boolean;
   climbs: any[];
   techniques: string[];
-  gear: string[];
 }

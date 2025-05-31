@@ -54,10 +54,8 @@ export function useOfflineTrainer() {
       warmUpDone: false,
       feltTiredAtEnd: false,
       newTechniquesTried: false,
-      gearUsed: false,
       climbs: [],
       techniques: [],
-      gear: [],
       startTime: new Date().toISOString()
     };
     
@@ -131,24 +129,6 @@ export function useOfflineTrainer() {
     }
   };
 
-  const addGear = (gear: string) => {
-    if (activeSession && !activeSession.gear.includes(gear)) {
-      setActiveSession({
-        ...activeSession,
-        gear: [...activeSession.gear, gear]
-      });
-    }
-  };
-
-  const removeGear = (gear: string) => {
-    if (activeSession) {
-      setActiveSession({
-        ...activeSession,
-        gear: activeSession.gear.filter(g => g !== gear)
-      });
-    }
-  };
-
   const getSessionStats = () => {
     const totalSessions = allSessions.length;
     const totalClimbs = allSessions.reduce((sum, session) => sum + session.climbs.length, 0);
@@ -177,8 +157,6 @@ export function useOfflineTrainer() {
     removeClimb,
     addTechnique,
     removeTechnique,
-    addGear,
-    removeGear,
     getSessionStats
   };
 }

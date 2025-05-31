@@ -172,7 +172,7 @@ const SessionHistory = () => {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <Mountain className="h-5 w-5 mx-auto mb-1 text-[#E55A2B]" />
                   <p className="text-2xl font-bold">{session.climbs.length}</p>
@@ -189,15 +189,10 @@ const SessionHistory = () => {
                   <p className="text-2xl font-bold">{session.techniques.length}</p>
                   <p className="text-sm text-gray-600">Techniques</p>
                 </div>
-
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-2xl font-bold">{session.gear.length}</p>
-                  <p className="text-sm text-gray-600">Gear Items</p>
-                </div>
               </div>
 
               {/* Session Details */}
-              {(session.climbs.length > 0 || session.techniques.length > 0 || session.gear.length > 0) && (
+              {(session.climbs.length > 0 || session.techniques.length > 0) && (
                 <div className="space-y-3">
                   {session.climbs.length > 0 && (
                     <div>
@@ -223,17 +218,6 @@ const SessionHistory = () => {
                       </div>
                     </div>
                   )}
-
-                  {session.gear.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Gear Used</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {session.gear.map((gear, index) => (
-                          <Badge key={index} variant="outline">{gear}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -244,9 +228,6 @@ const SessionHistory = () => {
                 )}
                 {session.newTechniquesTried && (
                   <Badge variant="default" className="text-xs">New Techniques</Badge>
-                )}
-                {session.gearUsed && (
-                  <Badge variant="default" className="text-xs">Used Gear</Badge>
                 )}
                 {session.feltTiredAtEnd && (
                   <Badge variant="secondary" className="text-xs">Felt Tired</Badge>
