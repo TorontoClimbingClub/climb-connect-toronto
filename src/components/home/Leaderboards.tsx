@@ -5,19 +5,17 @@ import { useLeaderboardManager } from "@/hooks/useLeaderboardManager";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-
 export function Leaderboards() {
-  const { 
-    topGradeClimbers, 
-    topTradClimbers, 
-    topSportClimbers, 
+  const {
+    topGradeClimbers,
+    topTradClimbers,
+    topSportClimbers,
     topTopRopeClimbers,
     topGearOwners,
     topEventAttendees,
     loading,
     refreshLeaderboards
   } = useLeaderboardManager();
-
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -34,19 +32,13 @@ export function Leaderboards() {
 
   // Simplified UI sync listener - reduced frequency
   useEffect(() => {
-    const syncChannel = supabase
-      .channel('leaderboards-ui-sync-optimized')
-      .on(
-        'broadcast',
-        { event: 'ui_update' },
-        (payload) => {
-          console.log('🔄 [LEADERBOARDS UI] Received UI sync:', payload);
-          // Only update timestamp, don't trigger re-renders
-          setLastUpdateTime(new Date().toLocaleTimeString());
-        }
-      )
-      .subscribe();
-
+    const syncChannel = supabase.channel('leaderboards-ui-sync-optimized').on('broadcast', {
+      event: 'ui_update'
+    }, payload => {
+      console.log('🔄 [LEADERBOARDS UI] Received UI sync:', payload);
+      // Only update timestamp, don't trigger re-renders
+      setLastUpdateTime(new Date().toLocaleTimeString());
+    }).subscribe();
     return () => {
       supabase.removeChannel(syncChannel);
     };
@@ -58,100 +50,67 @@ export function Leaderboards() {
       setLastUpdateTime(new Date().toLocaleTimeString());
     }
   }, [loading, topEventAttendees.length]);
-
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {[...Array(6)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
+    return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {[...Array(6)].map((_, i) => <Card key={i} className="animate-pulse">
             <CardHeader className="pb-3">
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {[...Array(3)].map((_, j) => (
-                  <div key={j} className="h-3 bg-gray-100 rounded"></div>
-                ))}
+                {[...Array(3)].map((_, j) => <div key={j} className="h-3 bg-gray-100 rounded"></div>)}
               </div>
             </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
+          </Card>)}
+      </div>;
   }
-
-  const leaderboardSections = [
-    {
-      title: "🏆 Event Enthusiasts",
-      icon: Star,
-      data: topEventAttendees,
-      metric: "Events Attended",
-      isGrade: false,
-      isProminent: true
-    },
-    {
-      title: "Top Grade Climbers",
-      icon: Mountain,
-      data: topGradeClimbers,
-      metric: "Highest Grade",
-      isGrade: true
-    },
-    {
-      title: "Trad Champions",
-      icon: Mountain,
-      data: topTradClimbers,
-      metric: "Trad Routes",
-      isGrade: false
-    },
-    {
-      title: "Sport Leaders",
-      icon: Mountain,
-      data: topSportClimbers,
-      metric: "Sport Routes",
-      isGrade: false
-    },
-    {
-      title: "Top Rope Masters",
-      icon: Mountain,
-      data: topTopRopeClimbers,
-      metric: "Top Rope Routes",
-      isGrade: false
-    },
-    {
-      title: "Gear Collectors",
-      icon: Package,
-      data: topGearOwners,
-      metric: "Equipment Items",
-      isGrade: false,
-      isGear: true
-    }
-  ];
-
-  return (
-    <div className="space-y-6">
+  const leaderboardSections = [{
+    title: "🏆 Event Enthusiasts",
+    icon: Star,
+    data: topEventAttendees,
+    metric: "Events Attended",
+    isGrade: false,
+    isProminent: true
+  }, {
+    title: "Top Grade Climbers",
+    icon: Mountain,
+    data: topGradeClimbers,
+    metric: "Highest Grade",
+    isGrade: true
+  }, {
+    title: "Trad Champions",
+    icon: Mountain,
+    data: topTradClimbers,
+    metric: "Trad Routes",
+    isGrade: false
+  }, {
+    title: "Sport Leaders",
+    icon: Mountain,
+    data: topSportClimbers,
+    metric: "Sport Routes",
+    isGrade: false
+  }, {
+    title: "Top Rope Masters",
+    icon: Mountain,
+    data: topTopRopeClimbers,
+    metric: "Top Rope Routes",
+    isGrade: false
+  }, {
+    title: "Gear Collectors",
+    icon: Package,
+    data: topGearOwners,
+    metric: "Equipment Items",
+    isGrade: false,
+    isGear: true
+  }];
+  return <div className="space-y-6">
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Trophy className="h-6 w-6 text-[#E55A2B]" />
           <h2 className="text-2xl font-bold text-[#E55A2B]">Community Leaderboards</h2>
         </div>
         <p className="text-stone-600">Celebrating our most active climbers</p>
-        <div className="flex items-center justify-center gap-4 mt-3">
-          {lastUpdateTime && (
-            <span className="text-xs text-stone-500">
-              Last updated: {lastUpdateTime}
-            </span>
-          )}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleManualRefresh}
-            disabled={isRefreshing}
-            className="text-xs"
-          >
-            <RefreshCw className={`h-3 w-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
+        
       </div>
 
       {/* Event Enthusiasts - Prominent Display */}
@@ -170,16 +129,9 @@ export function Leaderboards() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {topEventAttendees.length > 0 ? (
-                topEventAttendees.map((user, index) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+              {topEventAttendees.length > 0 ? topEventAttendees.map((user, index) => <div key={user.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center gap-3">
-                      <div className={`text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-600' :
-                        index === 1 ? 'bg-gray-100 text-gray-600' :
-                        index === 2 ? 'bg-orange-100 text-orange-600' :
-                        'bg-stone-100 text-stone-600'
-                      }`}>
+                      <div className={`text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center ${index === 0 ? 'bg-yellow-100 text-yellow-600' : index === 1 ? 'bg-gray-100 text-gray-600' : index === 2 ? 'bg-orange-100 text-orange-600' : 'bg-stone-100 text-stone-600'}`}>
                         {index + 1}
                       </div>
                       <span className="font-medium text-[#E55A2B]">{user.full_name}</span>
@@ -187,11 +139,7 @@ export function Leaderboards() {
                     <Badge variant="outline" className="bg-[#E55A2B] text-white border-[#E55A2B]">
                       {user.metric_value} events
                     </Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-stone-500 text-center py-4">No data available</p>
-              )}
+                  </div>) : <p className="text-sm text-stone-500 text-center py-4">No data available</p>}
             </div>
           </CardContent>
         </Card>
@@ -199,8 +147,7 @@ export function Leaderboards() {
 
       {/* Other Leaderboards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {leaderboardSections.slice(1).map((section) => (
-          <Card key={section.title} className="hover:shadow-lg transition-shadow">
+        {leaderboardSections.slice(1).map(section => <Card key={section.title} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <div className="bg-orange-100 p-2 rounded-lg">
@@ -211,16 +158,9 @@ export function Leaderboards() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {section.data.length > 0 ? (
-                  section.data.map((user, index) => (
-                    <div key={user.id} className="flex items-center justify-between">
+                {section.data.length > 0 ? section.data.map((user, index) => <div key={user.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
-                          index === 0 ? 'bg-yellow-100 text-yellow-600' :
-                          index === 1 ? 'bg-gray-100 text-gray-600' :
-                          index === 2 ? 'bg-orange-100 text-orange-600' :
-                          'bg-stone-100 text-stone-600'
-                        }`}>
+                        <div className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${index === 0 ? 'bg-yellow-100 text-yellow-600' : index === 1 ? 'bg-gray-100 text-gray-600' : index === 2 ? 'bg-orange-100 text-orange-600' : 'bg-stone-100 text-stone-600'}`}>
                           {index + 1}
                         </div>
                         <span className="text-sm font-medium truncate">{user.full_name}</span>
@@ -228,16 +168,10 @@ export function Leaderboards() {
                       <Badge variant="outline" className="text-xs">
                         {section.isGrade ? user.metric_value : section.isGear ? `${user.metric_value} items` : `${user.metric_value} ${section.metric.toLowerCase()}`}
                       </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-stone-500 text-center py-2">No data available</p>
-                )}
+                    </div>) : <p className="text-sm text-stone-500 text-center py-2">No data available</p>}
               </div>
             </CardContent>
-          </Card>
-        ))}
+          </Card>)}
       </div>
-    </div>
-  );
+    </div>;
 }
