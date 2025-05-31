@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { SimplifiedSession, WorkoutMetrics } from '@/types/training';
@@ -86,12 +86,14 @@ export function useTrainerDatabase() {
         return [];
       }
 
+      if (!sessions) return [];
+
       // Transform database data to SimplifiedSession format
       const transformedSessions: SimplifiedSession[] = sessions.map(session => ({
         id: session.id,
         startTime: session.start_time,
         endTime: session.end_time,
-        climbs: session.trainer_climbs.map((climb: any) => ({
+        climbs: (session.trainer_climbs || []).map((climb: any) => ({
           id: climb.id,
           grade: climb.grade,
           durationMinutes: climb.duration_minutes,
@@ -99,9 +101,9 @@ export function useTrainerDatabase() {
           createdAt: climb.created_at
         })),
         workoutMetrics: {
-          maxHangTime: session.max_hang_time,
-          maxPullUps: session.max_pull_ups,
-          maxLockoff: session.max_lockoff
+          maxHangTime: session.max_hang_time || 0,
+          maxPullUps: session.max_pull_ups || 0,
+          maxLockoff: session.max_lockoff || 0
         },
         sii: session.sii,
         recoveryFeeling: session.recovery_feeling,

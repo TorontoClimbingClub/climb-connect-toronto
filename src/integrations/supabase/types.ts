@@ -799,6 +799,89 @@ export type Database = {
           },
         ]
       }
+      trainer_climbs: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number
+          grade: string
+          id: string
+          number_of_takes: number | null
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes: number
+          grade: string
+          id?: string
+          number_of_takes?: number | null
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number
+          grade?: string
+          id?: string
+          number_of_takes?: number | null
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_climbs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "trainer_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trainer_sessions: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          id: string
+          max_hang_time: number | null
+          max_lockoff: number | null
+          max_pull_ups: number | null
+          recovery_feeling: number | null
+          rest_days_before_session: number | null
+          sii: number | null
+          start_time: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          id?: string
+          max_hang_time?: number | null
+          max_lockoff?: number | null
+          max_pull_ups?: number | null
+          recovery_feeling?: number | null
+          rest_days_before_session?: number | null
+          sii?: number | null
+          start_time: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          id?: string
+          max_hang_time?: number | null
+          max_lockoff?: number | null
+          max_pull_ups?: number | null
+          recovery_feeling?: number | null
+          rest_days_before_session?: number | null
+          sii?: number | null
+          start_time?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_sessions: {
         Row: {
           created_at: string
