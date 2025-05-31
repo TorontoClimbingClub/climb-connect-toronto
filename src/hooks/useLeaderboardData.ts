@@ -35,109 +35,92 @@ export const fetchPublicProfiles = async () => {
 export const fetchClimbCompletions = async () => {
   console.log('🔍 [LEADERBOARD DEBUG] Starting fetchClimbCompletions...');
   
-  // First, let's check if the tables exist and what relationships are available
-  console.log('🔍 [LEADERBOARD DEBUG] Checking climb_completions table structure...');
-  
   try {
-    // Try a simple query first to see what data exists
-    const { data: completionsSimple, error: simpleError } = await supabase
-      .from('climb_completions')
-      .select('*')
-      .limit(5);
+    // IMPROVED APPROACH: Use a more robust manual join strategy
+    console.log('🔍 [LEADERBOARD DEBUG] Fetching climb completions and routes separately...');
     
-    console.log('📊 [LEADERBOARD DATA] climb_completions sample:', completionsSimple);
-    
-    if (simpleError) {
-      console.error('❌ [LEADERBOARD ERROR] Simple climb_completions query failed:', simpleError);
-    }
-
-    // Check routes table
-    const { data: routesSimple, error: routesError } = await supabase
-      .from('routes')
-      .select('*')
-      .limit(5);
-    
-    console.log('📊 [LEADERBOARD DATA] routes sample:', routesSimple);
-    
-    if (routesError) {
-      console.error('❌ [LEADERBOARD ERROR] Routes query failed:', routesError);
-    }
-
-    // Now try the join - this is where the error occurs
-    console.log('🔍 [LEADERBOARD DEBUG] Attempting climb_completions with routes join...');
-    const { data, error } = await supabase
-      .from('climb_completions')
-      .select(`
-        user_id,
-        route_id,
-        routes!inner(
-          grade,
-          style
-        )
-      `);
-    
-    if (error) {
-      console.error('❌ [LEADERBOARD ERROR] Error fetching completions with routes join:', error);
-      console.error('❌ [LEADERBOARD ERROR] Error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
-      
-      // Try alternative approach - fetch separately and join in code
-      console.log('🔄 [LEADERBOARD FALLBACK] Trying manual join approach...');
-      
-      const { data: completions, error: completionsError } = await supabase
+    const [completionsResult, routesResult] = await Promise.all([
+      supabase
         .from('climb_completions')
-        .select('user_id, route_id');
-      
-      const { data: routes, error: routesError } = await supabase
+        .select('user_id, route_id'),
+      supabase
         .from('routes')
-        .select('id, grade, style');
-      
-      if (completionsError || routesError) {
-        console.error('❌ [LEADERBOARD ERROR] Fallback queries failed:', { completionsError, routesError });
-        throw error; // Throw original error
-      }
-      
-      // Manual join
-      const joinedData = completions?.map(completion => {
-        const route = routes?.find(r => r.id === completion.route_id);
+        .select('id, grade, style')
+    ]);
+    
+    if (completionsResult.error) {
+      console.error('❌ [LEADERBOARD ERROR] Error fetching completions:', completionsResult.error);
+      throw completionsResult.error;
+    }
+    
+    if (routesResult.error) {
+      console.error('❌ [LEADERBOARD ERROR] Error fetching routes:', routesResult.error);
+      throw routesResult.error;
+    }
+    
+    const completions = completionsResult.data || [];
+    const routes = routesResult.data || [];
+    
+    console.log('📊 [LEADERBOARD DATA] Raw data counts:', { 
+      completions: completions.length, 
+      routes: routes.length 
+    });
+    
+    // Create route lookup map for efficient joining
+    const routeMap = new Map();
+    routes.forEach(route => {
+      routeMap.set(route.id, { grade: route.grade, style: route.style });
+    });
+    
+    console.log('📊 [LEADERBOARD DATA] Route map created with', routeMap.size, 'routes');
+    
+    // Manual join with error handling
+    const joinedData = completions
+      .map(completion => {
+        const route = routeMap.get(completion.route_id);
+        if (!route) {
+          console.warn(`⚠️ [LEADERBOARD WARNING] Route not found for completion:`, completion);
+          return null;
+        }
+        
         return {
           user_id: completion.user_id,
           route_id: completion.route_id,
-          routes: route ? { grade: route.grade, style: route.style } : null
+          routes: route
         };
-      }).filter(item => item.routes !== null);
-      
-      console.log('✅ [LEADERBOARD SUCCESS] Manual join completed:', joinedData?.length, 'records');
-      return joinedData || [];
-    }
+      })
+      .filter(Boolean); // Remove null entries
     
-    console.log('✅ [LEADERBOARD SUCCESS] Completions fetched with join:', data?.length);
-    return data || [];
+    console.log('✅ [LEADERBOARD SUCCESS] Manual join completed:', joinedData.length, 'valid records');
+    console.log('📊 [LEADERBOARD DATA] Sample joined data:', joinedData.slice(0, 3));
     
-  } catch (err) {
-    console.error('❌ [LEADERBOARD CRITICAL] Unexpected error in fetchClimbCompletions:', err);
-    throw err;
+    return joinedData;
+    
+  } catch (error) {
+    console.error('❌ [LEADERBOARD CRITICAL] Critical error in fetchClimbCompletions:', error);
+    throw error;
   }
 };
 
 export const fetchGearData = async () => {
   console.log('🔍 [LEADERBOARD DEBUG] Fetching gear data...');
-  const { data, error } = await supabase
-    .from('user_equipment')
-    .select('user_id, quantity');
-  
-  if (error) {
-    console.error('❌ [LEADERBOARD ERROR] Error fetching gear:', error);
+  try {
+    const { data, error } = await supabase
+      .from('user_equipment')
+      .select('user_id, quantity');
+    
+    if (error) {
+      console.error('❌ [LEADERBOARD ERROR] Error fetching gear:', error);
+      throw error;
+    }
+    
+    console.log('✅ [LEADERBOARD SUCCESS] Gear data fetched:', data?.length);
+    console.log('📊 [LEADERBOARD DATA] Gear sample:', data?.slice(0, 3));
+    return data || [];
+  } catch (error) {
+    console.error('❌ [LEADERBOARD CRITICAL] Critical error in fetchGearData:', error);
     throw error;
   }
-  
-  console.log('✅ [LEADERBOARD SUCCESS] Gear data fetched:', data?.length);
-  console.log('📊 [LEADERBOARD DATA] Gear sample:', data?.slice(0, 3));
-  return data || [];
 };
 
 export const fetchEventData = async () => {

@@ -32,7 +32,6 @@ export function useBadges() {
 
   const fetchBadges = async () => {
     try {
-      // First try to create default badges
       await createDefaultBadges();
       
       const { data, error } = await supabase
@@ -111,18 +110,24 @@ export function useBadges() {
 
       if (!eventBadges) return;
 
-      // Remove badges that are no longer earned
+      // ENHANCED LOGIC: Remove badges that are no longer earned FIRST
       for (const badge of eventBadges) {
         const badgeIndex = badgeNames.indexOf(badge.name);
         const requiredCount = badgeThresholds[badgeIndex];
         
         if (totalAttendanceCount < requiredCount) {
           console.log(`🗑️ [BADGES] Removing badge ${badge.name} from user ${userId} (has ${totalAttendanceCount}, needs ${requiredCount})`);
-          await supabase
+          const { error } = await supabase
             .from('user_badges')
             .delete()
             .eq('user_id', userId)
             .eq('badge_id', badge.id);
+          
+          if (error) {
+            console.error('❌ [BADGES] Error removing badge:', error);
+          } else {
+            console.log(`✅ [BADGES] Successfully removed badge ${badge.name} from user ${userId}`);
+          }
         }
       }
 
@@ -132,7 +137,7 @@ export function useBadges() {
           const badge = eventBadges.find(b => b.name === badgeNames[i]);
           if (badge) {
             console.log(`🏆 [BADGES] Awarding badge ${badge.name} to user ${userId}`);
-            await supabase
+            const { error } = await supabase
               .from('user_badges')
               .upsert({ 
                 user_id: userId, 
@@ -140,6 +145,12 @@ export function useBadges() {
               }, { 
                 onConflict: 'user_id,badge_id' 
               });
+            
+            if (error) {
+              console.error('❌ [BADGES] Error awarding badge:', error);
+            } else {
+              console.log(`✅ [BADGES] Successfully awarded badge ${badge.name} to user ${userId}`);
+            }
           }
         }
       }
@@ -148,7 +159,51 @@ export function useBadges() {
       await fetchUserBadges();
       
     } catch (error: any) {
-      console.error('Error updating user badges:', error);
+      console.error('❌ [BADGES] Error updating user badges:', error);
+    }
+  };
+
+  // Manual badge sync function for fixing existing inconsistencies
+  const syncAllUserBadges = async () => {
+    try {
+      console.log('🔄 [BADGES] Starting manual badge sync for all users...');
+      
+      // Get all unique user IDs from both current and archived attendance
+      const [currentUsers, archivedUsers] = await Promise.all([
+        supabase
+          .from('event_attendance_approvals')
+          .select('user_id')
+          .eq('status', 'approved'),
+        (supabase as any)
+          .from('archived_event_attendance')
+          .select('user_id')
+      ]);
+
+      const userIds = new Set([
+        ...(currentUsers.data?.map(u => u.user_id) || []),
+        ...(archivedUsers.error ? [] : (archivedUsers.data?.map(u => u.user_id) || []))
+      ]);
+
+      console.log(`🔄 [BADGES] Syncing badges for ${userIds.size} users...`);
+
+      // Update badges for each user
+      for (const userId of userIds) {
+        await updateUserBadges(userId);
+      }
+
+      console.log('✅ [BADGES] Manual badge sync completed');
+      toast({
+        title: "Success",
+        description: `Badge sync completed for ${userIds.size} users`,
+      });
+      
+    } catch (error: any) {
+      console.error('❌ [BADGES] Error in manual badge sync:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sync badges",
+        variant: "destructive",
+      });
     }
   };
 
@@ -156,29 +211,43 @@ export function useBadges() {
     return userBadges.filter(ub => ub.user_id === userId);
   };
 
-  // Set up real-time subscription to update badges when attendance changes
+  // ENHANCED REAL-TIME SUBSCRIPTION: Handle ALL attendance changes including deletions
   useEffect(() => {
     const channel = supabase
-      .channel('badges-realtime')
+      .channel('badges-realtime-enhanced')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: '*', // Listen to ALL events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'event_attendance_approvals'
         },
         async (payload) => {
-          console.log('🔄 [BADGES] Attendance approval updated, updating badges:', payload);
+          console.log('🔄 [BADGES] Attendance approval changed, updating badges:', payload);
           
-          // Type guard for payload.new
+          // Handle INSERT and UPDATE events
           if (payload.new && typeof payload.new === 'object' && 'user_id' in payload.new && payload.new.user_id) {
+            console.log('🔄 [BADGES] Processing INSERT/UPDATE for user:', payload.new.user_id);
             await updateUserBadges(payload.new.user_id as string);
           }
           
-          // Type guard for payload.old
-          if (payload.old && typeof payload.old === 'object' && 'user_id' in payload.old && payload.old.user_id && 
-              payload.old.user_id !== (payload.new as any)?.user_id) {
+          // Handle DELETE events - this was the missing piece!
+          if (payload.old && typeof payload.old === 'object' && 'user_id' in payload.old && payload.old.user_id) {
+            console.log('🔄 [BADGES] Processing DELETE for user:', payload.old.user_id);
             await updateUserBadges(payload.old.user_id as string);
+          }
+          
+          // Handle UPDATE events where user_id might have changed
+          if (payload.old && payload.new && 
+              typeof payload.old === 'object' && 'user_id' in payload.old && payload.old.user_id &&
+              typeof payload.new === 'object' && 'user_id' in payload.new && payload.new.user_id &&
+              payload.old.user_id !== payload.new.user_id) {
+            console.log('🔄 [BADGES] Processing user_id change:', { 
+              old: payload.old.user_id, 
+              new: payload.new.user_id 
+            });
+            await updateUserBadges(payload.old.user_id as string);
+            await updateUserBadges(payload.new.user_id as string);
           }
         }
       )
@@ -199,6 +268,7 @@ export function useBadges() {
     loading,
     getUserBadges,
     updateUserBadges,
+    syncAllUserBadges, // New function for manual badge sync
     refreshBadges: () => Promise.all([fetchBadges(), fetchUserBadges()])
   };
 }

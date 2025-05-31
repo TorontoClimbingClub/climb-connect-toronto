@@ -62,18 +62,45 @@ export function useLeaderboardManager() {
         };
       }).filter(item => item.routes !== null) || [];
 
+      // ENHANCED: Also fetch archived attendance data for event leaderboard
+      const { data: archivedEventData } = await supabase
+        .from('archived_event_attendance')
+        .select('user_id, event_id, attended_at');
+
+      // Combine current and archived event data
+      const combinedEventData = [...(eventData || [])];
+      if (archivedEventData) {
+        const currentEventMap = new Map();
+        eventData?.forEach(record => {
+          const key = `${record.user_id}-${record.event_id}`;
+          currentEventMap.set(key, true);
+        });
+
+        archivedEventData.forEach(record => {
+          const key = `${record.user_id}-${record.event_id}`;
+          if (!currentEventMap.has(key)) {
+            combinedEventData.push({
+              user_id: record.user_id,
+              status: 'approved',
+              event_id: record.event_id,
+              approved_at: record.attended_at
+            });
+          }
+        });
+      }
+
       console.log('✅ [LEADERBOARD] All data fetched successfully');
       console.log('📊 [LEADERBOARD] Data counts:', {
         profiles: profilesData?.length,
         completions: completionsWithRoutes.length,
         gear: gearData?.length,
-        events: eventData?.length
+        events: combinedEventData.length
       });
 
       // Process all leaderboard data
       const climbingResults = processClimbingData(profilesData || [], completionsWithRoutes);
       const gearOwners = processGearData(profilesData || [], gearData || []);
-      const eventAttendees = processEventData(profilesData || [], eventData || []);
+      const eventAttendees = processEventData(profilesData || [], combinedEventData);
 
       // Update all leaderboard states
       setTopGradeClimbers(climbingResults.topGradeClimbers);
@@ -94,6 +121,66 @@ export function useLeaderboardManager() {
       setLoading(false);
     }
   }, [toast]);
+
+  // ENHANCED: Set up real-time subscriptions for all relevant tables
+  useEffect(() => {
+    // Event attendance real-time updates
+    const eventAttendanceChannel = supabase
+      .channel('leaderboards-event-attendance')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_attendance_approvals'
+        },
+        (payload) => {
+          console.log('🔄 [LEADERBOARD] Event attendance updated, refreshing leaderboards:', payload);
+          fetchAllLeaderboardData();
+        }
+      )
+      .subscribe();
+
+    // Gear equipment real-time updates
+    const gearChannel = supabase
+      .channel('leaderboards-gear')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_equipment'
+        },
+        (payload) => {
+          console.log('🔄 [LEADERBOARD] Gear updated, refreshing leaderboards:', payload);
+          fetchAllLeaderboardData();
+        }
+      )
+      .subscribe();
+
+    // Climb completions real-time updates
+    const climbingChannel = supabase
+      .channel('leaderboards-climbing')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'climb_completions'
+        },
+        (payload) => {
+          console.log('🔄 [LEADERBOARD] Climbing completion updated, refreshing leaderboards:', payload);
+          fetchAllLeaderboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(eventAttendanceChannel);
+      supabase.removeChannel(gearChannel);
+      supabase.removeChannel(climbingChannel);
+    };
+  }, [fetchAllLeaderboardData]);
 
   useEffect(() => {
     fetchAllLeaderboardData();

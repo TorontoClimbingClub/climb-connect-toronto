@@ -4,50 +4,68 @@ import type { LeaderboardUser } from "./useLeaderboardData";
 export const processGearData = (
   profilesData: any[],
   gearData: any[]
-): LeaderboardUser[] => {
-  console.log('🔍 [GEAR DEBUG] Processing gear data:', { 
-    profilesData: profilesData.length, 
-    gearData: gearData.length 
+) => {
+  console.log('🔍 [GEAR LEADERBOARD] Processing gear data:', { 
+    profiles: profilesData.length, 
+    gear: gearData.length 
   });
 
+  // Log sample data to understand structure
   if (gearData.length > 0) {
     console.log('📊 [GEAR DATA] Sample gear:', gearData[0]);
   }
 
-  // Count total equipment items for each user
-  const gearStats = gearData.reduce((acc: any, item) => {
-    if (!acc[item.user_id]) {
-      acc[item.user_id] = { total_items: 0 };
+  // Group gear by user and count total quantity
+  const userGearCounts = gearData.reduce((acc: any, gear) => {
+    const userId = gear.user_id;
+    const quantity = gear.quantity || 0;
+    
+    if (!userId) {
+      console.warn('⚠️ [GEAR WARNING] Gear missing user_id:', gear);
+      return acc;
     }
-    const quantity = item.quantity || 1;
-    acc[item.user_id].total_items += quantity;
-    console.log(`📈 [GEAR STATS] User ${item.user_id} total items: ${acc[item.user_id].total_items} (+${quantity})`);
+    
+    if (!acc[userId]) {
+      acc[userId] = 0;
+    }
+    
+    acc[userId] += quantity;
+    console.log(`📈 [GEAR STATS] User ${userId} total gear: ${acc[userId]}`);
+    
     return acc;
   }, {});
 
-  console.log('📊 [GEAR STATS] Gear stats calculated:', Object.keys(gearStats).length, 'users with gear');
+  console.log('📊 [GEAR STATS] User gear counts calculated:', Object.keys(userGearCounts).length, 'users');
+  console.log('📊 [GEAR STATS] Full user counts:', userGearCounts);
 
-  // Create leaderboard entries
-  const topGearOwners = Object.entries(gearStats)
-    .map(([userId, stats]: [string, any]) => {
+  // Create leaderboard entries - ENSURE TOP 5
+  const results = Object.entries(userGearCounts)
+    .map(([userId, gearCount]: [string, any]) => {
       const profile = profilesData.find(p => p.id === userId);
       if (!profile) {
-        console.warn('⚠️ [GEAR WARNING] Profile not found for user:', userId);
+        console.warn(`⚠️ [GEAR WARNING] Profile not found for user: ${userId}`);
         return null;
       }
-      console.log(`✅ [GEAR INCLUDE] User ${userId} (${profile.full_name}) - items: ${stats.total_items}`);
+      
+      // Filter out users with zero gear
+      if (gearCount === 0) {
+        console.log(`📊 [GEAR FILTER] User ${userId} (${profile.full_name}) filtered out - no gear`);
+        return null;
+      }
+      
+      console.log(`✅ [GEAR INCLUDE] User ${userId} (${profile.full_name}) - Gear: ${gearCount}`);
       return {
         id: userId,
         full_name: profile.full_name,
-        metric_value: stats.total_items
+        metric_value: gearCount
       };
     })
     .filter(Boolean)
-    .filter((user: any) => user.metric_value > 0)
     .sort((a: any, b: any) => b.metric_value - a.metric_value)
-    .slice(0, 5); // Show top 5 for gear leaderboards
+    .slice(0, 5); // ENSURE TOP 5 ONLY
 
-  console.log('🏁 [GEAR FINAL] Top gear owners for leaderboard:', topGearOwners.length, 'entries');
-  console.log('📊 [GEAR RESULT] Top gear owners:', topGearOwners);
-  return topGearOwners;
+  console.log(`📊 [GEAR RESULT] Gear leaderboard:`, results.length, 'entries');
+  console.log(`📊 [GEAR RESULT] Top 5 entries:`, results);
+  
+  return results;
 };

@@ -55,8 +55,8 @@ export const processClimbingData = (
     
     acc[userId].routes.push({ grade, style });
     
-    // Count by style - Fixed the style matching logic
-    const normalizedStyle = style.toLowerCase().trim();
+    // IMPROVED STYLE MATCHING: Handle various style naming conventions
+    const normalizedStyle = style.toLowerCase().trim().replace(/[-_\s]/g, '');
     console.log(`🔍 [CLIMBING STYLE] User ${userId} route style: "${style}" (normalized: "${normalizedStyle}")`);
     
     if (normalizedStyle === 'trad' || normalizedStyle === 'traditional') {
@@ -65,11 +65,11 @@ export const processClimbingData = (
     } else if (normalizedStyle === 'sport') {
       acc[userId].sportRoutes++;
       console.log(`📈 [CLIMBING STATS] User ${userId} sport routes: ${acc[userId].sportRoutes}`);
-    } else if (normalizedStyle === 'top rope' || normalizedStyle === 'toprope') {
+    } else if (normalizedStyle === 'toprope' || normalizedStyle === 'topropeclimbing' || normalizedStyle === 'tr') {
       acc[userId].topRopeRoutes++;
       console.log(`📈 [CLIMBING STATS] User ${userId} top rope routes: ${acc[userId].topRopeRoutes}`);
     } else {
-      console.warn(`⚠️ [CLIMBING WARNING] Unknown style "${style}" for user ${userId}`);
+      console.warn(`⚠️ [CLIMBING WARNING] Unknown style "${style}" (normalized: "${normalizedStyle}") for user ${userId}`);
     }
     
     // Track highest grade

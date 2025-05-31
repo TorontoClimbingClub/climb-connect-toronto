@@ -4,82 +4,68 @@ import type { LeaderboardUser } from "./useLeaderboardData";
 export const processEventData = (
   profilesData: any[],
   eventData: any[]
-): LeaderboardUser[] => {
-  console.log('🔍 [EVENT DEBUG] Processing event data for Event Enthusiast leaderboard:', { 
-    profilesData: profilesData.length, 
-    eventData: eventData.length 
+) => {
+  console.log('🔍 [EVENT LEADERBOARD] Processing event attendance data:', { 
+    profiles: profilesData.length, 
+    events: eventData.length 
   });
-  
+
+  // Log sample data to understand structure
   if (eventData.length > 0) {
-    console.log('📊 [EVENT DATA] Sample event attendance:', eventData[0]);
+    console.log('📊 [EVENT DATA] Sample attendance:', eventData[0]);
   }
-  
-  if (profilesData.length > 0) {
-    console.log('📊 [PROFILES DATA] Sample profiles:', profilesData.slice(0, 3));
-  }
-  
-  // Filter and count only approved attendances for each user
-  const approvedAttendances = eventData.filter(approval => approval.status === 'approved');
-  console.log('✅ [EVENT FILTER] Approved attendances found:', approvedAttendances.length);
-  
-  if (approvedAttendances.length > 0) {
-    console.log('📋 [EVENT USERS] Users with approved attendance:', [...new Set(approvedAttendances.map(a => a.user_id))]);
-  }
-  
-  // Group by user_id and count unique events
-  const eventStats = approvedAttendances.reduce((acc: any, approval) => {
-    if (!acc[approval.user_id]) {
-      acc[approval.user_id] = { 
-        event_count: 0, 
-        unique_events: new Set()
-      };
+
+  // Group attendance by user and count approved events
+  const userEventCounts = eventData.reduce((acc: any, attendance) => {
+    const userId = attendance.user_id;
+    const status = attendance.status;
+    
+    if (!userId) {
+      console.warn('⚠️ [EVENT WARNING] Attendance missing user_id:', attendance);
+      return acc;
     }
     
-    // Only count if we haven't seen this event for this user before
-    if (!acc[approval.user_id].unique_events.has(approval.event_id)) {
-      acc[approval.user_id].unique_events.add(approval.event_id);
-      acc[approval.user_id].event_count += 1;
+    // Only count approved attendance
+    if (status !== 'approved') {
+      console.log(`🔍 [EVENT STATUS] User ${userId} attendance not approved: ${status}`);
+      return acc;
     }
+    
+    if (!acc[userId]) {
+      acc[userId] = 0;
+    }
+    
+    acc[userId]++;
+    console.log(`📈 [EVENT STATS] User ${userId} approved events: ${acc[userId]}`);
     
     return acc;
   }, {});
 
-  console.log('📊 [EVENT STATS] Event attendance stats for', Object.keys(eventStats).length, 'users');
-  console.log('📊 [EVENT STATS] Detailed stats:', Object.fromEntries(
-    Object.entries(eventStats).map(([userId, stats]: [string, any]) => [userId, stats.event_count])
-  ));
+  console.log('📊 [EVENT STATS] User event counts calculated:', Object.keys(userEventCounts).length, 'users');
+  console.log('📊 [EVENT STATS] Full user counts:', userEventCounts);
 
-  // Create leaderboard entries for users with approved attendances
-  const topEventAttendees = Object.entries(eventStats)
-    .map(([userId, stats]: [string, any]) => {
-      // Find profile for this user - be more flexible in matching
+  // Create leaderboard entries
+  const results = Object.entries(userEventCounts)
+    .map(([userId, eventCount]: [string, any]) => {
       const profile = profilesData.find(p => p.id === userId);
-      
       if (!profile) {
-        console.warn('⚠️ [EVENT WARNING] Profile not found for user:', userId);
-        console.warn('📋 [AVAILABLE PROFILES] Available profile IDs:', profilesData.map(p => `${p.id} (${p.full_name})`));
-        
-        // Return a placeholder entry instead of null to ensure we don't lose data
-        return {
-          id: userId,
-          full_name: `User ${userId.slice(0, 8)}...`, // Show partial ID as fallback
-          metric_value: stats.event_count
-        };
+        console.warn(`⚠️ [EVENT WARNING] Profile not found for user: ${userId}`);
+        return null;
       }
       
-      console.log(`✅ [EVENT INCLUDE] User ${userId} (${profile.full_name}) - events: ${stats.event_count}`);
+      console.log(`✅ [EVENT INCLUDE] User ${userId} (${profile.full_name}) - Events: ${eventCount}`);
       return {
         id: userId,
         full_name: profile.full_name,
-        metric_value: stats.event_count
+        metric_value: eventCount
       };
     })
-    .filter((user: any) => user && user.metric_value > 0) // Ensure user exists and has events
+    .filter(Boolean)
     .sort((a: any, b: any) => b.metric_value - a.metric_value)
-    .slice(0, 10); // Show top 10 event enthusiasts
+    .slice(0, 10); // Show top 10 for event leaderboard
 
-  console.log('🏁 [EVENT FINAL] Top event attendees for leaderboard:', topEventAttendees.length, 'entries');
-  console.log('📊 [EVENT RESULT] Final leaderboard:', topEventAttendees);
+  console.log(`📊 [EVENT RESULT] Event leaderboard:`, results.length, 'entries');
+  console.log(`📊 [EVENT RESULT] Top entries:`, results);
   
-  return topEventAttendees;
+  return results;
 };
