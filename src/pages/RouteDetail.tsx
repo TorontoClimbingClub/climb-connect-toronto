@@ -6,7 +6,6 @@ import RouteDetailsCard from "@/components/route-detail/RouteDetailsCard";
 import { PhotosSection } from "@/components/route-detail/PhotosSection";
 import { CommentsSection } from "@/components/route-detail/CommentsSection";
 import { useRouteData } from "@/hooks/useRouteData";
-import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
@@ -48,13 +47,6 @@ export default function RouteDetail() {
     deleteComment
   } = useRouteData(routeId || "");
 
-  // Only use climb completions if user is available
-  const { toggleCompletion, isCompleted } = user ? useClimbCompletions() : { 
-    toggleCompletion: () => {}, 
-    isCompleted: () => false 
-  };
-  const completed = user ? isCompleted(routeId || "") : false;
-
   // Show loading state while routes are being fetched
   if (loading) {
     return (
@@ -80,13 +72,6 @@ export default function RouteDetail() {
       </div>
     );
   }
-
-  const handleToggleCompletion = () => {
-    if (user && routeId) {
-      console.log('🎯 Toggling completion:', { userId: user.id, routeId });
-      toggleCompletion(routeId);
-    }
-  };
 
   const handleAddComment = async (comment: string, parentId?: string) => {
     if (!user) {
@@ -122,12 +107,7 @@ export default function RouteDetail() {
           onBack={handleBack}
         />
 
-        <RouteDetailsCard
-          route={route}
-          completed={completed}
-          canToggleCompletion={!!user}
-          onToggleCompletion={handleToggleCompletion}
-        />
+        <RouteDetailsCard route={route} />
 
         <PhotosSection routeId={routeId || ""} />
 
