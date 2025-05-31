@@ -2,20 +2,27 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
-import { useLeaderboardContext } from "@/contexts/LeaderboardContext";
 
 export const useAttendanceManagement = () => {
   const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
-  const { refreshLeaderboards } = useLeaderboardContext();
   const { toast } = useToast();
 
-  // Centralized sync function that updates the context
-  const triggerCentralSync = async () => {
+  // Optimized helper function to trigger cross-client sync with throttling
+  const triggerLeaderboardSync = async () => {
     try {
-      console.log('🔄 [ATTENDANCE] Triggering central leaderboard sync');
-      await refreshLeaderboards();
+      // Throttle sync requests to prevent spam
+      const syncChannel = supabase.channel('leaderboard-sync-optimized');
+      await syncChannel.send({
+        type: 'broadcast',
+        event: 'force_refresh',
+        payload: {
+          timestamp: Date.now(),
+          source: 'attendance_change'
+        }
+      });
+      console.log('🔄 [ATTENDANCE] Triggered optimized leaderboard sync');
     } catch (error) {
-      console.error('❌ [ATTENDANCE] Failed to trigger central sync:', error);
+      console.error('❌ [ATTENDANCE] Failed to trigger sync:', error);
     }
   };
 
@@ -51,8 +58,8 @@ export const useAttendanceManagement = () => {
         await refreshApprovals();
       }
 
-      // Trigger centralized sync with delay
-      setTimeout(() => triggerCentralSync(), 500);
+      // Trigger optimized cross-client synchronization with delay
+      setTimeout(() => triggerLeaderboardSync(), 500);
 
     } catch (error: any) {
       console.error('Error confirming attendance:', error);
@@ -95,8 +102,8 @@ export const useAttendanceManagement = () => {
         await refreshApprovals();
       }
 
-      // Trigger centralized sync with delay
-      setTimeout(() => triggerCentralSync(), 500);
+      // Trigger optimized cross-client synchronization with delay
+      setTimeout(() => triggerLeaderboardSync(), 500);
 
     } catch (error: any) {
       console.error('Error rejecting attendance:', error);
@@ -133,8 +140,8 @@ export const useAttendanceManagement = () => {
         await refreshApprovals();
       }
 
-      // Trigger centralized sync with delay
-      setTimeout(() => triggerCentralSync(), 500);
+      // Trigger optimized cross-client synchronization with delay
+      setTimeout(() => triggerLeaderboardSync(), 500);
 
     } catch (error: any) {
       console.error('Error resetting attendance:', error);

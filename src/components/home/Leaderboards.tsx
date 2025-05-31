@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Mountain, Users, Package, Star, RefreshCw } from "lucide-react";
-import { useLeaderboardContext } from "@/contexts/LeaderboardContext";
+import { useLeaderboardManager } from "@/hooks/useLeaderboardManager";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export function Leaderboards() {
@@ -15,7 +16,7 @@ export function Leaderboards() {
     topEventAttendees,
     loading,
     refreshLeaderboards
-  } = useLeaderboardContext();
+  } = useLeaderboardManager();
 
   const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -31,12 +32,32 @@ export function Leaderboards() {
     }
   };
 
-  // Update timestamp when data changes
+  // Simplified UI sync listener - reduced frequency
   useEffect(() => {
-    if (!loading && topEventAttendees.length >= 0) {
+    const syncChannel = supabase
+      .channel('leaderboards-ui-sync-optimized')
+      .on(
+        'broadcast',
+        { event: 'ui_update' },
+        (payload) => {
+          console.log('🔄 [LEADERBOARDS UI] Received UI sync:', payload);
+          // Only update timestamp, don't trigger re-renders
+          setLastUpdateTime(new Date().toLocaleTimeString());
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(syncChannel);
+    };
+  }, []);
+
+  // Update timestamp when data changes - throttled
+  useEffect(() => {
+    if (!loading && topEventAttendees.length > 0) {
       setLastUpdateTime(new Date().toLocaleTimeString());
     }
-  }, [loading, topEventAttendees]);
+  }, [loading, topEventAttendees.length]);
 
   if (loading) {
     return (
