@@ -1,6 +1,7 @@
 
 import { useEffect } from "react";
 import { useRouteComments } from "./useRouteComments";
+import { useGradeSubmissions } from "./useGradeSubmissions";
 
 export const useRouteData = (routeId: string) => {
   const {
@@ -11,19 +12,31 @@ export const useRouteData = (routeId: string) => {
     fetchComments
   } = useRouteComments(routeId);
 
+  const {
+    submissions,
+    betaGrade,
+    userSubmission,
+    loading: gradeLoading,
+    fetchSubmissions
+  } = useGradeSubmissions(routeId);
+
   useEffect(() => {
     if (routeId) {
       try {
         fetchComments();
+        fetchSubmissions();
       } catch (error) {
         console.warn('Error fetching route data:', error);
       }
     }
-  }, [fetchComments, routeId]);
+  }, [fetchComments, fetchSubmissions, routeId]);
 
   return {
     comments,
-    loading: commentsLoading,
+    submissions,
+    betaGrade,
+    userSubmission,
+    loading: commentsLoading || gradeLoading,
     addComment,
     deleteComment
   };

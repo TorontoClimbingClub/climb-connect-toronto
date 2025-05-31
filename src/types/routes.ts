@@ -39,3 +39,22 @@ export interface AreaDescription {
   created_at: string;
   updated_at: string;
 }
+
+export interface RouteGradeSubmission {
+  id: string;
+  route_id: string;
+  user_id: string;
+  submitted_grade: string;
+  notes?: string;
+  climbing_style: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RouteBetaGrade {
+  route_id: string;
+  beta_grade: string;
+  submission_count: number;
+  grade_distribution: Record<string, number>;
+  last_updated: string;
+}

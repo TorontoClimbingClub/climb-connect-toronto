@@ -1,15 +1,40 @@
 
-export const gradeToNumber = (grade: string): number => {
-  const gradeMap: { [key: string]: number } = {
-    '5.0': 50, '5.1': 51, '5.2': 52, '5.3': 53, '5.4': 54, '5.5': 55,
-    '5.6': 56, '5.7': 57, '5.8': 58, '5.9': 59, 
-    '5.10': 100, '5.10a': 101, '5.10b': 102, '5.10c': 103, '5.10d': 104,
-    '5.11': 110, '5.11a': 111, '5.11b': 112, '5.11c': 113, '5.11d': 114,
-    '5.12': 120, '5.12a': 121, '5.12b': 122, '5.12c': 123, '5.12d': 124,
-    '5.13': 130, '5.13a': 131, '5.13b': 132, '5.13c': 133, '5.13d': 134,
-    '5.14': 140, '5.14a': 141, '5.14b': 142, '5.14c': 143, '5.14d': 144
-  };
-  
-  console.log('Converting grade:', grade, 'to number:', gradeMap[grade] || 0);
-  return gradeMap[grade] || 0;
+// Grade conversion utilities for different climbing styles
+
+export const gradeOptions = {
+  'Sport': ['5.5', '5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d', '5.13a', '5.13b', '5.13c', '5.13d', '5.14a', '5.14b', '5.14c', '5.14d', '5.15a', '5.15b', '5.15c', '5.15d'],
+  'Trad': ['5.5', '5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d', '5.13a', '5.13b', '5.13c', '5.13d'],
+  'Top Rope': ['5.5', '5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d']
+};
+
+// Convert YDS grade to numerical value for comparison
+export const gradeToNumber = (grade: string, style: 'Sport' | 'Trad' | 'Top Rope'): number => {
+  const options = gradeOptions[style] || gradeOptions['Sport'];
+  const index = options.indexOf(grade);
+  return index >= 0 ? index : 0;
+};
+
+// Convert numerical value back to grade string
+export const numberToGrade = (num: number, style: 'Sport' | 'Trad' | 'Top Rope'): string => {
+  const options = gradeOptions[style] || gradeOptions['Sport'];
+  return options[num] || options[0];
+};
+
+// Calculate grade difficulty relative to a base grade
+export const getGradeDifficulty = (grade: string, baseGrade: string, style: 'Sport' | 'Trad' | 'Top Rope'): number => {
+  return gradeToNumber(grade, style) - gradeToNumber(baseGrade, style);
+};
+
+// Get color coding for grade difficulty
+export const getGradeDifficultyColor = (difficulty: number): string => {
+  if (difficulty > 2) return 'text-red-600';
+  if (difficulty > 0) return 'text-orange-600';
+  if (difficulty < -2) return 'text-green-600';
+  if (difficulty < 0) return 'text-green-500';
+  return 'text-blue-600';
+};
+
+// Format grade with style-specific conventions
+export const formatGrade = (grade: string, style: 'Sport' | 'Trad' | 'Top Rope'): string => {
+  return grade; // For now, return as-is. Could add style-specific formatting later
 };

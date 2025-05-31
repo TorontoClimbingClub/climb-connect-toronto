@@ -469,6 +469,38 @@ export type Database = {
         }
         Relationships: []
       }
+      route_beta_grades: {
+        Row: {
+          beta_grade: string
+          grade_distribution: Json
+          last_updated: string
+          route_id: string
+          submission_count: number
+        }
+        Insert: {
+          beta_grade: string
+          grade_distribution?: Json
+          last_updated?: string
+          route_id: string
+          submission_count?: number
+        }
+        Update: {
+          beta_grade?: string
+          grade_distribution?: Json
+          last_updated?: string
+          route_id?: string
+          submission_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_beta_grades_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: true
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       route_comments: {
         Row: {
           comment: string
@@ -510,6 +542,47 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_grade_submissions: {
+        Row: {
+          climbing_style: string
+          created_at: string
+          id: string
+          notes: string | null
+          route_id: string
+          submitted_grade: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          climbing_style: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          route_id: string
+          submitted_grade: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          climbing_style?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          route_id?: string
+          submitted_grade?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_grade_submissions_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
             referencedColumns: ["id"]
           },
         ]
@@ -898,6 +971,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_beta_grade: {
+        Args: { route_id_param: string }
+        Returns: undefined
+      }
       delete_user_account: {
         Args: { user_id: string }
         Returns: undefined
