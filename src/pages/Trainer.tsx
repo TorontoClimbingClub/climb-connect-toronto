@@ -7,24 +7,31 @@ import { Activity, BarChart3, History } from 'lucide-react';
 import SessionForm from '@/components/trainer/SessionForm';
 import TrainingDashboard from '@/components/trainer/TrainingDashboard';
 import SessionHistory from '@/components/trainer/SessionHistory';
+import { useActiveSession } from '@/hooks/trainer/useActiveSession';
 
 const Trainer = () => {
   const { containerClass, paddingClass } = useResponsiveContainer('wide');
   const [activeTab, setActiveTab] = useState('log');
+  const { hasActiveSession } = useActiveSession();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className={`${containerClass} ${paddingClass}`}>
         <div className="pt-6 pb-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Training Tracker</h1>
-          <p className="text-gray-600">Log your climbing sessions and track your progress</p>
+          <p className="text-gray-600">
+            {hasActiveSession 
+              ? "Continue your active climbing session" 
+              : "Start a new climbing session and track your progress"
+            }
+          </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="log" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
-              Log Session
+              {hasActiveSession ? 'Active Session' : 'Start Session'}
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -37,17 +44,21 @@ const Trainer = () => {
           </TabsList>
 
           <TabsContent value="log" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>New Training Session</CardTitle>
-                <CardDescription>
-                  Record your climbing session details and track your progress
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <SessionForm />
-              </CardContent>
-            </Card>
+            {hasActiveSession ? (
+              <SessionForm />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>New Training Session</CardTitle>
+                  <CardDescription>
+                    Start a climbing session that will track your progress in real-time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SessionForm />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
