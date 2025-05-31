@@ -15,7 +15,6 @@ import ClimbingRoutes from "./pages/Routes";
 import RouteDetail from "./pages/RouteDetail";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
-import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -85,7 +84,7 @@ const AppRoutes = () => {
       <Route path="/events/:eventId" element={<EventDetail />} />
       <Route path="/routes" element={<ClimbingRoutes />} />
       <Route path="/routes/:routeId" element={<RouteDetail />} />
-      <Route path="/community" element={<Community />} />
+      <Route path="/community" element={<Navigate to="/events" replace />} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />

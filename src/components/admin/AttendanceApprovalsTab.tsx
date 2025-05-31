@@ -1,10 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Check, X, Calendar, User, Clock, MapPin, Users } from "lucide-react";
 import { useAttendanceApprovals } from "@/hooks/useAttendanceApprovals";
-import { useEventManager } from "@/hooks/useEventManager";
+import { useEvents } from "@/hooks/useEvents";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,7 @@ interface EventParticipant {
 
 export function AttendanceApprovalsTab() {
   const { approvals, loading: approvalsLoading, approveAttendance, rejectAttendance } = useAttendanceApprovals();
-  const { upcomingEvents, loading: eventsLoading } = useEventManager();
+  const { upcomingEvents, loading: eventsLoading } = useEvents();
   const { user } = useAuth();
   const { toast } = useToast();
   const [eventsWithParticipants, setEventsWithParticipants] = useState<any[]>([]);

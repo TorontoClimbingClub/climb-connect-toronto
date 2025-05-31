@@ -1,9 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Mountain, Users, Package, Star, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useOptimizedLeaderboards } from "@/hooks/useOptimizedLeaderboards";
+import { Trophy, Mountain, Users, Package, Star } from "lucide-react";
+import { useLeaderboardManager } from "@/hooks/useLeaderboardManager";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,9 +15,8 @@ export function Leaderboards() {
     topGearOwners,
     topEventAttendees,
     loading,
-    error,
     refreshLeaderboards
-  } = useOptimizedLeaderboards();
+  } = useLeaderboardManager();
 
   // Set up real-time subscription to refresh leaderboards when attendance changes
   useEffect(() => {
@@ -42,24 +40,6 @@ export function Leaderboards() {
       supabase.removeChannel(channel);
     };
   }, [refreshLeaderboards]);
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Trophy className="h-6 w-6 text-[#E55A2B]" />
-            <h2 className="text-2xl font-bold text-[#E55A2B]">Community Leaderboards</h2>
-          </div>
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={refreshLeaderboards} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
