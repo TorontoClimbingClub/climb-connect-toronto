@@ -1,4 +1,6 @@
 
+import type { LeaderboardUser } from "./useLeaderboardData";
+
 // Grade mapping for sorting
 const gradeOrder: { [key: string]: number } = {
   '5.3': 1, '5.4': 2, '5.5': 3, '5.6': 4, '5.7': 5, '5.8': 6, '5.9': 7,
@@ -9,12 +11,6 @@ const gradeOrder: { [key: string]: number } = {
   '5.14a': 24, '5.14b': 25, '5.14c': 26, '5.14d': 27,
   '5.15a': 28, '5.15b': 29, '5.15c': 30, '5.15d': 31
 };
-
-export interface LeaderboardUser {
-  id: string;
-  full_name: string;
-  metric_value: number | string;
-}
 
 export const processClimbingData = (
   profilesData: any[],

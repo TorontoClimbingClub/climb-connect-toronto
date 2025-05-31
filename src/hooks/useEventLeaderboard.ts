@@ -1,9 +1,5 @@
 
-export interface LeaderboardUser {
-  id: string;
-  full_name: string;
-  metric_value: number | string;
-}
+import type { LeaderboardUser } from "./useLeaderboardData";
 
 export const processEventData = (
   profilesData: any[],

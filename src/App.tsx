@@ -15,7 +15,7 @@ const Auth = lazy(() => import("@/pages/Auth"));
 const Events = lazy(() => import("@/pages/Events"));
 const EventDetail = lazy(() => import("@/pages/EventDetail"));
 const Community = lazy(() => import("@/pages/Community"));
-const RoutesPage = lazy(() => import("@/pages/Routes"));
+const Routes = lazy(() => import("@/pages/Routes"));
 const RouteDetail = lazy(() => import("@/pages/RouteDetail"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Admin = lazy(() => import("@/pages/Admin"));
@@ -49,7 +49,7 @@ function App() {
                     <Route path="/events" element={<Events />} />
                     <Route path="/events/:id" element={<EventDetail />} />
                     <Route path="/community" element={<Community />} />
-                    <Route path="/routes" element={<RoutesPage />} />
+                    <Route path="/routes" element={<Routes />} />
                     <Route path="/routes/:routeId" element={<RouteDetail />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />
