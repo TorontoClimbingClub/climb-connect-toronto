@@ -1,5 +1,9 @@
-
-import type { LeaderboardUser } from "./useLeaderboardData";
+// Define the type locally since we removed useLeaderboardData
+export interface LeaderboardUser {
+  id: string;
+  full_name: string;
+  metric_value: number;
+}
 
 export const processEventData = (
   profilesData: any[],
