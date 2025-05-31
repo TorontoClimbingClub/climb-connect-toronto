@@ -3,8 +3,10 @@ import React from 'react';
 import { useSimplifiedTrainer } from '@/hooks/trainer/useSimplifiedTrainer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, Cell } from 'recharts';
-import { TrendingUp, Target, Activity, Clock, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Target, Activity, Clock, AlertTriangle, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import EmptyState from './charts/EmptyState';
 
 const SimplifiedDashboard = () => {
@@ -84,10 +86,38 @@ const SimplifiedDashboard = () => {
   };
 
   const getSIIBadgeVariant = (sii: number) => {
-    if (sii < 0.8) return 'default';
     if (sii < 1.2) return 'secondary';
     return 'destructive';
   };
+
+  const getSIIBadgeText = (sii: number) => {
+    if (sii < 1.2) return 'Moderate';
+    return 'High';
+  };
+
+  const SIIFormulaTooltip = () => (
+    <TooltipProvider>
+      <UITooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <Info className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-sm">
+          <div className="space-y-2 text-sm">
+            <p><strong>Session Intensity Index (SII) Formula:</strong></p>
+            <p>SII = Physical Load × Performance Load × Duration Factor</p>
+            <div className="space-y-1 text-xs">
+              <p><strong>Physical Load:</strong> (Hang + Pullups + Lockoff ratios) / 3</p>
+              <p><strong>Performance Load:</strong> Grade Factor × Efficiency Factor</p>
+              <p><strong>Duration Factor:</strong> 0.7 + (Session hours × 0.15)</p>
+            </div>
+            <p className="text-xs text-gray-500">Based on 30-day rolling averages</p>
+          </div>
+        </TooltipContent>
+      </UITooltip>
+    </TooltipProvider>
+  );
 
   return (
     <div className="space-y-6">
@@ -108,14 +138,19 @@ const SimplifiedDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average SII</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              Average SII
+              <SIIFormulaTooltip />
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageSII?.toFixed(2) || '0.00'}</div>
-            <Badge variant={getSIIBadgeVariant(stats.averageSII || 0)} className="mt-1">
-              {stats.averageSII! < 0.8 ? 'Low' : stats.averageSII! < 1.2 ? 'Moderate' : 'High'} Intensity
-            </Badge>
+            {stats.averageSII && stats.averageSII >= 1.2 && (
+              <Badge variant={getSIIBadgeVariant(stats.averageSII)} className="mt-1">
+                {getSIIBadgeText(stats.averageSII)} Intensity
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
@@ -126,9 +161,11 @@ const SimplifiedDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{latestSession?.sii?.toFixed(2) || '0.00'}</div>
-            <Badge variant={getSIIBadgeVariant(latestSession?.sii || 0)} className="mt-1">
-              {latestSession?.sii! < 0.8 ? 'Low' : latestSession?.sii! < 1.2 ? 'Moderate' : 'High'}
-            </Badge>
+            {latestSession?.sii && latestSession.sii >= 1.2 && (
+              <Badge variant={getSIIBadgeVariant(latestSession.sii)} className="mt-1">
+                {getSIIBadgeText(latestSession.sii)}
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
@@ -177,14 +214,17 @@ const SimplifiedDashboard = () => {
         {/* SII Timeline */}
         <Card>
           <CardHeader>
-            <CardTitle>Session Intensity Timeline</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Session Intensity Timeline
+              <SIIFormulaTooltip />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={siiTimelineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="session" />
-                <YAxis domain={[0, 'dataMax + 0.5']} />
+                <YAxis domain={[0, 2.0]} />
                 <Tooltip 
                   labelFormatter={(label) => {
                     const sessionIndex = parseInt(label.replace('S', '')) - 1;
