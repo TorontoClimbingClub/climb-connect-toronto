@@ -1,11 +1,8 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useEvents } from './useEvents';
 
-export const useRealtimeEvents = () => {
-  const { fetchEvents, updateUserParticipation } = useEvents();
-
+export const useRealtimeEvents = (onEventChange?: () => void, onParticipationChange?: (eventId: string, joined: boolean) => void) => {
   useEffect(() => {
     // Subscribe to events changes
     const eventsChannel = supabase
@@ -19,7 +16,7 @@ export const useRealtimeEvents = () => {
         },
         (payload) => {
           console.log('🔄 Event updated:', payload);
-          fetchEvents();
+          onEventChange?.();
         }
       )
       .subscribe();
@@ -37,11 +34,11 @@ export const useRealtimeEvents = () => {
         (payload) => {
           console.log('🔄 Participant updated:', payload);
           if (payload.eventType === 'INSERT') {
-            updateUserParticipation(payload.new.event_id, true);
+            onParticipationChange?.(payload.new.event_id, true);
           } else if (payload.eventType === 'DELETE') {
-            updateUserParticipation(payload.old.event_id, false);
+            onParticipationChange?.(payload.old.event_id, false);
           }
-          fetchEvents();
+          onEventChange?.();
         }
       )
       .subscribe();
@@ -50,5 +47,5 @@ export const useRealtimeEvents = () => {
       supabase.removeChannel(eventsChannel);
       supabase.removeChannel(participantsChannel);
     };
-  }, [fetchEvents, updateUserParticipation]);
+  }, [onEventChange, onParticipationChange]);
 };

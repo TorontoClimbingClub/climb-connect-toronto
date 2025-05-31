@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { Navigation } from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
@@ -5,7 +6,7 @@ import { EmptyEventsState } from "@/components/events/EmptyEventsState";
 import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";
 import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOptimizedEvents } from "@/hooks/useOptimizedEvents";
+import { useEventManager } from "@/hooks/useEventManager";
 import { useRealtimeEvents } from "@/hooks/useRealtimeEvents";
 import { useCommunityData } from "@/hooks/useCommunityData";
 import { useAccessControl } from "@/hooks/useAccessControl";
@@ -23,26 +24,31 @@ export default function Events() {
     userParticipations,
     loading: eventsLoading,
     fetchUserParticipations
-  } = useOptimizedEvents();
+  } = useEventManager();
+  
   const {
     members,
     loading: membersLoading,
     fetchCommunityMembers
   } = useCommunityData();
+  
   const {
     getUserCompletionStats,
     loading: completionsLoading
   } = useClimbCompletions();
+  
   const [selectedUser, setSelectedUser] = useState<CommunityMember | null>(null);
   const [showProfileOverlay, setShowProfileOverlay] = useState(false);
 
   // Enable real-time updates for events
   useRealtimeEvents();
+  
   const handleMemberClick = useCallback((member: CommunityMember) => {
     console.log('📱 Events: Member clicked:', member.full_name);
     setSelectedUser(member);
     setShowProfileOverlay(true);
   }, []);
+  
   const handleCloseProfile = useCallback(() => {
     setShowProfileOverlay(false);
     setSelectedUser(null);
@@ -59,7 +65,9 @@ export default function Events() {
   useEffect(() => {
     fetchCommunityMembers();
   }, [fetchCommunityMembers]);
+  
   const loading = accessLoading || eventsLoading;
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
@@ -75,6 +83,7 @@ export default function Events() {
       </div>
     );
   }
+  
   if (!hasAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
@@ -88,6 +97,7 @@ export default function Events() {
       </div>
     );
   }
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
       <div className={`${containerClass} ${paddingClass}`}>

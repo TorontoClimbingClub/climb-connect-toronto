@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Mountain, Users, Package, Star } from "lucide-react";
-import { useLeaderboards } from "@/hooks/useLeaderboards";
+import { useLeaderboardManager } from "@/hooks/useLeaderboardManager";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,7 +16,7 @@ export function Leaderboards() {
     topEventAttendees,
     loading,
     refreshLeaderboards
-  } = useLeaderboards();
+  } = useLeaderboardManager();
 
   // Set up real-time subscription to refresh leaderboards when attendance changes
   useEffect(() => {
