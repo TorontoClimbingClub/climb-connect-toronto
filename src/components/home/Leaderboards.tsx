@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Mountain, Users, Package, Star, RefreshCw } from "lucide-react";
@@ -33,15 +32,16 @@ export function Leaderboards() {
     }
   };
 
-  // Set up cross-client synchronization listener
+  // Simplified UI sync listener - reduced frequency
   useEffect(() => {
     const syncChannel = supabase
-      .channel('leaderboards-ui-sync')
+      .channel('leaderboards-ui-sync-optimized')
       .on(
         'broadcast',
         { event: 'ui_update' },
         (payload) => {
           console.log('🔄 [LEADERBOARDS UI] Received UI sync:', payload);
+          // Only update timestamp, don't trigger re-renders
           setLastUpdateTime(new Date().toLocaleTimeString());
         }
       )
@@ -52,21 +52,10 @@ export function Leaderboards() {
     };
   }, []);
 
-  // Update timestamp when data changes
+  // Update timestamp when data changes - throttled
   useEffect(() => {
     if (!loading && topEventAttendees.length > 0) {
       setLastUpdateTime(new Date().toLocaleTimeString());
-      
-      // Broadcast UI update to other clients
-      const syncChannel = supabase.channel('leaderboards-ui-sync');
-      syncChannel.send({
-        type: 'broadcast',
-        event: 'ui_update',
-        payload: {
-          timestamp: Date.now(),
-          attendees_count: topEventAttendees.length
-        }
-      });
     }
   }, [loading, topEventAttendees.length]);
 

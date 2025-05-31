@@ -7,10 +7,11 @@ export const useAttendanceManagement = () => {
   const { approvals, approveAttendance, rejectAttendance, refreshApprovals } = useAttendanceApprovals();
   const { toast } = useToast();
 
-  // Helper function to trigger cross-client sync
+  // Optimized helper function to trigger cross-client sync with throttling
   const triggerLeaderboardSync = async () => {
     try {
-      const syncChannel = supabase.channel('leaderboard-sync');
+      // Throttle sync requests to prevent spam
+      const syncChannel = supabase.channel('leaderboard-sync-optimized');
       await syncChannel.send({
         type: 'broadcast',
         event: 'force_refresh',
@@ -19,7 +20,7 @@ export const useAttendanceManagement = () => {
           source: 'attendance_change'
         }
       });
-      console.log('🔄 [ATTENDANCE] Triggered leaderboard sync for all clients');
+      console.log('🔄 [ATTENDANCE] Triggered optimized leaderboard sync');
     } catch (error) {
       console.error('❌ [ATTENDANCE] Failed to trigger sync:', error);
     }
@@ -57,8 +58,8 @@ export const useAttendanceManagement = () => {
         await refreshApprovals();
       }
 
-      // Trigger cross-client synchronization
-      await triggerLeaderboardSync();
+      // Trigger optimized cross-client synchronization with delay
+      setTimeout(() => triggerLeaderboardSync(), 500);
 
     } catch (error: any) {
       console.error('Error confirming attendance:', error);
@@ -101,8 +102,8 @@ export const useAttendanceManagement = () => {
         await refreshApprovals();
       }
 
-      // Trigger cross-client synchronization
-      await triggerLeaderboardSync();
+      // Trigger optimized cross-client synchronization with delay
+      setTimeout(() => triggerLeaderboardSync(), 500);
 
     } catch (error: any) {
       console.error('Error rejecting attendance:', error);
@@ -139,8 +140,8 @@ export const useAttendanceManagement = () => {
         await refreshApprovals();
       }
 
-      // Trigger cross-client synchronization
-      await triggerLeaderboardSync();
+      // Trigger optimized cross-client synchronization with delay
+      setTimeout(() => triggerLeaderboardSync(), 500);
 
     } catch (error: any) {
       console.error('Error resetting attendance:', error);

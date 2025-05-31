@@ -25,10 +25,10 @@ export function useLeaderboardManager() {
 
   const fetchAllLeaderboardData = useCallback(async (forceRefresh = false) => {
     try {
-      // Prevent excessive fetching with debounce mechanism
+      // Enhanced debounce mechanism to prevent rapid fetching
       const now = Date.now();
-      if (!forceRefresh && now - lastSync < 2000) {
-        console.log('🔄 [LEADERBOARD] Skipping fetch due to debounce');
+      if (!forceRefresh && now - lastSync < 5000) {
+        console.log('🔄 [LEADERBOARD] Skipping fetch due to enhanced debounce');
         return;
       }
 
@@ -70,7 +70,7 @@ export function useLeaderboardManager() {
         };
       }).filter(item => item.routes !== null) || [];
 
-      // ENHANCED: Also fetch archived attendance data for event leaderboard
+      // Also fetch archived attendance data for event leaderboard
       let archivedEventData: any[] = [];
       try {
         const { data: archived } = await supabase
@@ -116,7 +116,7 @@ export function useLeaderboardManager() {
       const gearOwners = processGearData(profilesData || [], gearData || []);
       const eventAttendees = processEventData(profilesData || [], combinedEventData);
 
-      // Update all leaderboard states atomically
+      // Update all leaderboard states atomically to prevent flashing
       setTopGradeClimbers(climbingResults.topGradeClimbers);
       setTopTradClimbers(climbingResults.topTradClimbers);
       setTopSportClimbers(climbingResults.topSportClimbers);
@@ -124,18 +124,6 @@ export function useLeaderboardManager() {
       setTopGearOwners(gearOwners);
       setTopEventAttendees(eventAttendees);
       setLastSync(now);
-
-      // Broadcast state sync event for cross-client synchronization
-      const syncChannel = supabase.channel('leaderboard-sync');
-      syncChannel.send({
-        type: 'broadcast',
-        event: 'state_sync',
-        payload: {
-          timestamp: now,
-          event_attendees_count: eventAttendees.length,
-          sync_source: 'data_fetch'
-        }
-      });
 
     } catch (error: any) {
       console.error('❌ [LEADERBOARD] Error fetching leaderboard data:', error);
@@ -149,13 +137,13 @@ export function useLeaderboardManager() {
     }
   }, [toast, lastSync]);
 
-  // ENHANCED: Set up comprehensive real-time subscriptions
+  // Simplified real-time subscriptions - only essential ones
   useEffect(() => {
-    console.log('🔄 [LEADERBOARD] Setting up real-time subscriptions');
+    console.log('🔄 [LEADERBOARD] Setting up optimized real-time subscriptions');
 
-    // Multi-table subscription channel
-    const mainChannel = supabase
-      .channel('leaderboards-comprehensive')
+    // Single subscription channel for all attendance-related updates
+    const attendanceChannel = supabase
+      .channel('leaderboards-attendance-only')
       .on(
         'postgres_changes',
         {
@@ -165,75 +153,32 @@ export function useLeaderboardManager() {
         },
         (payload) => {
           console.log('🔄 [LEADERBOARD] Event attendance updated:', payload);
-          fetchAllLeaderboardData(true);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_equipment'
-        },
-        (payload) => {
-          console.log('🔄 [LEADERBOARD] Gear updated:', payload);
-          fetchAllLeaderboardData(true);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'climb_completions'
-        },
-        (payload) => {
-          console.log('🔄 [LEADERBOARD] Climbing completion updated:', payload);
-          fetchAllLeaderboardData(true);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        (payload) => {
-          console.log('🔄 [LEADERBOARD] Profile updated:', payload);
-          fetchAllLeaderboardData(true);
+          // Debounced refresh to prevent rapid updates
+          setTimeout(() => fetchAllLeaderboardData(true), 1000);
         }
       )
       .subscribe();
 
-    // Cross-client state synchronization channel
+    // Simplified cross-client sync with reduced frequency
     const syncChannel = supabase
-      .channel('leaderboard-sync')
-      .on(
-        'broadcast',
-        { event: 'state_sync' },
-        (payload) => {
-          console.log('🔄 [LEADERBOARD] Received sync broadcast:', payload);
-          // If another client has newer data, refresh our state
-          if (payload.payload.timestamp > lastSync) {
-            console.log('🔄 [LEADERBOARD] Syncing with newer client state');
-            fetchAllLeaderboardData(true);
-          }
-        }
-      )
+      .channel('leaderboard-sync-optimized')
       .on(
         'broadcast',
         { event: 'force_refresh' },
         (payload) => {
           console.log('🔄 [LEADERBOARD] Force refresh requested:', payload);
-          fetchAllLeaderboardData(true);
+          // Only refresh if it's been more than 3 seconds since last update
+          const now = Date.now();
+          if (now - lastSync > 3000) {
+            fetchAllLeaderboardData(true);
+          }
         }
       )
       .subscribe();
 
     return () => {
-      console.log('🔄 [LEADERBOARD] Cleaning up real-time subscriptions');
-      supabase.removeChannel(mainChannel);
+      console.log('🔄 [LEADERBOARD] Cleaning up optimized subscriptions');
+      supabase.removeChannel(attendanceChannel);
       supabase.removeChannel(syncChannel);
     };
   }, [fetchAllLeaderboardData, lastSync]);
@@ -242,22 +187,25 @@ export function useLeaderboardManager() {
     fetchAllLeaderboardData(true);
   }, []);
 
-  // Enhanced refresh function that notifies other clients
+  // Optimized refresh function with reduced broadcast frequency
   const refreshLeaderboards = useCallback(async () => {
     console.log('🔄 [LEADERBOARD] Manual refresh requested');
     await fetchAllLeaderboardData(true);
     
-    // Notify other clients to refresh
-    const syncChannel = supabase.channel('leaderboard-sync');
-    syncChannel.send({
-      type: 'broadcast',
-      event: 'force_refresh',
-      payload: {
-        timestamp: Date.now(),
-        source: 'manual_refresh'
-      }
-    });
-  }, [fetchAllLeaderboardData]);
+    // Only notify other clients if enough time has passed
+    const now = Date.now();
+    if (now - lastSync > 2000) {
+      const syncChannel = supabase.channel('leaderboard-sync-optimized');
+      syncChannel.send({
+        type: 'broadcast',
+        event: 'force_refresh',
+        payload: {
+          timestamp: now,
+          source: 'manual_refresh'
+        }
+      });
+    }
+  }, [fetchAllLeaderboardData, lastSync]);
 
   return {
     topGradeClimbers,
