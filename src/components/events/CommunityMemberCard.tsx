@@ -1,5 +1,5 @@
 
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -8,8 +8,7 @@ import { CommunityMember } from "@/types/community";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { ClimbCompletion } from "@/hooks/useClimbCompletions";
 import { BadgeIcon } from "@/components/badges/BadgeIcon";
-import { useBadges } from "@/hooks/useBadges";
-import { supabase } from "@/integrations/supabase/client";
+import { useEnhancedCommunityMember } from "@/hooks/useEnhancedCommunityMember";
 
 interface CommunityMemberCardProps {
   member: CommunityMember;
@@ -28,7 +27,8 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
   hiddenStyles,
   onClick
 }: CommunityMemberCardProps) {
-  const { getUserBadges, updateUserBadges } = useBadges();
+  // Use enhanced hook for real-time updates and consistent counting
+  const { userBadges, eventsCount, isLoading } = useEnhancedCommunityMember(member?.id || '');
   
   // Ensure member object has all required properties with defaults
   const safeMember = {
@@ -41,7 +41,6 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     climbing_experience: member?.climbing_experience || [],
     climbing_description: member?.climbing_description || null,
     equipment_count: member?.equipment_count || 0,
-    events_count: member?.events_count || 0,
     profile_photo_url: member?.profile_photo_url || null,
     show_climbing_level: member?.show_climbing_level ?? true,
     show_climbing_progress: member?.show_climbing_progress ?? true,
@@ -51,33 +50,6 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
     show_top_rope_progress: member?.show_top_rope_progress ?? true,
     allow_profile_viewing: member?.allow_profile_viewing ?? true,
   };
-
-  // Get user badges
-  const userBadges = getUserBadges(safeMember.id);
-
-  // Set up real-time subscription to update badges when this user's attendance changes
-  useEffect(() => {
-    const channel = supabase
-      .channel(`member-badges-${safeMember.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_attendance_approvals',
-          filter: `user_id=eq.${safeMember.id}`
-        },
-        async (payload) => {
-          console.log('🔄 [MEMBER BADGES] Attendance updated for user, refreshing badges:', safeMember.id);
-          await updateUserBadges(safeMember.id);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [safeMember.id, updateUserBadges]);
 
   // Apply privacy settings consistently for all users
   const shouldShowClimbingLevel = safeMember.show_climbing_level;
@@ -108,6 +80,9 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
       handleCardClick();
     }
   };
+
+  // Use the enhanced events count for consistent display
+  const displayEventsCount = isLoading ? '...' : eventsCount;
 
   return (
     <Card 
@@ -153,7 +128,7 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
           )}
         </div>
 
-        {/* User Badges */}
+        {/* User Badges with real-time updates */}
         {userBadges.length > 0 && (
           <div className="mb-3">
             <div className="flex flex-wrap gap-1">
@@ -222,7 +197,7 @@ export const CommunityMemberCard = memo(function CommunityMemberCard({
           </div>
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-1 flex-shrink-0" aria-hidden="true" />
-            <span>{safeMember.events_count} events joined</span>
+            <span>{displayEventsCount} events joined</span>
           </div>
         </div>
       </CardContent>
