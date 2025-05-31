@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/Navigation";
 import { UsersTab } from "@/components/admin/UsersTab";
@@ -7,7 +8,6 @@ import { ConsoleLogTab } from "@/components/admin/ConsoleLogTab";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useUserHandlers, useEventHandlers } from "@/utils/admin";
 import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
-import { BadgeSyncButton } from "@/components/admin/BadgeSyncButton";
 
 export default function Admin() {
   const { containerClass, paddingClass } = useResponsiveContainer('full');
@@ -50,9 +50,6 @@ export default function Admin() {
       <div className={`${containerClass} ${paddingClass}`}>
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-[#E55A2B]">Admin Panel</h1>
-          <div className="flex gap-2">
-            <BadgeSyncButton />
-          </div>
         </div>
 
         <Tabs defaultValue="events" className="space-y-4 sm:space-y-6">

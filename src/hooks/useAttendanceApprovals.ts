@@ -2,7 +2,18 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { EventAttendanceApproval } from "@/types/badges";
+
+// Define the type locally since we deleted the badges types file
+interface EventAttendanceApproval {
+  id: string;
+  user_id: string;
+  event_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  approved_at?: string;
+  event?: { title: string; date: string };
+  user?: { full_name: string };
+}
 
 export function useAttendanceApprovals() {
   const [approvals, setApprovals] = useState<EventAttendanceApproval[]>([]);

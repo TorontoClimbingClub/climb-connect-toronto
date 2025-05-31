@@ -6,4 +6,3 @@ export * from './community';
 export * from './equipment';
 export * from './api';
 export * from './admin';
-export * from './badges';
