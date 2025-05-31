@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Play, Square, Edit2, Clock } from 'lucide-react';
+import { Plus, X, Play, Square, Edit2, Clock, Activity } from 'lucide-react';
 import { useSimplifiedTrainer } from '@/hooks/trainer/useSimplifiedTrainer';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { WorkoutMetrics } from '@/types/training';
 
 const SimplifiedSessionForm = () => {
   const { 
@@ -34,6 +35,15 @@ const SimplifiedSessionForm = () => {
     numberOfTakes: 0
   });
 
+  // Workout metrics form
+  const [workoutMetrics, setWorkoutMetrics] = useState<WorkoutMetrics>({
+    maxHangTime: 0,
+    maxPullUps: 0,
+    maxLockoff: 0
+  });
+
+  const [recoveryFeeling, setRecoveryFeeling] = useState<number>(3);
+
   const grades = ['5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d'];
 
   const handleStartSession = async () => {
@@ -57,11 +67,18 @@ const SimplifiedSessionForm = () => {
   const handleEndSession = async () => {
     setIsEnding(true);
     try {
-      await endSession();
+      await endSession(workoutMetrics, recoveryFeeling);
       toast({
         title: "Session Completed",
-        description: "Your training session has been saved!",
+        description: "Your training session has been saved with workout metrics!",
       });
+      // Reset workout metrics
+      setWorkoutMetrics({
+        maxHangTime: 0,
+        maxPullUps: 0,
+        maxLockoff: 0
+      });
+      setRecoveryFeeling(3);
     } catch (error) {
       toast({
         title: "Error",
@@ -179,6 +196,77 @@ const SimplifiedSessionForm = () => {
             <p>Duration: {getSessionDuration()}</p>
           </div>
         </CardHeader>
+      </Card>
+
+      {/* Workout Metrics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Workout Metrics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label>Max Hang Time (seconds)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={workoutMetrics.maxHangTime}
+                onChange={(e) => setWorkoutMetrics({
+                  ...workoutMetrics,
+                  maxHangTime: parseInt(e.target.value) || 0
+                })}
+                placeholder="Hang time in seconds"
+              />
+            </div>
+            
+            <div>
+              <Label>Max Pull-ups</Label>
+              <Input
+                type="number"
+                min="0"
+                value={workoutMetrics.maxPullUps}
+                onChange={(e) => setWorkoutMetrics({
+                  ...workoutMetrics,
+                  maxPullUps: parseInt(e.target.value) || 0
+                })}
+                placeholder="Number of pull-ups"
+              />
+            </div>
+            
+            <div>
+              <Label>Max Lockoff Time (seconds)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={workoutMetrics.maxLockoff}
+                onChange={(e) => setWorkoutMetrics({
+                  ...workoutMetrics,
+                  maxLockoff: parseInt(e.target.value) || 0
+                })}
+                placeholder="Lockoff time in seconds"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Label>Recovery Feeling (1-5 scale)</Label>
+            <Select value={recoveryFeeling.toString()} onValueChange={(value) => setRecoveryFeeling(parseInt(value))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 - Very Tired</SelectItem>
+                <SelectItem value="2">2 - Tired</SelectItem>
+                <SelectItem value="3">3 - Neutral</SelectItem>
+                <SelectItem value="4">4 - Good</SelectItem>
+                <SelectItem value="5">5 - Excellent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Add/Edit Climb */}

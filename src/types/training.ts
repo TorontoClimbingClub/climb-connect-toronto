@@ -7,11 +7,21 @@ export interface SimplifiedClimb {
   createdAt: string;
 }
 
+export interface WorkoutMetrics {
+  maxHangTime: number; // seconds
+  maxPullUps: number;
+  maxLockoff: number; // seconds
+}
+
 export interface SimplifiedSession {
   id: string;
   startTime: string;
   endTime?: string;
   climbs: SimplifiedClimb[];
+  workoutMetrics?: WorkoutMetrics;
+  sii?: number; // Session Intensity Index
+  recoveryFeeling?: number; // 1-5 scale
+  restDaysBeforeSession?: number;
 }
 
 export interface SessionStats {
@@ -20,6 +30,20 @@ export interface SessionStats {
   averageSessionDuration: number;
   averageClimbsPerSession: number;
   totalSessionTime: number;
+  averageSII?: number;
+}
+
+export interface SIIComponents {
+  physicalLoad: number;
+  performanceLoad: number;
+  durationFactor: number;
+  sii: number;
+}
+
+export interface RecoveryRecommendation {
+  recommendedRestDays: number;
+  reason: string;
+  confidenceLevel: 'low' | 'medium' | 'high';
 }
 
 // Legacy type for backwards compatibility
