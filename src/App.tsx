@@ -13,6 +13,7 @@ import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import ClimbingRoutes from "./pages/Routes";
 import RouteDetail from "./pages/RouteDetail";
+import Trainer from "./pages/Trainer";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -84,6 +85,7 @@ const AppRoutes = () => {
       <Route path="/events/:eventId" element={<EventDetail />} />
       <Route path="/routes" element={<ClimbingRoutes />} />
       <Route path="/routes/:routeId" element={<RouteDetail />} />
+      <Route path="/trainer" element={<ProtectedRoute><Trainer /></ProtectedRoute>} />
       <Route path="/community" element={<Navigate to="/events" replace />} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

@@ -1,94 +1,58 @@
 
-import { Home, Calendar, User, Users, Settings, Mountain } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Calendar, Mountain, Activity, Users, User, Settings } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAccessControl } from '@/hooks/useAccessControl';
 
-const navigationItems = [
-  { icon: Home, label: "Home", href: "/" },
-  { icon: Calendar, label: "Community", href: "/events" },
-  { icon: Mountain, label: "Beta Boards", href: "/routes" },
-  { icon: User, label: "Profile", href: "/profile", requiresAuth: true },
-];
-
-export const Navigation = () => {
-  const currentPath = window.location.pathname;
+const Navigation = () => {
+  const location = useLocation();
   const { user } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const { canAccess } = useAccessControl();
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .rpc('get_user_role', { _user_id: user.id });
-        
-        if (error) {
-          console.error('Error fetching user role:', error);
-          return;
-        }
-        
-        setUserRole(data);
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      }
-    };
-
-    fetchUserRole();
-  }, [user]);
-
-  const handleNavigation = (href: string, requiresAuth?: boolean) => {
-    if (requiresAuth && !user) {
-      window.location.href = '/auth';
-    } else {
-      window.location.href = href;
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
     }
+    return location.pathname.startsWith(path);
   };
 
+  const navItems = [
+    { path: '/', icon: Home, label: 'Home' },
+    { path: '/events', icon: Calendar, label: 'Events' },
+    { path: '/routes', icon: Mountain, label: 'Routes' },
+    { path: '/trainer', icon: Activity, label: 'Trainer' },
+  ];
+
+  // Add conditional nav items
+  if (user) {
+    navItems.push({ path: '/profile', icon: User, label: 'Profile' });
+  }
+
+  if (canAccess('admin')) {
+    navItems.push({ path: '/admin', icon: Settings, label: 'Admin' });
+  }
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200">
-      <div className="max-w-md mx-auto px-4">
-        <div className="flex items-center justify-around py-2">
-          {navigationItems.map((item) => {
-            const isActive = currentPath === item.href;
-            const Icon = item.icon;
-            
-            return (
-              <button
-                key={item.label}
-                onClick={() => handleNavigation(item.href, item.requiresAuth)}
-                className={cn(
-                  "flex flex-col items-center space-y-1 py-2 px-3 rounded-lg transition-colors",
-                  isActive 
-                    ? "text-[#E55A2B] bg-orange-50" 
-                    : "text-stone-600 hover:text-[#E55A2B] hover:bg-stone-50"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.label}</span>
-              </button>
-            );
-          })}
-          
-          {/* Admin button - only show for admin users */}
-          {user && userRole === 'admin' && (
-            <button
-              onClick={() => handleNavigation('/admin')}
-              className={cn(
-                "flex flex-col items-center space-y-1 py-2 px-3 rounded-lg transition-colors",
-                currentPath === '/admin'
-                  ? "text-[#E55A2B] bg-orange-50" 
-                  : "text-stone-600 hover:text-[#E55A2B] hover:bg-stone-50"
-              )}
-            >
-              <Settings className="h-5 w-5" />
-              <span className="text-xs font-medium">Admin</span>
-            </button>
-          )}
-        </div>
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <div className="flex justify-around items-center h-16 max-w-md mx-auto">
+        {navItems.map(({ path, icon: Icon, label }) => (
+          <Link
+            key={path}
+            to={path}
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              isActive(path)
+                ? 'text-[#E55A2B]'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Icon className="h-5 w-5" />
+            <span className="text-xs font-medium">{label}</span>
+          </Link>
+        ))}
       </div>
     </nav>
   );
 };
+
+export default Navigation;

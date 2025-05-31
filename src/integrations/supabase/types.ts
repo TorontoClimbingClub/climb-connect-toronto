@@ -93,6 +93,27 @@ export type Database = {
         }
         Relationships: []
       }
+      climbing_styles_ref: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       equipment_categories: {
         Row: {
           created_at: string | null
@@ -561,6 +582,210 @@ export type Database = {
           sector?: string
           style?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      session_climbs: {
+        Row: {
+          attempts_made: number
+          climbing_style: string
+          completed: boolean
+          created_at: string
+          falls_count: number
+          id: string
+          is_hardest_climb: boolean
+          notes: string | null
+          rest_time_minutes: number | null
+          route_grade: string
+          session_id: string
+        }
+        Insert: {
+          attempts_made?: number
+          climbing_style: string
+          completed?: boolean
+          created_at?: string
+          falls_count?: number
+          id?: string
+          is_hardest_climb?: boolean
+          notes?: string | null
+          rest_time_minutes?: number | null
+          route_grade: string
+          session_id: string
+        }
+        Update: {
+          attempts_made?: number
+          climbing_style?: string
+          completed?: boolean
+          created_at?: string
+          falls_count?: number
+          id?: string
+          is_hardest_climb?: boolean
+          notes?: string | null
+          rest_time_minutes?: number | null
+          route_grade?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_climbs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_gear: {
+        Row: {
+          created_at: string
+          gear_name: string
+          gear_type: string | null
+          id: string
+          notes: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          gear_name: string
+          gear_type?: string | null
+          id?: string
+          notes?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          gear_name?: string
+          gear_type?: string | null
+          id?: string
+          notes?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_gear_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_goals_ref: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      session_techniques: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          session_id: string
+          success_level: string | null
+          technique_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          session_id: string
+          success_level?: string | null
+          technique_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          session_id?: string
+          success_level?: string | null
+          technique_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_techniques_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sessions: {
+        Row: {
+          created_at: string
+          custom_goal: string | null
+          end_time: string | null
+          felt_after_session: string | null
+          felt_tired_at_end: boolean
+          gear_used: boolean
+          id: string
+          max_grade_climbed: string | null
+          new_techniques_tried: boolean
+          partner_count: number
+          session_date: string
+          session_goal: string | null
+          start_time: string
+          total_climbs: number
+          updated_at: string
+          user_id: string
+          warm_up_done: boolean
+          would_change_next_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_goal?: string | null
+          end_time?: string | null
+          felt_after_session?: string | null
+          felt_tired_at_end?: boolean
+          gear_used?: boolean
+          id?: string
+          max_grade_climbed?: string | null
+          new_techniques_tried?: boolean
+          partner_count?: number
+          session_date?: string
+          session_goal?: string | null
+          start_time?: string
+          total_climbs?: number
+          updated_at?: string
+          user_id: string
+          warm_up_done?: boolean
+          would_change_next_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_goal?: string | null
+          end_time?: string | null
+          felt_after_session?: string | null
+          felt_tired_at_end?: boolean
+          gear_used?: boolean
+          id?: string
+          max_grade_climbed?: string | null
+          new_techniques_tried?: boolean
+          partner_count?: number
+          session_date?: string
+          session_goal?: string | null
+          start_time?: string
+          total_climbs?: number
+          updated_at?: string
+          user_id?: string
+          warm_up_done?: boolean
+          would_change_next_time?: string | null
         }
         Relationships: []
       }
