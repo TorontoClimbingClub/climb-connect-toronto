@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,9 +12,12 @@ import { UserProfile } from "@/types";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
 
 export default function Profile() {
   const { user } = useAuth();
+  const { containerClass, paddingClass } = useResponsiveContainer('medium');
+
   const {
     profile,
     loading,
@@ -83,7 +85,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-2xl mx-auto p-4">
+      <div className={`${containerClass} ${paddingClass}`}>
         <div className="mb-6 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-[#E55A2B] mb-2">My Profile</h1>

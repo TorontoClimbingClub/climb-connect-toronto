@@ -12,11 +12,13 @@ import { ClimbingRoute } from "@/types/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
 import { useRealtimeRoutes } from "@/hooks/useRealtimeRoutes";
+import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
 
 export default function Routes() {
   const navigate = useNavigate();
   const location = useLocation();
   const { routes, loading } = useRouteManagement();
+  const { containerClass, paddingClass } = useResponsiveContainer('medium');
   
   // Enable real-time updates for routes
   useRealtimeRoutes();
@@ -56,7 +58,7 @@ export default function Routes() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-        <div className="max-w-md mx-auto p-4">
+        <div className={`${containerClass} ${paddingClass}`}>
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E55A2B] mx-auto mb-4"></div>
@@ -160,7 +162,7 @@ export default function Routes() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-md mx-auto p-4">
+      <div className={`${containerClass} ${paddingClass}`}>
         <PageHeader
           title={getPageTitle()}
           subtitle={getPageSubtitle()}
@@ -195,7 +197,6 @@ export default function Routes() {
           )}
 
           {selectedSector && (
-            // Sort areas alphabetically when displaying
             areas.map((area) => (
               <AreaCard
                 key={area}

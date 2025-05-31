@@ -5,13 +5,15 @@ import { Calendar, ArrowRight, ExternalLink, Mountain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Leaderboards } from "@/components/home/Leaderboards";
+import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { containerClass, paddingClass } = useResponsiveContainer('wide');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-4xl mx-auto p-4">
+      <div className={`${containerClass} ${paddingClass}`}>
         {/* Hero Section */}
         <div className="text-center mb-8">
           <div className="bg-white p-4 rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">

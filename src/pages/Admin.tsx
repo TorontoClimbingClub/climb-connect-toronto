@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Navigation } from "@/components/Navigation";
 import { UsersTab } from "@/components/admin/UsersTab";
@@ -7,8 +6,11 @@ import { RouteManagementTab } from "@/components/admin/RouteManagementTab";
 import { ConsoleLogTab } from "@/components/admin/ConsoleLogTab";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useUserHandlers, useEventHandlers } from "@/utils/admin";
+import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
 
 export default function Admin() {
+  const { containerClass, paddingClass } = useResponsiveContainer('full');
+
   const {
     users,
     events,
@@ -44,7 +46,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-6xl mx-auto p-2 sm:p-4">
+      <div className={`${containerClass} ${paddingClass}`}>
         <div className="mb-4 sm:mb-6 px-2 sm:px-0">
           <h1 className="text-xl sm:text-2xl font-bold text-[#E55A2B] mb-2">Admin Panel</h1>
           <p className="text-stone-600 text-sm sm:text-base">Manage TCC users, events, attendance, routes, and view console logs</p>

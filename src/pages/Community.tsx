@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ import { useCommunity } from "@/hooks/useCommunity";
 import { UserProfileOverlay } from "@/components/UserProfileOverlay";
 import { CompletionProgressBars } from "@/components/CompletionProgressBars";
 import { useClimbCompletions } from "@/hooks/useClimbCompletions";
+import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
 
 export default function Community() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,6 +18,7 @@ export default function Community() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { members, loading } = useCommunity();
   const { getUserCompletionStats } = useClimbCompletions();
+  const { containerClass, paddingClass } = useResponsiveContainer('medium');
 
   const filteredMembers = members.filter(member =>
     member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,7 +43,7 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 pb-20">
-      <div className="max-w-2xl mx-auto p-4">
+      <div className={`${containerClass} ${paddingClass}`}>
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Users className="h-6 w-6 text-[#E55A2B]" />
