@@ -2,20 +2,19 @@
 import React, { useState } from 'react';
 import { useResponsiveContainer } from '@/hooks/useResponsiveContainer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, BarChart3, History, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import SessionForm from '@/components/trainer/SessionForm';
-import TrainingDashboard from '@/components/trainer/TrainingDashboard';
-import SessionHistory from '@/components/trainer/SessionHistory';
+import SimplifiedSessionForm from '@/components/trainer/SimplifiedSessionForm';
+import SimplifiedDashboard from '@/components/trainer/SimplifiedDashboard';
+import SimplifiedSessionHistory from '@/components/trainer/SimplifiedSessionHistory';
 import Navigation from '@/components/Navigation';
-import { useOfflineTrainer } from '@/hooks/trainer/useOfflineTrainer';
+import { useSimplifiedTrainer } from '@/hooks/trainer/useSimplifiedTrainer';
 
 const Trainer = () => {
   const { containerClass, paddingClass } = useResponsiveContainer('wide');
   const [activeTab, setActiveTab] = useState('log');
-  const { hasActiveSession, isLoading } = useOfflineTrainer();
+  const { hasActiveSession, isLoading } = useSimplifiedTrainer();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -75,29 +74,15 @@ const Trainer = () => {
           </TabsList>
 
           <TabsContent value="log" className="space-y-6">
-            {hasActiveSession ? (
-              <SessionForm />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>New Training Session</CardTitle>
-                  <CardDescription>
-                    Start a climbing session to track your progress
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SessionForm />
-                </CardContent>
-              </Card>
-            )}
+            <SimplifiedSessionForm />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <TrainingDashboard />
+            <SimplifiedDashboard />
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
-            <SessionHistory />
+            <SimplifiedSessionHistory />
           </TabsContent>
         </Tabs>
       </div>
