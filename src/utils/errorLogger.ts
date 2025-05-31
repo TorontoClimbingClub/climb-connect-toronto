@@ -14,7 +14,7 @@ interface LoggedError {
 
 class ErrorLogger {
   private errors: LoggedError[] = [];
-  private maxErrors = 200; // Increased to keep more errors
+  private maxErrors = 100; // Reduced to keep fewer errors
   private originalConsoleError: typeof console.error;
   private originalConsoleWarn: typeof console.warn;
 
