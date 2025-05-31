@@ -76,6 +76,11 @@ export function useOfflineTrainer() {
     return Promise.resolve();
   };
 
+  const deleteSession = (sessionId: string) => {
+    setAllSessions(prev => prev.filter(session => session.id !== sessionId));
+    return Promise.resolve();
+  };
+
   const updateSession = (updates: Partial<ActiveSessionData>) => {
     if (activeSession) {
       setActiveSession({ ...activeSession, ...updates });
@@ -136,11 +141,32 @@ export function useOfflineTrainer() {
       session.climbs.map(climb => climb.routeGrade)
     ));
     
+    // Calculate average session duration
+    const completedSessions = allSessions.filter(s => s.startTime && s.endTime);
+    const totalDuration = completedSessions.reduce((sum, session) => {
+      const duration = new Date(session.endTime!).getTime() - new Date(session.startTime).getTime();
+      return sum + duration;
+    }, 0);
+    const avgDurationMinutes = completedSessions.length > 0 
+      ? Math.round(totalDuration / (completedSessions.length * 1000 * 60)) 
+      : 0;
+
+    // Calculate completion rate
+    const totalAttempts = allSessions.reduce((sum, session) => 
+      sum + session.climbs.reduce((climbSum, climb) => climbSum + (climb.attemptsMade || 1), 0), 0
+    );
+    const completedClimbs = allSessions.reduce((sum, session) => 
+      sum + session.climbs.filter(climb => climb.completed).length, 0
+    );
+    const completionRate = totalClimbs > 0 ? Math.round((completedClimbs / totalClimbs) * 100) : 0;
+    
     return {
       totalSessions,
       totalClimbs,
       uniqueGrades: uniqueGrades.size,
-      averageClimbsPerSession: totalSessions > 0 ? Math.round(totalClimbs / totalSessions) : 0
+      averageClimbsPerSession: totalSessions > 0 ? Math.round(totalClimbs / totalSessions) : 0,
+      avgDurationMinutes,
+      completionRate
     };
   };
 
@@ -151,6 +177,7 @@ export function useOfflineTrainer() {
     hasActiveSession: !!activeSession,
     startSession,
     endSession,
+    deleteSession,
     updateSession,
     addClimb,
     updateClimb,

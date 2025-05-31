@@ -1,15 +1,17 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Mountain, Target, Search, Filter } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Calendar, Clock, Mountain, Target, Search, Filter, Trash2 } from 'lucide-react';
 import { useOfflineTrainer } from '@/hooks/trainer/useOfflineTrainer';
+import { useToast } from '@/hooks/use-toast';
 
 const SessionHistory = () => {
-  const { allSessions } = useOfflineTrainer();
+  const { allSessions, deleteSession } = useOfflineTrainer();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGoal, setFilterGoal] = useState('all');
   const [sortBy, setSortBy] = useState('date-desc');
@@ -39,6 +41,22 @@ const SessionHistory = () => {
 
   // Get unique session goals for filter
   const uniqueGoals = [...new Set(allSessions.map(s => s.sessionGoal).filter(Boolean))];
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId);
+      toast({
+        title: "Session Deleted",
+        description: "Training session has been permanently deleted.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete training session.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const formatSessionDuration = (session: any) => {
     if (!session.startTime || !session.endTime) return 'N/A';
@@ -152,7 +170,7 @@ const SessionHistory = () => {
           <Card key={session.id} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between mb-4">
-                <div>
+                <div className="flex-1">
                   <h3 className="font-semibold text-lg">
                     {new Date(session.sessionDate).toLocaleDateString('en-US', {
                       weekday: 'long',
@@ -166,10 +184,36 @@ const SessionHistory = () => {
                     <p className="text-sm text-gray-500 italic">{session.customGoal}</p>
                   )}
                 </div>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatSessionDuration(session)}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatSessionDuration(session)}
+                  </Badge>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Training Session</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this training session? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleDeleteSession(session.id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
