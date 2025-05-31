@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import SessionForm from '@/components/trainer/SessionForm';
 import TrainingDashboard from '@/components/trainer/TrainingDashboard';
 import SessionHistory from '@/components/trainer/SessionHistory';
+import Navigation from '@/components/Navigation';
 import { useActiveSession } from '@/hooks/trainer/useActiveSession';
 
 const Trainer = () => {
@@ -84,6 +85,7 @@ const Trainer = () => {
           </TabsContent>
         </Tabs>
       </div>
+      <Navigation />
     </div>
   );
 };

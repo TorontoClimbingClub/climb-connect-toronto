@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, Target, Users, Zap, Trash2 } from 'lucide-react';
+import { CalendarDays, Clock, Target, Zap, Trash2 } from 'lucide-react';
 import { useTrainingSessions } from '@/hooks/trainer/useTrainingSessions';
 import { format, parseISO } from 'date-fns';
 import {
@@ -190,7 +190,7 @@ const SessionHistory = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <Target className="h-4 w-4 text-gray-500" />
                     <span className="text-sm">
@@ -202,12 +202,6 @@ const SessionHistory = () => {
                     <span className="text-sm">
                       <strong>Climbs:</strong> {session.total_climbs}
                       {session.max_grade_climbed && ` • Max: ${session.max_grade_climbed}`}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">
-                      <strong>Partners:</strong> {session.partner_count}
                     </span>
                   </div>
                 </div>
