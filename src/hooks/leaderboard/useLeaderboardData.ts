@@ -13,23 +13,51 @@ export function useLeaderboardDataFetcher() {
   const fetchAllLeaderboardData = useCallback(async (): Promise<LeaderboardData> => {
     console.log('🔍 [LEADERBOARD] Starting comprehensive leaderboard data fetch...');
 
-    // Fetch all required data in parallel
+    // Fetch all required data in parallel with enhanced queries
     const [
       { data: profilesData, error: profilesError },
       { data: completionsData, error: completionsError },
       { data: gearData, error: gearError },
       { data: eventData, error: eventError }
     ] = await Promise.all([
-      supabase.from('profiles').select('id, full_name').order('full_name'),
-      supabase.from('climb_completions').select('user_id, route_id'),
-      supabase.from('user_equipment').select('user_id, quantity'),
-      supabase.from('event_attendance_approvals').select('user_id, status, event_id, approved_at').eq('status', 'approved')
+      // Enhanced profile query to ensure all users are included
+      supabase
+        .from('profiles')
+        .select('id, full_name, allow_profile_viewing')
+        .order('full_name'),
+      supabase
+        .from('climb_completions')
+        .select('user_id, route_id'),
+      supabase
+        .from('user_equipment')
+        .select('user_id, quantity'),
+      // Enhanced event query to ensure all approved attendance is included
+      supabase
+        .from('event_attendance_approvals')
+        .select('user_id, status, event_id, approved_at')
+        .eq('status', 'approved')
     ]);
 
-    if (profilesError) throw profilesError;
-    if (completionsError) throw completionsError;
-    if (gearError) throw gearError;
-    if (eventError) throw eventError;
+    if (profilesError) {
+      console.error('❌ [LEADERBOARD] Profiles error:', profilesError);
+      throw profilesError;
+    }
+    if (completionsError) {
+      console.error('❌ [LEADERBOARD] Completions error:', completionsError);
+      throw completionsError;
+    }
+    if (gearError) {
+      console.error('❌ [LEADERBOARD] Gear error:', gearError);
+      throw gearError;
+    }
+    if (eventError) {
+      console.error('❌ [LEADERBOARD] Event error:', eventError);
+      throw eventError;
+    }
+
+    // Enhanced logging for admin user debugging
+    const adminProfiles = profilesData?.filter(p => p.full_name?.toLowerCase().includes('mateo')) || [];
+    console.log('👑 [LEADERBOARD] Admin profiles found:', adminProfiles);
 
     // Fetch routes data separately to avoid join issues
     const { data: routesData, error: routesError } = await supabase
@@ -51,15 +79,21 @@ export function useLeaderboardDataFetcher() {
     // Also fetch archived attendance data for event leaderboard
     let archivedEventData: any[] = [];
     try {
-      const { data: archived } = await supabase
+      const { data: archived, error: archivedError } = await supabase
         .from('archived_event_attendance')
         .select('user_id, event_id, attended_at');
-      archivedEventData = archived || [];
+      
+      if (archivedError) {
+        console.log('📊 [LEADERBOARD] Archived attendance query error:', archivedError);
+      } else {
+        archivedEventData = archived || [];
+        console.log('📊 [LEADERBOARD] Archived attendance loaded:', archivedEventData.length, 'records');
+      }
     } catch (error) {
-      console.log('📊 [LEADERBOARD] No archived attendance data available');
+      console.log('📊 [LEADERBOARD] No archived attendance data available:', error);
     }
 
-    // Combine current and archived event data
+    // Combine current and archived event data with enhanced admin tracking
     const combinedEventData = [...(eventData || [])];
     if (archivedEventData.length > 0) {
       const currentEventMap = new Map();
@@ -81,12 +115,21 @@ export function useLeaderboardDataFetcher() {
       });
     }
 
+    // Enhanced logging for admin event data
+    const adminEventRecords = combinedEventData.filter(record => {
+      const profile = profilesData?.find(p => p.id === record.user_id);
+      return profile?.full_name?.toLowerCase().includes('mateo');
+    });
+    console.log('👑 [LEADERBOARD] Admin event records:', adminEventRecords.length);
+
     console.log('✅ [LEADERBOARD] All data fetched successfully');
     console.log('📊 [LEADERBOARD] Data counts:', {
       profiles: profilesData?.length,
       completions: completionsWithRoutes.length,
       gear: gearData?.length,
-      events: combinedEventData.length
+      events: combinedEventData.length,
+      adminProfiles: adminProfiles.length,
+      adminEvents: adminEventRecords.length
     });
 
     // Process all leaderboard data
@@ -102,7 +145,7 @@ export function useLeaderboardDataFetcher() {
       topGearOwners: gearOwners,
       topEventAttendees: eventAttendees
     };
-  }, [toast]);
+  }, []);
 
   const handleFetchError = useCallback((error: any) => {
     console.error('❌ [LEADERBOARD] Error fetching leaderboard data:', error);

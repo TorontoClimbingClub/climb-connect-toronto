@@ -1,3 +1,4 @@
+
 import type { LeaderboardUser } from "@/hooks/types/leaderboard";
 
 export const processEventData = (
@@ -8,6 +9,10 @@ export const processEventData = (
     profiles: profilesData.length, 
     events: eventData.length 
   });
+
+  // Enhanced logging for debugging admin visibility
+  const adminProfiles = profilesData.filter(p => p.full_name?.toLowerCase().includes('mateo'));
+  console.log('👑 [EVENT DEBUG] Admin profiles found:', adminProfiles);
 
   // Log sample data to understand structure
   if (eventData.length > 0) {
@@ -35,7 +40,14 @@ export const processEventData = (
     }
     
     acc[userId]++;
-    console.log(`📈 [EVENT STATS] User ${userId} approved events: ${acc[userId]}`);
+    
+    // Enhanced logging for admin users
+    const userProfile = profilesData.find(p => p.id === userId);
+    if (userProfile?.full_name?.toLowerCase().includes('mateo')) {
+      console.log(`👑 [EVENT ADMIN] Admin ${userProfile.full_name} approved events: ${acc[userId]}`);
+    }
+    
+    console.log(`📈 [EVENT STATS] User ${userId} (${userProfile?.full_name || 'Unknown'}) approved events: ${acc[userId]}`);
     
     return acc;
   }, {});
@@ -43,12 +55,23 @@ export const processEventData = (
   console.log('📊 [EVENT STATS] User event counts calculated:', Object.keys(userEventCounts).length, 'users');
   console.log('📊 [EVENT STATS] Full user counts:', userEventCounts);
 
-  // Create leaderboard entries
+  // Create leaderboard entries with enhanced admin debugging
   const results = Object.entries(userEventCounts)
     .map(([userId, eventCount]: [string, any]) => {
       const profile = profilesData.find(p => p.id === userId);
       if (!profile) {
         console.warn(`⚠️ [EVENT WARNING] Profile not found for user: ${userId}`);
+        return null;
+      }
+      
+      // Enhanced logging for admin inclusion
+      if (profile.full_name?.toLowerCase().includes('mateo')) {
+        console.log(`👑 [EVENT ADMIN INCLUDE] Admin ${profile.full_name} - Events: ${eventCount}, Profile visible: ${profile.allow_profile_viewing !== false}`);
+      }
+      
+      // Check if profile viewing is allowed (default to true if not set)
+      if (profile.allow_profile_viewing === false) {
+        console.log(`🔒 [EVENT PRIVACY] User ${userId} (${profile.full_name}) excluded due to privacy settings`);
         return null;
       }
       
@@ -65,6 +88,10 @@ export const processEventData = (
 
   console.log(`📊 [EVENT RESULT] Event leaderboard:`, results.length, 'entries');
   console.log(`📊 [EVENT RESULT] Top entries:`, results);
+  
+  // Final check for admin in results
+  const adminInResults = results.find(r => r.full_name?.toLowerCase().includes('mateo'));
+  console.log(`👑 [EVENT FINAL] Admin in final results:`, adminInResults);
   
   return results;
 };
