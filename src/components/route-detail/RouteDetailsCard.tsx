@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,15 +15,13 @@ interface RouteDetailsCardProps {
   route: ClimbingRoute;
 }
 
+/**
+ * Route details card component with optimized data fetching
+ */
 const RouteDetailsCard: React.FC<RouteDetailsCardProps> = ({ route }) => {
   const { user } = useAuth();
   const { isCompleted, toggleCompletion, loading } = useClimbCompletions();
-  const { betaGrade, fetchSubmissions } = useGradeSubmissions(route.id);
-
-  // Refresh submissions when component mounts or route changes
-  useEffect(() => {
-    fetchSubmissions();
-  }, [fetchSubmissions, route.id]);
+  const { betaGrade } = useGradeSubmissions(route.id);
 
   const handleToggleCompletion = () => {
     toggleCompletion(route.id);

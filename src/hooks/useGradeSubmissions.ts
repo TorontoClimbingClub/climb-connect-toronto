@@ -1,68 +1,72 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { RouteGradeSubmission, RouteBetaGrade } from "@/types/routes";
 
+/**
+ * Hook for managing route grade submissions and beta grades
+ * Optimized for performance with memoized calculations and efficient data fetching
+ */
 export const useGradeSubmissions = (routeId: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<RouteGradeSubmission[]>([]);
   const [betaGrade, setBetaGrade] = useState<RouteBetaGrade | null>(null);
-  const [userSubmission, setUserSubmission] = useState<RouteGradeSubmission | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Memoize user's submission to prevent unnecessary re-renders
+  const userSubmission = useMemo(() => {
+    if (!user || !submissions.length) return null;
+    return submissions.find(s => s.user_id === user.id) || null;
+  }, [submissions, user]);
 
   const fetchSubmissions = useCallback(async () => {
     if (!routeId) return;
 
     try {
-      // Fetch all submissions for this route
-      const { data: submissionsData, error: submissionsError } = await supabase
-        .from('route_grade_submissions')
-        .select('*')
-        .eq('route_id', routeId)
-        .order('created_at', { ascending: false });
+      // Fetch both submissions and beta grade in parallel for better performance
+      const [submissionsResult, betaGradeResult] = await Promise.all([
+        supabase
+          .from('route_grade_submissions')
+          .select('*')
+          .eq('route_id', routeId)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('route_beta_grades')
+          .select('*')
+          .eq('route_id', routeId)
+          .single()
+      ]);
 
-      if (submissionsError) throw submissionsError;
+      if (submissionsResult.error) throw submissionsResult.error;
+      setSubmissions(submissionsResult.data || []);
 
-      setSubmissions(submissionsData || []);
-
-      // Find current user's submission
-      if (user && submissionsData) {
-        const currentUserSubmission = submissionsData.find(s => s.user_id === user.id);
-        setUserSubmission(currentUserSubmission || null);
-      }
-
-      // Fetch beta grade
-      const { data: betaGradeData, error: betaGradeError } = await supabase
-        .from('route_beta_grades')
-        .select('*')
-        .eq('route_id', routeId)
-        .single();
-
-      if (betaGradeError && betaGradeError.code !== 'PGRST116') { // PGRST116 is "not found"
-        console.error('Error fetching beta grade:', betaGradeError);
-      } else if (betaGradeData) {
-        // Convert the Json type to our expected Record<string, number>
-        const gradeDistribution = betaGradeData.grade_distribution as Record<string, number>;
-        
+      // Handle beta grade (no error if not found)
+      if (betaGradeResult.error && betaGradeResult.error.code !== 'PGRST116') {
+        console.error('Error fetching beta grade:', betaGradeResult.error);
+        setBetaGrade(null);
+      } else if (betaGradeResult.data) {
+        const gradeDistribution = betaGradeResult.data.grade_distribution as Record<string, number>;
         setBetaGrade({
-          route_id: betaGradeData.route_id,
-          beta_grade: betaGradeData.beta_grade,
-          submission_count: betaGradeData.submission_count,
+          route_id: betaGradeResult.data.route_id,
+          beta_grade: betaGradeResult.data.beta_grade,
+          submission_count: betaGradeResult.data.submission_count,
           grade_distribution: gradeDistribution,
-          last_updated: betaGradeData.last_updated
+          last_updated: betaGradeResult.data.last_updated
         });
       } else {
         setBetaGrade(null);
       }
     } catch (error) {
       console.error('Error fetching grade submissions:', error);
+      setSubmissions([]);
+      setBetaGrade(null);
     }
-  }, [routeId, user]);
+  }, [routeId]);
 
-  const submitGrade = async (grade: string, notes: string, climbingStyle: string) => {
+  const submitGrade = useCallback(async (grade: string, notes: string, climbingStyle: string) => {
     if (!user || !routeId) return false;
 
     setLoading(true);
@@ -98,7 +102,7 @@ export const useGradeSubmissions = (routeId: string) => {
         description: `Your grade assessment has been ${userSubmission ? 'updated' : 'submitted'} successfully`,
       });
 
-      await fetchSubmissions(); // Refresh data
+      await fetchSubmissions();
       return true;
     } catch (error) {
       console.error('Error submitting grade:', error);
@@ -111,9 +115,9 @@ export const useGradeSubmissions = (routeId: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, routeId, userSubmission, fetchSubmissions, toast]);
 
-  const deleteSubmission = async () => {
+  const deleteSubmission = useCallback(async () => {
     if (!user || !userSubmission) return false;
 
     setLoading(true);
@@ -130,7 +134,7 @@ export const useGradeSubmissions = (routeId: string) => {
         description: "Your grade assessment has been removed",
       });
 
-      await fetchSubmissions(); // Refresh data
+      await fetchSubmissions();
       return true;
     } catch (error) {
       console.error('Error deleting submission:', error);
@@ -143,7 +147,7 @@ export const useGradeSubmissions = (routeId: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, userSubmission, fetchSubmissions, toast]);
 
   return {
     submissions,

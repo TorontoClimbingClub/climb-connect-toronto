@@ -5,11 +5,14 @@ import { RouteHeader } from "@/components/route-detail/RouteHeader";
 import RouteDetailsCard from "@/components/route-detail/RouteDetailsCard";
 import { PhotosSection } from "@/components/route-detail/PhotosSection";
 import { CommentsSection } from "@/components/route-detail/CommentsSection";
-import { useRouteData } from "@/hooks/useRouteData";
+import { useOptimizedRouteData } from "@/hooks/useOptimizedRouteData";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useRouteManagement } from "@/hooks/useRouteManagement";
 
+/**
+ * Route detail page with optimized data fetching and error handling
+ */
 export default function RouteDetail() {
   const { routeId } = useParams<{ routeId: string }>();
   const navigate = useNavigate();
@@ -45,7 +48,7 @@ export default function RouteDetail() {
     loading: dataLoading,
     addComment,
     deleteComment
-  } = useRouteData(routeId || "");
+  } = useOptimizedRouteData(routeId || "");
 
   // Show loading state while routes are being fetched
   if (loading) {
