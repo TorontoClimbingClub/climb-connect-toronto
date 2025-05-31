@@ -1,6 +1,5 @@
-
 import { useEffect, useState, useCallback } from "react";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { EventCard } from "@/components/events/EventCard";
 import { EmptyEventsState } from "@/components/events/EmptyEventsState";
 import { CommunityMemberCard } from "@/components/events/CommunityMemberCard";

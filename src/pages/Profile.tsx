@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import { useEquipmentProfile } from "@/hooks/useEquipmentProfile";
 import { ProfileInformation } from "@/components/profile/ProfileInformation";

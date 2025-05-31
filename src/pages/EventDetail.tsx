@@ -1,8 +1,7 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { EventHeader } from "@/components/event-detail/EventHeader";
 import { EventDetailsCard } from "@/components/event-detail/EventDetailsCard";
 import { CarpoolCard } from "@/components/event-detail/CarpoolCard";

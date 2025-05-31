@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, ArrowRight, ExternalLink, Mountain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { Leaderboards } from "@/components/home/Leaderboards";
 import { useResponsiveContainer } from "@/hooks/useResponsiveContainer";
 

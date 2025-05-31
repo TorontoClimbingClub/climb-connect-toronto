@@ -1,6 +1,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { CombinedEventsAttendanceTab } from "@/components/admin/CombinedEventsAttendanceTab";
 import { RouteManagementTab } from "@/components/admin/RouteManagementTab";

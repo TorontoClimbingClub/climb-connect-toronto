@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { EnhancedRouteFilters } from "@/components/filters/EnhancedRouteFilters";
 import { PageHeader } from "@/components/routes/PageHeader";
 import { CragCard } from "@/components/routes/CragCard";
