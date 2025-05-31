@@ -15,10 +15,9 @@ const SessionForm = () => {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle>Ready to Start Training?</CardTitle>
+        <CardTitle>New Training Session</CardTitle>
         <CardDescription>
-          Begin a new climbing session and track your progress in real-time. 
-          Your session will be saved automatically and persist even if you close the app.
+          Start a climbing session that will track your progress in real-time
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center">

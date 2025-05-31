@@ -46,7 +46,7 @@ export function useActiveSession() {
     }
   }, [localSession]);
 
-  const { data: activeDbSession } = useQuery({
+  const { data: activeDbSession, isLoading: isLoadingSession } = useQuery({
     queryKey: ['active-session'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -231,7 +231,8 @@ export function useActiveSession() {
     }
   };
 
-  const hasActiveSession = !!(activeDbSession && localSession);
+  // Determine if there's an active session - both DB session and local session must exist
+  const hasActiveSession = !!(activeDbSession && localSession && !isLoadingSession);
 
   return {
     activeSession: localSession,
@@ -240,6 +241,7 @@ export function useActiveSession() {
     endSession: endSessionMutation.mutate,
     updateLocalSession,
     isStarting: startSessionMutation.isPending,
-    isEnding: endSessionMutation.isPending
+    isEnding: endSessionMutation.isPending,
+    isLoadingSession
   };
 }
