@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, Mountain, Activity, Users, User, Settings } from 'lucide-react';
+import { Home, Calendar, Mountain, Activity, User, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccessControl } from '@/hooks/useAccessControl';
 
 const Navigation = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const { hasAccess: canAccess } = useAccessControl();
+  const { hasAccess: hasAdminAccess } = useAccessControl('admin');
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -29,9 +29,8 @@ const Navigation = () => {
     navItems.push({ path: '/profile', icon: User, label: 'Profile' });
   }
 
-  // Check if user has admin access - for simplicity, checking if user exists
-  // In a real app, you'd check user roles from the profile
-  if (user) {
+  // Only show admin tab if user has admin access
+  if (user && hasAdminAccess) {
     navItems.push({ path: '/admin', icon: Settings, label: 'Admin' });
   }
 
