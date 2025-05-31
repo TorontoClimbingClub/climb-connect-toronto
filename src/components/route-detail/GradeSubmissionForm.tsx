@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,10 +16,26 @@ interface GradeSubmissionFormProps {
 }
 
 const GradeSubmissionForm: React.FC<GradeSubmissionFormProps> = ({ route }) => {
-  const { userSubmission, loading, submitGrade, deleteSubmission } = useGradeSubmissions(route.id);
+  const { userSubmission, loading, submitGrade, deleteSubmission, fetchSubmissions } = useGradeSubmissions(route.id);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedGrade, setSelectedGrade] = useState(userSubmission?.submitted_grade || '');
-  const [notes, setNotes] = useState(userSubmission?.notes || '');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [notes, setNotes] = useState('');
+
+  // Fetch submissions when component mounts or route changes
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
+
+  // Update form state when userSubmission changes
+  useEffect(() => {
+    if (userSubmission) {
+      setSelectedGrade(userSubmission.submitted_grade);
+      setNotes(userSubmission.notes || '');
+    } else {
+      setSelectedGrade('');
+      setNotes('');
+    }
+  }, [userSubmission]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

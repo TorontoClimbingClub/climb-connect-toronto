@@ -20,9 +20,10 @@ const RouteDetailsCard: React.FC<RouteDetailsCardProps> = ({ route }) => {
   const { isCompleted, toggleCompletion, loading } = useClimbCompletions();
   const { betaGrade, fetchSubmissions } = useGradeSubmissions(route.id);
 
+  // Refresh submissions when component mounts or route changes
   useEffect(() => {
     fetchSubmissions();
-  }, [fetchSubmissions]);
+  }, [fetchSubmissions, route.id]);
 
   const handleToggleCompletion = () => {
     toggleCompletion(route.id);
