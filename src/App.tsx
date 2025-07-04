@@ -34,7 +34,7 @@ const App = () => (
             } />
             <Route path="/chat" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout fullscreen>
                   <Chat />
                 </Layout>
               </ProtectedRoute>

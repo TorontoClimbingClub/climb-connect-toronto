@@ -57,7 +57,7 @@ export default function Events() {
           max_participants,
           created_by,
           created_at,
-          profiles (
+          profiles!created_by (
             display_name
           )
         `)
@@ -89,13 +89,23 @@ export default function Events() {
       );
 
       setEvents(eventsWithCounts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading events:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load events.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a table not found error (migration not applied)
+      if (error?.message?.includes('relation "public.events" does not exist')) {
+        toast({
+          title: "Database Setup Required",
+          description: "The events table hasn't been created yet. Please run the database migrations.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: `Failed to load events: ${error?.message || 'Unknown error'}`,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -194,8 +204,27 @@ export default function Events() {
   useEffect(() => {
     if (user) {
       loadEvents();
+    } else {
+      setLoading(false);
     }
   }, [user]);
+
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
+        </div>
+        <Card className="text-center p-8">
+          <CardContent>
+            <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Authentication Required</h3>
+            <p className="text-gray-500">Please sign in to view and join climbing events.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -11,11 +11,15 @@ npm run ui:update-map
 node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 ```
 
-**Last Updated:** 2025-07-04T17:36:28.356Z
+## ⚠️ STALE MAP WARNING
+**This map may be outdated:** Source files have been modified since last MAP generation
+**Action Required:** Run `npm run ui:update-map` before proceeding
+
+**Last Updated:** 2025-07-04T20:13:15.168Z
 **Project:** climb-connect-toronto
 **Components Scanned:** 60
 **Total Files:** 60
-**Latest File Modified:** Fri Jul 04 2025 05:42:46 GMT-0400 (Eastern Daylight Time)
+**Latest File Modified:** Fri Jul 04 2025 16:06:37 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -54,122 +58,50 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Navigate** (line 27) - `navigate`
   - Context: `return <Navigate to="/auth" replace />;`
 
-#### handleSaveEdit
+#### loadMessages
 **File:** `src/components/enhanced-realtime-chat.tsx`
-**Lines:** 682
-**Last Modified:** 2025-07-04T09:42:23.540Z
+**Lines:** 280
+**Last Modified:** 2025-07-04T20:06:27.476Z
 
 **Key Elements:**
-- **Avatar** (line 103) - `avatar`
-  - Context: `<Avatar className="w-8 h-8 flex-shrink-0">`
-- **AvatarImage** (line 104) - `avatarimage`
-  - Context: `<AvatarImage src={message.avatar_url} />`
-- **AvatarFallback** (line 105) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **Textarea** (line 135) - `textarea`
-  - Context: `<Textarea`
-- **Button** (line 142) - `button`
-  - Context: `<Button size="sm" onClick={handleSaveEdit}>`
-- **Check** (line 143) - `check`
-  - Context: `<Check className="h-3 w-3" />`
-- **Button** (line 145) - `button`
-  - Context: `<Button size="sm" variant="outline" onClick={handleCancelEdit}>`
-- **X** (line 146) - `x`
-  - Context: `<X className="h-3 w-3" />`
-- **Popover** (line 161) - `popover`
-  - Context: `<Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>`
-- **PopoverTrigger** (line 162) - `popovertrigger`
-  - Context: `<PopoverTrigger asChild>`
-- **Button** (line 163) - `button`
-  - Context: `<Button size="sm" variant="ghost" className="h-6 w-6 p-0">`
-- **Smile** (line 164) - `smile`
-  - Context: `<Smile className="h-3 w-3" />`
-- **PopoverContent** (line 167) - `popovercontent`
-  - Context: `<PopoverContent className="w-64 p-2">`
-- **Button** (line 170) - `button`
-  - Context: `<Button`
-- **Button** (line 188) - `button`
-  - Context: `<Button`
-- **Edit2** (line 194) - `edit2`
-  - Context: `<Edit2 className="h-3 w-3" />`
-- **Tooltip** (line 206) - `tooltip`
-  - Context: `<Tooltip key={reaction.emoji}>`
-- **TooltipTrigger** (line 207) - `tooltiptrigger`
-  - Context: `<TooltipTrigger asChild>`
-- **Button** (line 208) - `button`
-  - Context: `<Button`
-- **TooltipContent** (line 219) - `tooltipcontent`
-  - Context: `<TooltipContent>`
-- **ChatMessage** (line 260) - `chatmessage`
-  - Context: `const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);`
-- **ChatMessage** (line 261) - `chatmessage`
-  - Context: `const [filteredMessages, setFilteredMessages] = useState<ChatMessage[]>(initialM...`
-- **UserProfile** (line 269) - `userprofile`
-  - Context: `const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);`
-- **HTMLDivElement** (line 272) - `htmldivelement`
+- **ChatMessage** (line 29) - `chatmessage`
+  - Context: `const [messages, setMessages] = useState<ChatMessage[]>([]);`
+- **HTMLDivElement** (line 34) - `htmldivelement`
   - Context: `const scrollAreaRef = useRef<HTMLDivElement>(null);`
-- **HTMLTextAreaElement** (line 273) - `htmltextareaelement`
-  - Context: `const textareaRef = useRef<HTMLTextAreaElement>(null);`
-- **HTMLTextAreaElement** (line 499) - `htmltextareaelement`
-  - Context: `const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {`
-- **Card** (line 553) - `card`
-  - Context: `<Card className={`h-[calc(100vh-12rem)] ${className}`}>`
-- **CardHeader** (line 554) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 555) - `cardtitle`
-  - Context: `<CardTitle>Club Chat</CardTitle>`
-- **CardContent** (line 557) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **Skeleton** (line 560) - `skeleton`
-  - Context: `<Skeleton className="h-8 w-8 rounded-full" />`
-- **Skeleton** (line 562) - `skeleton`
-  - Context: `<Skeleton className="h-4 w-20" />`
-- **Skeleton** (line 563) - `skeleton`
-  - Context: `<Skeleton className="h-16 w-64" />`
-- **Card** (line 573) - `card`
-  - Context: `<Card className={`h-[calc(100vh-12rem)] ${className}`}>`
-- **CardHeader** (line 574) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 576) - `cardtitle`
-  - Context: `<CardTitle className="flex items-center space-x-2">`
-- **Button** (line 582) - `button`
-  - Context: `<Button`
-- **Search** (line 587) - `search`
-  - Context: `<Search className="h-4 w-4" />`
-- **Input** (line 592) - `input`
+- **Card** (line 174) - `card`
+  - Context: `<Card className="h-full flex items-center justify-center">`
+- **Card** (line 181) - `card`
+  - Context: `<Card className="h-full w-full flex flex-col border-0 rounded-none bg-white">`
+- **Input** (line 190) - `input`
   - Context: `<Input`
-- **CardContent** (line 601) - `cardcontent`
-  - Context: `<CardContent className="flex flex-col h-full p-0">`
-- **ScrollArea** (line 602) - `scrollarea`
-  - Context: `<ScrollArea ref={scrollAreaRef} className="flex-1 p-4">`
-- **MessageItem** (line 612) - `messageitem`
-  - Context: `<MessageItem`
-- **TypingIndicator** (line 625) - `typingindicator`
-  - Context: `<TypingIndicator typingUsers={typingUsers} />`
-- **Textarea** (line 631) - `textarea`
-  - Context: `<Textarea`
-- **Button** (line 648) - `button`
+- **Button** (line 197) - `button`
   - Context: `<Button`
-- **Avatar** (line 655) - `avatar`
-  - Context: `<Avatar className="w-6 h-6 mr-2">`
-- **AvatarImage** (line 656) - `avatarimage`
-  - Context: `<AvatarImage src={profile.avatar_url} />`
-- **AvatarFallback** (line 657) - `avatarfallback`
+- **Search** (line 205) - `search`
+  - Context: `<Search className="h-4 w-4" />`
+- **ScrollArea** (line 211) - `scrollarea`
+  - Context: `<ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>`
+- **Avatar** (line 221) - `avatar`
+  - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
+- **AvatarImage** (line 222) - `avatarimage`
+  - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
+- **AvatarFallback** (line 223) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 668) - `button`
+- **Input** (line 257) - `input`
+  - Context: `<Input`
+- **Button** (line 269) - `button`
   - Context: `<Button`
-- **Send** (line 674) - `send`
+- **Send** (line 274) - `send`
   - Context: `<Send className="h-4 w-4" />`
 
 ### 📁 src/components/layout/
 
 #### Layout
 **File:** `src/components/layout/Layout.tsx`
-**Lines:** 19
-**Last Modified:** 2025-07-03T21:42:28.149Z
+**Lines:** 26
+**Last Modified:** 2025-07-04T20:06:37.128Z
 
 **Key Elements:**
-- **NavBar** (line 12) - `navbar`
+- **NavBar** (line 13) - `navbar`
   - Context: `<NavBar />`
 
 #### location
@@ -1058,7 +990,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### toaster
 **File:** `src/components/ui/toaster.tsx`
 **Lines:** 34
-**Last Modified:** 2025-07-03T21:42:28.360Z
+**Last Modified:** 2025-07-04T17:59:11.542Z
 
 **Key Elements:**
 - **ToastProvider** (line 15) - `toastprovider`
@@ -1169,8 +1101,8 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### Chat
 **File:** `src/pages/Chat.tsx`
-**Lines:** 34
-**Last Modified:** 2025-07-04T09:42:46.825Z
+**Lines:** 30
+**Last Modified:** 2025-07-04T20:06:18.642Z
 
 **Key Elements:**
 - **EnhancedRealtimeChat** (line 20) - `enhancedrealtimechat`

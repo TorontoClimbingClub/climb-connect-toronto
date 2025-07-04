@@ -1,73 +1,155 @@
-# Welcome to your Lovable project
+# Climb Connect Toronto
 
-## Project info
+A social platform for the Toronto climbing community. Connect with local climbers, join events, chat in real-time, and build the climbing community together.
 
-**URL**: https://lovable.dev/projects/8f29b230-267f-43bc-9cd2-2cdea68f58bd
+## Features
 
-## How can I edit this code?
+### 🧗‍♀️ **Community Chat**
+- Real-time messaging with the climbing community
+- Message search and history
+- User profiles with avatars
+- Typing indicators and message reactions
+- @username mentions and emoji reactions
+- Message editing with revision history
 
-There are several ways of editing your application.
+### 📅 **Events System**
+- Create and manage climbing events
+- Event-specific chat rooms for participants
+- Participant tracking and limits
+- Location and date management
 
-**Use Lovable**
+### 👥 **User Profiles**
+- Customizable profiles with display names and avatars
+- Authentication and secure access
+- User presence and activity status
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8f29b230-267f-43bc-9cd2-2cdea68f58bd) and start prompting.
+### 🎨 **Modern UI**
+- Responsive design with mobile-first approach
+- Dark/light theme support
+- Clean, intuitive interface built with shadcn/ui
+- Professional chat experience similar to Discord/Slack
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI Components**: shadcn/ui + Radix UI + Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Real-time + Auth + Storage)
+- **State Management**: React Query + React Context
+- **Routing**: React Router DOM
+- **Forms**: React Hook Form + Zod validation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Database Architecture
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Core Tables
+- `profiles` - User profiles extending auth.users
+- `messages` - Main community chat messages
+- `events` - Climbing events with location and participation
+- `event_participants` - Junction table for event attendance
+- `event_messages` - Event-specific chat messages
 
-Follow these steps:
+### Advanced Chat Features
+- `message_reactions` - Emoji reactions with user attribution
+- `typing_indicators` - Real-time typing status tracking
+- Enhanced messages with editing, mentions, and reactions
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Security
+- Row Level Security (RLS) policies on all tables
+- Authenticated access with proper permissions
+- Secure file storage for avatars
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Development
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Supabase account and project
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone git@github.com:TorontoClimbingClub/climb-connect-toronto.git
+   cd climb-connect-toronto
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   Create `.env.local` with your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the app**
+   Open [http://localhost:8080](http://localhost:8080)
+
+### Database Setup
+
+1. **Run migrations**
+   Apply the SQL migrations in `supabase/migrations/` to set up:
+   - Basic schema (profiles, messages, events)
+   - Enhanced chat features (reactions, typing indicators, editing)
+   - RLS policies and security
+
+2. **Configure Authentication**
+   Set up Supabase Auth with email/password or social providers
+
+### Build for Production
+
+```bash
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+## Architecture
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Component Structure
+- `src/components/` - Reusable UI components
+- `src/pages/` - Main application pages (Home, Chat, Events, Profile)
+- `src/hooks/` - Custom React hooks for Supabase integration
+- `src/utils/` - Utility functions and helpers
+- `src/integrations/` - External service integrations (Supabase)
 
-**Use GitHub Codespaces**
+### Key Components
+- `Layout` - Main app layout with navigation
+- `enhanced-realtime-chat` - Advanced chat with all features
+- `NavBar` - Responsive navigation
+- `Auth` - Authentication forms and logic
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Real-time Features
+- Supabase postgres_changes subscriptions
+- Real-time message updates
+- Typing indicators and presence
+- Live reactions and editing
 
-## What technologies are used for this project?
+## Contributing
 
-This project is built with:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## License
 
-## How can I deploy this project?
+This project is open source and available under the [MIT License](LICENSE).
 
-Simply open [Lovable](https://lovable.dev/projects/8f29b230-267f-43bc-9cd2-2cdea68f58bd) and click on Share -> Publish.
+## Community
 
-## Can I connect a custom domain to my Lovable project?
+Join the Toronto climbing community and help build this platform together!
 
-Yes, you can!
+- **GitHub**: [TorontoClimbingClub/climb-connect-toronto](https://github.com/TorontoClimbingClub/climb-connect-toronto)
+- **Issues**: Report bugs and request features
+- **Discussions**: Share ideas and get help
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Built with ❤️ by the Toronto Climbing Club
