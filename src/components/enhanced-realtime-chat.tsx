@@ -154,8 +154,8 @@ function MessageItem({
             )}
           </div>
           
-          {/* Message actions */}
-          {!isEditing && (
+          {/* Message actions - DISABLED until migration applied */}
+          {false && !isEditing && (
             <div className={`absolute -top-2 ${isOwn ? 'left-0' : 'right-0'} opacity-0 group-hover:opacity-100 transition-opacity`}>
               <div className="flex items-center space-x-1 bg-white border rounded-lg shadow-sm px-2 py-1">
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
@@ -199,8 +199,8 @@ function MessageItem({
           )}
         </div>
         
-        {/* Reactions */}
-        {reactions.length > 0 && (
+        {/* Reactions - DISABLED until migration applied */}
+        {false && reactions.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {reactions.map((reaction) => (
               <Tooltip key={reaction.emoji}>
@@ -313,6 +313,7 @@ export function EnhancedRealtimeChat({
 
     const loadMessages = async () => {
       try {
+        console.log('Loading messages for user:', user);
         const { data, error } = await supabase
           .from('messages')
           .select(`
@@ -320,9 +321,6 @@ export function EnhancedRealtimeChat({
             content,
             created_at,
             user_id,
-            edited_at,
-            original_content,
-            mentioned_users,
             profiles (
               display_name,
               avatar_url
@@ -331,7 +329,12 @@ export function EnhancedRealtimeChat({
           .order('created_at', { ascending: true })
           .limit(50);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error loading messages from database:', error);
+          throw error;
+        }
+
+        console.log('Raw messages from database:', data);
 
         const chatMessages: ChatMessage[] = (data || []).map(msg => ({
           id: msg.id,
@@ -340,14 +343,16 @@ export function EnhancedRealtimeChat({
           avatar_url: msg.profiles?.avatar_url || undefined,
           timestamp: msg.created_at || new Date().toISOString(),
           user_id: msg.user_id || undefined,
-          edited_at: msg.edited_at || undefined,
-          original_content: msg.original_content || undefined,
-          mentioned_users: msg.mentioned_users || [],
+          edited_at: undefined, // Will be supported after migration
+          original_content: undefined, // Will be supported after migration
+          mentioned_users: [], // Will be supported after migration
         }));
 
+        console.log('Processed chat messages:', chatMessages);
         setMessages(chatMessages);
       } catch (error) {
         console.error('Error loading messages:', error);
+        alert(`Failed to load messages: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -373,9 +378,6 @@ export function EnhancedRealtimeChat({
               content,
               created_at,
               user_id,
-              edited_at,
-              original_content,
-              mentioned_users,
               profiles (
                 display_name,
                 avatar_url
@@ -392,9 +394,9 @@ export function EnhancedRealtimeChat({
               avatar_url: newMsg.profiles?.avatar_url || undefined,
               timestamp: newMsg.created_at || new Date().toISOString(),
               user_id: newMsg.user_id || undefined,
-              edited_at: newMsg.edited_at || undefined,
-              original_content: newMsg.original_content || undefined,
-              mentioned_users: newMsg.mentioned_users || [],
+              edited_at: undefined, // Will be supported after migration
+              original_content: undefined, // Will be supported after migration
+              mentioned_users: [], // Will be supported after migration
             };
 
             setMessages(prev => [...prev, chatMessage]);
@@ -420,9 +422,6 @@ export function EnhancedRealtimeChat({
               content,
               created_at,
               user_id,
-              edited_at,
-              original_content,
-              mentioned_users,
               profiles (
                 display_name,
                 avatar_url
@@ -439,9 +438,9 @@ export function EnhancedRealtimeChat({
               avatar_url: updatedMsg.profiles?.avatar_url || undefined,
               timestamp: updatedMsg.created_at || new Date().toISOString(),
               user_id: updatedMsg.user_id || undefined,
-              edited_at: updatedMsg.edited_at || undefined,
-              original_content: updatedMsg.original_content || undefined,
-              mentioned_users: updatedMsg.mentioned_users || [],
+              edited_at: undefined, // Will be supported after migration
+              original_content: undefined, // Will be supported after migration
+              mentioned_users: [], // Will be supported after migration
             };
 
             setMessages(prev => 
@@ -460,21 +459,30 @@ export function EnhancedRealtimeChat({
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !user || isSending) return;
 
+    console.log('Attempting to send message:', newMessage.trim());
+    console.log('User:', user);
+
     setIsSending(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert([{
           content: newMessage.trim(),
           user_id: user.id,
-        }]);
+        }])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Message sent successfully:', data);
       setNewMessage('');
-      stopTyping();
+      // stopTyping(); // Disabled until migration
     } catch (error) {
       console.error('Error sending message:', error);
+      alert(`Failed to send message: ${error.message}`);
     } finally {
       setIsSending(false);
     }
@@ -498,23 +506,23 @@ export function EnhancedRealtimeChat({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    const position = e.target.selectionStart;
-    
     setNewMessage(value);
-    setCursorPosition(position);
-    handleTyping();
-
-    // Check for mention trigger
-    const beforeCursor = value.slice(0, position);
-    const mentionMatch = beforeCursor.match(/@(\w*)$/);
     
-    if (mentionMatch) {
-      setMentionQuery(mentionMatch[1]);
-      setShowMentionSuggestions(true);
-    } else {
-      setShowMentionSuggestions(false);
-      setMentionQuery('');
-    }
+    // Typing indicators disabled until migration
+    // handleTyping();
+
+    // Mention suggestions disabled until migration
+    // const position = e.target.selectionStart;
+    // setCursorPosition(position);
+    // const beforeCursor = value.slice(0, position);
+    // const mentionMatch = beforeCursor.match(/@(\w*)$/);
+    // if (mentionMatch) {
+    //   setMentionQuery(mentionMatch[1]);
+    //   setShowMentionSuggestions(true);
+    // } else {
+    //   setShowMentionSuggestions(false);
+    //   setMentionQuery('');
+    // }
   };
 
   const handleMentionSelect = (profile: UserProfile) => {
@@ -622,7 +630,7 @@ export function EnhancedRealtimeChat({
           )}
         </ScrollArea>
         
-        <TypingIndicator typingUsers={typingUsers} />
+        {/* <TypingIndicator typingUsers={typingUsers} /> - DISABLED until migration applied */}
         
         <div className="border-t p-4">
           <div className="relative">
@@ -630,18 +638,17 @@ export function EnhancedRealtimeChat({
               <div className="flex-1 relative">
                 <Textarea
                   ref={textareaRef}
-                  placeholder="Type your message... Use @username to mention someone"
+                  placeholder="Type your message..."
                   value={newMessage}
                   onChange={handleInputChange}
                   onKeyPress={handleKeyPress}
-                  onBlur={stopTyping}
                   disabled={isSending}
                   className="min-h-[40px] max-h-[120px] resize-none pr-12"
                   rows={1}
                 />
                 
-                {/* Mention suggestions */}
-                {showMentionSuggestions && mentionSuggestions.length > 0 && (
+                {/* Mention suggestions - DISABLED until migration applied */}
+                {false && showMentionSuggestions && mentionSuggestions.length > 0 && (
                   <div className="absolute bottom-full left-0 mb-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                     <div className="p-2 space-y-1">
                       {mentionSuggestions.map((profile) => (

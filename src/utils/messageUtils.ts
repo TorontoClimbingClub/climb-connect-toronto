@@ -42,16 +42,18 @@ export function highlightMentions(content: string, currentUsername: string): Rea
     // Add highlighted mention
     const isSelfMention = mention.username.toLowerCase() === currentUsername.toLowerCase();
     parts.push(
-      <span
-        key={`mention-${index}`}
-        className={`font-semibold ${
-          isSelfMention 
-            ? 'text-blue-600 bg-blue-100 px-1 rounded' 
-            : 'text-green-600'
-        }`}
-      >
-        @{mention.username}
-      </span>
+      React.createElement(
+        'span',
+        {
+          key: `mention-${index}`,
+          className: `font-semibold ${
+            isSelfMention 
+              ? 'text-blue-600 bg-blue-100 px-1 rounded' 
+              : 'text-green-600'
+          }`
+        },
+        `@${mention.username}`
+      )
     );
 
     lastIndex = mention.endIndex;

@@ -11,14 +11,10 @@ npm run ui:update-map
 node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 ```
 
-## ⚠️ STALE MAP WARNING
-**This map may be outdated:** Source files have been modified since last MAP generation
-**Action Required:** Run `npm run ui:update-map` before proceeding
-
-**Last Updated:** 2025-07-04T09:43:25.930Z
+**Last Updated:** 2025-07-04T17:36:28.356Z
 **Project:** climb-connect-toronto
-**Components Scanned:** 61
-**Total Files:** 61
+**Components Scanned:** 60
+**Total Files:** 60
 **Latest File Modified:** Fri Jul 04 2025 05:42:46 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
@@ -163,53 +159,6 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Button** (line 668) - `button`
   - Context: `<Button`
 - **Send** (line 674) - `send`
-  - Context: `<Send className="h-4 w-4" />`
-
-#### loadMessages
-**File:** `src/components/realtime-chat.tsx`
-**Lines:** 288
-**Last Modified:** 2025-07-04T09:23:07.866Z
-
-**Key Elements:**
-- **ChatMessage** (line 37) - `chatmessage`
-  - Context: `const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);`
-- **HTMLDivElement** (line 41) - `htmldivelement`
-  - Context: `const scrollAreaRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 183) - `card`
-  - Context: `<Card className={`h-[calc(100vh-12rem)] ${className}`}>`
-- **CardHeader** (line 184) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 185) - `cardtitle`
-  - Context: `<CardTitle>Club Chat</CardTitle>`
-- **CardContent** (line 187) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **Skeleton** (line 190) - `skeleton`
-  - Context: `<Skeleton className="h-8 w-8 rounded-full" />`
-- **Skeleton** (line 192) - `skeleton`
-  - Context: `<Skeleton className="h-4 w-20" />`
-- **Skeleton** (line 193) - `skeleton`
-  - Context: `<Skeleton className="h-16 w-64" />`
-- **Card** (line 203) - `card`
-  - Context: `<Card className={`h-[calc(100vh-12rem)] ${className}`}>`
-- **CardHeader** (line 204) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 205) - `cardtitle`
-  - Context: `<CardTitle className="flex items-center space-x-2">`
-- **CardContent** (line 212) - `cardcontent`
-  - Context: `<CardContent className="flex flex-col h-full p-0">`
-- **ScrollArea** (line 213) - `scrollarea`
-  - Context: `<ScrollArea ref={scrollAreaRef} className="flex-1 p-4">`
-- **Avatar** (line 229) - `avatar`
-  - Context: `<Avatar className="w-8 h-8">`
-- **AvatarImage** (line 230) - `avatarimage`
-  - Context: `<AvatarImage src={message.avatar_url} />`
-- **AvatarFallback** (line 231) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **Textarea** (line 266) - `textarea`
-  - Context: `<Textarea`
-- **Button** (line 275) - `button`
-  - Context: `<Button`
-- **Send** (line 281) - `send`
   - Context: `<Send className="h-4 w-4" />`
 
 ### 📁 src/components/layout/
