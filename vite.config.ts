@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { viteErrorLogger } from "../vitelogs/vite-error-logger.js";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -13,6 +14,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' &&
     componentTagger(),
+    viteErrorLogger({ projectName: 'climb-connect-toronto' }),
   ].filter(Boolean),
   resolve: {
     alias: {

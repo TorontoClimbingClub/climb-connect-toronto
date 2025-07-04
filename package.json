@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "ui:update-map": "node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .",
+    "ui:setup": "node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs . && echo 'UI component mapping ready!'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
