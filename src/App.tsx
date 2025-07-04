@@ -48,7 +48,7 @@ const App = () => (
             } />
             <Route path="/profile" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout fullscreen>
                   <Profile />
                 </Layout>
               </ProtectedRoute>

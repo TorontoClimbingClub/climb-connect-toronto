@@ -15,11 +15,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **This map may be outdated:** Source files have been modified since last MAP generation
 **Action Required:** Run `npm run ui:update-map` before proceeding
 
-**Last Updated:** 2025-07-04T20:13:15.168Z
+**Last Updated:** 2025-07-04T20:20:48.907Z
 **Project:** climb-connect-toronto
 **Components Scanned:** 60
 **Total Files:** 60
-**Latest File Modified:** Fri Jul 04 2025 16:06:37 GMT-0400 (Eastern Daylight Time)
+**Latest File Modified:** Fri Jul 04 2025 16:15:59 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -1110,81 +1110,87 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### loadEvents
 **File:** `src/pages/Events.tsx`
-**Lines:** 349
-**Last Modified:** 2025-07-03T21:42:28.440Z
+**Lines:** 378
+**Last Modified:** 2025-07-04T20:15:59.338Z
 
 **Key Elements:**
 - **Event** (line 34) - `event`
   - Context: `const [events, setEvents] = useState<Event[]>([]);`
-- **Card** (line 208) - `card`
-  - Context: `<Card key={i} className="animate-pulse">`
-- **CardContent** (line 210) - `cardcontent`
-  - Context: `<CardContent className="p-4 space-y-2">`
-- **Dialog** (line 225) - `dialog`
-  - Context: `<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>`
-- **DialogTrigger** (line 226) - `dialogtrigger`
-  - Context: `<DialogTrigger asChild>`
-- **Button** (line 227) - `button`
-  - Context: `<Button className="bg-green-600 hover:bg-green-700">`
-- **Plus** (line 228) - `plus`
-  - Context: `<Plus className="h-4 w-4 mr-2" />`
-- **DialogContent** (line 232) - `dialogcontent`
-  - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 233) - `dialogheader`
-  - Context: `<DialogHeader>`
-- **DialogTitle** (line 234) - `dialogtitle`
-  - Context: `<DialogTitle>Create New Event</DialogTitle>`
-- **Label** (line 238) - `label`
-  - Context: `<Label htmlFor="title">Event Title</Label>`
-- **Input** (line 239) - `input`
-  - Context: `<Input`
-- **Label** (line 247) - `label`
-  - Context: `<Label htmlFor="description">Description</Label>`
-- **Textarea** (line 248) - `textarea`
-  - Context: `<Textarea`
-- **Label** (line 256) - `label`
-  - Context: `<Label htmlFor="location">Location</Label>`
-- **Input** (line 257) - `input`
-  - Context: `<Input`
-- **Label** (line 265) - `label`
-  - Context: `<Label htmlFor="event_date">Date & Time</Label>`
-- **Input** (line 266) - `input`
-  - Context: `<Input`
-- **Label** (line 275) - `label`
-  - Context: `<Label htmlFor="max_participants">Max Participants (optional)</Label>`
-- **Input** (line 276) - `input`
-  - Context: `<Input`
-- **Button** (line 284) - `button`
-  - Context: `<Button type="submit" className="w-full">Create Event</Button>`
-- **Card** (line 291) - `card`
+- **Card** (line 218) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 292) - `cardcontent`
+- **CardContent** (line 219) - `cardcontent`
   - Context: `<CardContent>`
-- **CalendarDays** (line 293) - `calendardays`
+- **CalendarDays** (line 220) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 301) - `card`
+- **Card** (line 237) - `card`
+  - Context: `<Card key={i} className="animate-pulse">`
+- **CardContent** (line 239) - `cardcontent`
+  - Context: `<CardContent className="p-4 space-y-2">`
+- **Dialog** (line 254) - `dialog`
+  - Context: `<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>`
+- **DialogTrigger** (line 255) - `dialogtrigger`
+  - Context: `<DialogTrigger asChild>`
+- **Button** (line 256) - `button`
+  - Context: `<Button className="bg-green-600 hover:bg-green-700">`
+- **Plus** (line 257) - `plus`
+  - Context: `<Plus className="h-4 w-4 mr-2" />`
+- **DialogContent** (line 261) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[425px]">`
+- **DialogHeader** (line 262) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 263) - `dialogtitle`
+  - Context: `<DialogTitle>Create New Event</DialogTitle>`
+- **Label** (line 267) - `label`
+  - Context: `<Label htmlFor="title">Event Title</Label>`
+- **Input** (line 268) - `input`
+  - Context: `<Input`
+- **Label** (line 276) - `label`
+  - Context: `<Label htmlFor="description">Description</Label>`
+- **Textarea** (line 277) - `textarea`
+  - Context: `<Textarea`
+- **Label** (line 285) - `label`
+  - Context: `<Label htmlFor="location">Location</Label>`
+- **Input** (line 286) - `input`
+  - Context: `<Input`
+- **Label** (line 294) - `label`
+  - Context: `<Label htmlFor="event_date">Date & Time</Label>`
+- **Input** (line 295) - `input`
+  - Context: `<Input`
+- **Label** (line 304) - `label`
+  - Context: `<Label htmlFor="max_participants">Max Participants (optional)</Label>`
+- **Input** (line 305) - `input`
+  - Context: `<Input`
+- **Button** (line 313) - `button`
+  - Context: `<Button type="submit" className="w-full">Create Event</Button>`
+- **Card** (line 320) - `card`
+  - Context: `<Card className="text-center p-8">`
+- **CardContent** (line 321) - `cardcontent`
+  - Context: `<CardContent>`
+- **CalendarDays** (line 322) - `calendardays`
+  - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
+- **Card** (line 330) - `card`
   - Context: `<Card key={event.id} className="hover:shadow-lg transition-shadow">`
-- **CardHeader** (line 302) - `cardheader`
+- **CardHeader** (line 331) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 304) - `cardtitle`
+- **CardTitle** (line 333) - `cardtitle`
   - Context: `<CardTitle className="text-lg">{event.title}</CardTitle>`
-- **Badge** (line 306) - `badge`
+- **Badge** (line 335) - `badge`
   - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 311) - `carddescription`
+- **CardDescription** (line 340) - `carddescription`
   - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 313) - `cardcontent`
+- **CardContent** (line 342) - `cardcontent`
   - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 316) - `calendardays`
+- **CalendarDays** (line 345) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 320) - `mappin`
+- **MapPin** (line 349) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 324) - `users`
+- **Users** (line 353) - `users`
   - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 329) - `button`
+- **Button** (line 358) - `button`
   - Context: `<Button`
-- **Button** (line 337) - `button`
+- **Button** (line 366) - `button`
   - Context: `<Button variant="outline" size="sm" asChild>`
-- **Link** (line 338) - `link`
+- **Link** (line 367) - `link`
   - Context: `<Link to={`/events/${event.id}`}>View Details</Link>`
 
 #### Home
