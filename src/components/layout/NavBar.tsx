@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { Mountain, Menu, MessageCircle, Calendar, User, LogOut } from 'lucide-react';
+import { Mountain, Menu, MessageCircle, Calendar, User, LogOut, Users } from 'lucide-react';
 
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +14,7 @@ export function NavBar() {
 
   const navigation = [
     { name: 'Chat', href: '/chat', icon: MessageCircle },
+    { name: 'Groups', href: '/groups', icon: Users },
     { name: 'Events', href: '/events', icon: Calendar },
     { name: 'Profile', href: '/profile', icon: User },
   ];

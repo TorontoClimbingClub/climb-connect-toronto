@@ -12,6 +12,8 @@ import Auth from "./pages/Auth";
 import Chat from "./pages/Chat";
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
+import Groups from "./pages/Groups";
+import GroupChat from "./pages/GroupChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +52,20 @@ const App = () => (
               <ProtectedRoute>
                 <Layout fullscreen>
                   <Profile />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/groups" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Groups />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/groups/:groupId/chat" element={
+              <ProtectedRoute>
+                <Layout fullscreen>
+                  <GroupChat />
                 </Layout>
               </ProtectedRoute>
             } />

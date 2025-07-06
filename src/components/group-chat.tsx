@@ -4,34 +4,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search } from 'lucide-react';
+import { Send, Search, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
-interface ChatMessage {
+interface GroupMessage {
   id: string;
   content: string;
   created_at: string;
   user_id: string;
+  group_id: string;
   profiles: {
     display_name: string;
     avatar_url?: string;
   } | null;
 }
 
-interface EnhancedRealtimeChatProps {
-  roomName: string;
-  username: string;
-  onMessage?: (message: ChatMessage) => void;
+interface GroupChatProps {
+  groupId: string;
+  groupName: string;
 }
 
-export function EnhancedRealtimeChat({ roomName, username, onMessage }: EnhancedRealtimeChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+export function GroupChat({ groupId, groupName }: GroupChatProps) {
+  const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -43,25 +45,27 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
 
   // Load existing messages
   const loadMessages = useCallback(async () => {
-    console.log('Loading messages...');
+    console.log('Loading group messages for:', groupId);
     try {
       const { data, error } = await supabase
-        .from('messages')
+        .from('group_messages')
         .select(`
           id,
           content,
           created_at,
           user_id,
+          group_id,
           profiles!inner(display_name, avatar_url)
         `)
+        .eq('group_id', groupId)
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error loading messages:', error);
+        console.error('Error loading group messages:', error);
         return;
       }
 
-      console.log('Loaded messages:', data);
+      console.log('Loaded group messages:', data);
       setMessages(data || []);
       // Scroll to bottom after messages load
       setTimeout(scrollToBottom, 100);
@@ -70,21 +74,22 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
     } finally {
       setIsLoading(false);
     }
-  }, [scrollToBottom]);
+  }, [groupId]);
 
   // Send message
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !user) return;
 
-    console.log('Sending message:', { content: newMessage, user_id: user.id });
+    console.log('Sending group message:', { content: newMessage, user_id: user.id, group_id: groupId });
 
     try {
       const { data, error } = await supabase
-        .from('messages')
+        .from('group_messages')
         .insert([
           {
             content: newMessage,
             user_id: user.id,
+            group_id: groupId,
           },
         ])
         .select(`
@@ -92,19 +97,18 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
           content,
           created_at,
           user_id,
+          group_id,
           profiles!inner(display_name, avatar_url)
         `)
         .single();
 
       if (error) {
-        console.error('Error sending message:', error);
+        console.error('Error sending group message:', error);
         return;
       }
 
-      console.log('Message sent successfully:', data);
+      console.log('Group message sent successfully:', data);
       setNewMessage('');
-      // Scroll to bottom after sending message
-      setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
@@ -115,25 +119,27 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
     loadMessages();
 
     const channel = supabase
-      .channel('messages')
+      .channel(`group-messages-${groupId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages',
+          table: 'group_messages',
+          filter: `group_id=eq.${groupId}`
         },
         async (payload) => {
-          console.log('New message received:', payload.new);
+          console.log('New group message received:', payload.new);
           
           // Fetch the complete message with profile data
           const { data: messageWithProfile } = await supabase
-            .from('messages')
+            .from('group_messages')
             .select(`
               id,
               content,
               created_at,
               user_id,
+              group_id,
               profiles!inner(display_name, avatar_url)
             `)
             .eq('id', payload.new.id)
@@ -141,7 +147,6 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
 
           if (messageWithProfile) {
             setMessages(prev => [...prev, messageWithProfile]);
-            onMessage?.(messageWithProfile);
           }
         }
       )
@@ -150,7 +155,7 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadMessages, onMessage]);
+  }, [loadMessages, groupId]);
 
   // Auto scroll to bottom when messages change
   useEffect(() => {
@@ -181,7 +186,7 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
   if (isLoading) {
     return (
       <Card className="h-full flex items-center justify-center">
-        <div className="text-gray-500">Loading chat...</div>
+        <div className="text-gray-500">Loading group chat...</div>
       </Card>
     );
   }
@@ -190,9 +195,19 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
     <Card className="h-full w-full flex flex-col border-0 rounded-none bg-white">
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold">Community Chat</h3>
-          <p className="text-sm text-gray-500">All members • {messages.length} messages</p>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/groups')}
+            className="p-1"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h3 className="font-semibold">{groupName}</h3>
+            <p className="text-sm text-gray-500">{messages.length} messages</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {showSearch && (
@@ -264,7 +279,7 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
       <div className="p-4 border-t">
         <div className="flex gap-2">
           <Input
-            placeholder="Type a message..."
+            placeholder={`Message ${groupName}...`}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => {
