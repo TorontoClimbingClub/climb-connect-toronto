@@ -52,16 +52,19 @@ export type Database = {
         Row: {
           event_id: string
           joined_at: string | null
+          last_read_at: string | null
           user_id: string
         }
         Insert: {
           event_id: string
           joined_at?: string | null
+          last_read_at?: string | null
           user_id: string
         }
         Update: {
           event_id?: string
           joined_at?: string | null
+          last_read_at?: string | null
           user_id?: string
         }
         Relationships: [
