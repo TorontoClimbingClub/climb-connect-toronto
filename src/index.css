@@ -102,25 +102,58 @@ All colors MUST be HSL.
   html,
   body,
   #root {
-    height: 100%;
     margin: 0;
     padding: 0;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
     width: 100%;
     max-width: 100vw; /* Ensure content doesn't exceed viewport width */
   }
 
-  /* Additional mobile-specific overflow controls */
   html {
+    height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scroll-behavior: smooth; /* Smooth scrolling behavior */
   }
 
   body {
+    min-height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
     overscroll-behavior-x: none; /* Prevent overscroll bounce horizontally */
     position: relative;
+    touch-action: manipulation; /* Optimize touch interactions */
+  }
+
+  #root {
+    min-height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Mobile browser specific optimizations */
+  @media screen and (max-width: 768px) {
+    body {
+      /* Fix for mobile browsers with dynamic viewport */
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+    
+    html {
+      /* Ensure proper height calculation on mobile */
+      height: -webkit-fill-available;
+    }
+  }
+
+  /* Prevent zoom on double tap for better scroll performance */
+  * {
+    touch-action: manipulation;
+  }
+
+  /* Optimize scroll performance */
+  main {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 }

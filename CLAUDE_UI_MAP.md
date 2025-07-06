@@ -15,11 +15,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **This map may be outdated:** Source files have been modified since last MAP generation
 **Action Required:** Run `npm run ui:update-map` before proceeding
 
-**Last Updated:** 2025-07-06T19:29:53.999Z
+**Last Updated:** 2025-07-06T20:06:53.197Z
 **Project:** climb-connect-toronto
-**Components Scanned:** 65
-**Total Files:** 65
-**Latest File Modified:** Sun Jul 06 2025 15:24:33 GMT-0400 (Eastern Daylight Time)
+**Components Scanned:** 66
+**Total Files:** 66
+**Latest File Modified:** Sun Jul 06 2025 16:04:00 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -157,45 +157,47 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/components/group-chat.tsx`
-**Lines:** 361
-**Last Modified:** 2025-07-06T03:25:18.382Z
+**Lines:** 414
+**Last Modified:** 2025-07-06T19:45:04.497Z
 
 **Key Elements:**
 - **GroupMessage** (line 31) - `groupmessage`
   - Context: `const [messages, setMessages] = useState<GroupMessage[]>([]);`
 - **HTMLDivElement** (line 37) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 226) - `card`
+- **NodeJS** (line 38) - `nodejs`
+  - Context: `const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
+- **Card** (line 279) - `card`
   - Context: `<Card className="h-full flex items-center justify-center">`
-- **Card** (line 233) - `card`
+- **Card** (line 286) - `card`
   - Context: `<Card className="h-full w-full flex flex-col border-0 rounded-none bg-white">`
-- **Button** (line 237) - `button`
+- **Button** (line 290) - `button`
   - Context: `<Button`
-- **ArrowLeft** (line 243) - `arrowleft`
+- **ArrowLeft** (line 296) - `arrowleft`
   - Context: `<ArrowLeft className="h-5 w-5" />`
-- **Input** (line 252) - `input`
+- **Input** (line 305) - `input`
   - Context: `<Input`
-- **Button** (line 259) - `button`
+- **Button** (line 312) - `button`
   - Context: `<Button`
-- **X** (line 271) - `x`
+- **X** (line 324) - `x`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Search** (line 271) - `search`
+- **Search** (line 324) - `search`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Avatar** (line 287) - `avatar`
+- **Avatar** (line 340) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 288) - `avatarimage`
+- **AvatarImage** (line 341) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 289) - `avatarfallback`
+- **AvatarFallback** (line 342) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **ChatActionsMenu** (line 324) - `chatactionsmenu`
+- **ChatActionsMenu** (line 377) - `chatactionsmenu`
   - Context: `<ChatActionsMenu`
-- **Input** (line 327) - `input`
+- **Input** (line 380) - `input`
   - Context: `<Input`
-- **Button** (line 340) - `button`
+- **Button** (line 393) - `button`
   - Context: `<Button`
-- **Send** (line 345) - `send`
+- **Send** (line 398) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 351) - `createeventmodal`
+- **CreateEventModal** (line 404) - `createeventmodal`
   - Context: `<CreateEventModal`
 
 ### 📁 src/components/layout/
@@ -203,7 +205,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### Layout
 **File:** `src/components/layout/Layout.tsx`
 **Lines:** 26
-**Last Modified:** 2025-07-04T20:06:37.128Z
+**Last Modified:** 2025-07-06T19:45:18.331Z
 
 **Key Elements:**
 - **NavBar** (line 13) - `navbar`
@@ -212,7 +214,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### location
 **File:** `src/components/layout/NavBar.tsx`
 **Lines:** 134
-**Last Modified:** 2025-07-06T02:56:02.780Z
+**Last Modified:** 2025-07-06T19:45:41.778Z
 
 **Key Elements:**
 - **Link** (line 28) - `link`
@@ -1095,11 +1097,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### toaster
 **File:** `src/components/ui/toaster.tsx`
 **Lines:** 34
-**Last Modified:** 2025-07-04T17:59:11.542Z
+**Last Modified:** 2025-07-06T19:32:06.641Z
 
 **Key Elements:**
 - **ToastProvider** (line 15) - `toastprovider`
-  - Context: `<ToastProvider>`
+  - Context: `<ToastProvider duration={750}>`
 - **Toast** (line 18) - `toast`
   - Context: `<Toast key={id} {...props}>`
 - **ToastTitle** (line 20) - `toasttitle`
@@ -1289,10 +1291,53 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Button** (line 165) - `button`
   - Context: `<Button type="submit" className="w-full" disabled={loading}>`
 
+#### navigate
+**File:** `src/pages/EventChat.tsx`
+**Lines:** 371
+**Last Modified:** 2025-07-06T19:56:16.111Z
+
+**Key Elements:**
+- **Event** (line 41) - `event`
+  - Context: `const [event, setEvent] = useState<Event | null>(null);`
+- **EventMessage** (line 42) - `eventmessage`
+  - Context: `const [messages, setMessages] = useState<EventMessage[]>([]);`
+- **HTMLDivElement** (line 46) - `htmldivelement`
+  - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
+- **Card** (line 223) - `card`
+  - Context: `<Card className="p-8">`
+- **Card** (line 233) - `card`
+  - Context: `<Card className="p-8 text-center">`
+- **Button** (line 236) - `button`
+  - Context: `<Button onClick={() => navigate('/events')}>Back to Events</Button>`
+- **Button** (line 256) - `button`
+  - Context: `<Button`
+- **ArrowLeft** (line 262) - `arrowleft`
+  - Context: `<ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />`
+- **CalendarDays** (line 268) - `calendardays`
+  - Context: `<CalendarDays className="h-4 w-4 mr-1" />`
+- **MapPin** (line 272) - `mappin`
+  - Context: `<MapPin className="h-4 w-4 mr-1" />`
+- **Users** (line 276) - `users`
+  - Context: `<Users className="h-4 w-4 mr-1" />`
+- **Users** (line 283) - `users`
+  - Context: `<Users className="h-3 w-3 mr-1" />`
+- **Avatar** (line 308) - `avatar`
+  - Context: `<Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">`
+- **AvatarImage** (line 309) - `avatarimage`
+  - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
+- **AvatarFallback** (line 310) - `avatarfallback`
+  - Context: `<AvatarFallback className="text-xs">`
+- **Input** (line 352) - `input`
+  - Context: `<Input`
+- **Button** (line 359) - `button`
+  - Context: `<Button`
+- **Send** (line 365) - `send`
+  - Context: `<Send className="h-4 w-4" />`
+
 #### loadEvents
 **File:** `src/pages/Events.tsx`
-**Lines:** 373
-**Last Modified:** 2025-07-06T19:24:33.354Z
+**Lines:** 426
+**Last Modified:** 2025-07-06T20:04:00.737Z
 
 **Key Elements:**
 - **Event** (line 34) - `event`
@@ -1303,71 +1348,87 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
   - Context: `<CardContent>`
 - **CalendarDays** (line 220) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Dialog** (line 249) - `dialog`
-  - Context: `<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>`
-- **DialogTrigger** (line 250) - `dialogtrigger`
-  - Context: `<DialogTrigger asChild>`
-- **Button** (line 251) - `button`
-  - Context: `<Button className="bg-green-600 hover:bg-green-700">`
-- **Plus** (line 252) - `plus`
-  - Context: `<Plus className="h-4 w-4 mr-2" />`
-- **DialogContent** (line 256) - `dialogcontent`
-  - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 257) - `dialogheader`
-  - Context: `<DialogHeader>`
-- **DialogTitle** (line 258) - `dialogtitle`
-  - Context: `<DialogTitle>Create New Event</DialogTitle>`
-- **Label** (line 262) - `label`
-  - Context: `<Label htmlFor="title">Event Title</Label>`
-- **Input** (line 263) - `input`
-  - Context: `<Input`
-- **Label** (line 271) - `label`
-  - Context: `<Label htmlFor="description">Description</Label>`
-- **Textarea** (line 272) - `textarea`
-  - Context: `<Textarea`
-- **Label** (line 280) - `label`
-  - Context: `<Label htmlFor="location">Location</Label>`
-- **Input** (line 281) - `input`
-  - Context: `<Input`
-- **Label** (line 289) - `label`
-  - Context: `<Label htmlFor="event_date">Date & Time</Label>`
-- **Input** (line 290) - `input`
-  - Context: `<Input`
-- **Label** (line 299) - `label`
-  - Context: `<Label htmlFor="max_participants">Max Participants (optional)</Label>`
-- **Input** (line 300) - `input`
-  - Context: `<Input`
-- **Button** (line 308) - `button`
-  - Context: `<Button type="submit" className="w-full">Create Event</Button>`
-- **Card** (line 315) - `card`
-  - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 316) - `cardcontent`
-  - Context: `<CardContent>`
-- **CalendarDays** (line 317) - `calendardays`
-  - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 325) - `card`
-  - Context: `<Card key={event.id} className="hover:shadow-lg transition-shadow">`
-- **CardHeader** (line 326) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 328) - `cardtitle`
-  - Context: `<CardTitle className="text-lg">{event.title}</CardTitle>`
-- **Badge** (line 330) - `badge`
-  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 335) - `carddescription`
-  - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 337) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 340) - `calendardays`
-  - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 344) - `mappin`
-  - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 348) - `users`
-  - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 353) - `button`
+- **Card** (line 254) - `card`
+  - Context: `<Card key={event.id} className="p-3 sm:p-4">`
+- **CalendarDays** (line 262) - `calendardays`
+  - Context: `<CalendarDays className="h-4 w-4 mr-1 flex-shrink-0" />`
+- **MapPin** (line 266) - `mappin`
+  - Context: `<MapPin className="h-4 w-4 mr-1 flex-shrink-0" />`
+- **Button** (line 274) - `button`
   - Context: `<Button`
+- **Link** (line 280) - `link`
+  - Context: `<Link to={`/events/${event.id}/chat`}>`
+- **MessageSquare** (line 281) - `messagesquare`
+  - Context: `<MessageSquare className="h-8 w-8 sm:h-4 sm:w-4" />`
+- **Button** (line 284) - `button`
+  - Context: `<Button`
+- **LogOut** (line 290) - `logout`
+  - Context: `<LogOut className="h-8 w-8 sm:h-4 sm:w-4" />`
+- **Dialog** (line 302) - `dialog`
+  - Context: `<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>`
+- **DialogTrigger** (line 303) - `dialogtrigger`
+  - Context: `<DialogTrigger asChild>`
+- **Button** (line 304) - `button`
+  - Context: `<Button className="bg-green-600 hover:bg-green-700">`
+- **Plus** (line 305) - `plus`
+  - Context: `<Plus className="h-4 w-4 mr-2" />`
+- **DialogContent** (line 309) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[425px]">`
+- **DialogHeader** (line 310) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 311) - `dialogtitle`
+  - Context: `<DialogTitle>Create New Event</DialogTitle>`
+- **Label** (line 315) - `label`
+  - Context: `<Label htmlFor="title">Event Title</Label>`
+- **Input** (line 316) - `input`
+  - Context: `<Input`
+- **Label** (line 324) - `label`
+  - Context: `<Label htmlFor="description">Description</Label>`
+- **Textarea** (line 325) - `textarea`
+  - Context: `<Textarea`
+- **Label** (line 333) - `label`
+  - Context: `<Label htmlFor="location">Location</Label>`
+- **Input** (line 334) - `input`
+  - Context: `<Input`
+- **Label** (line 342) - `label`
+  - Context: `<Label htmlFor="event_date">Date & Time</Label>`
+- **Input** (line 343) - `input`
+  - Context: `<Input`
+- **Label** (line 352) - `label`
+  - Context: `<Label htmlFor="max_participants">Max Participants (optional)</Label>`
+- **Input** (line 353) - `input`
+  - Context: `<Input`
 - **Button** (line 361) - `button`
+  - Context: `<Button type="submit" className="w-full">Create Event</Button>`
+- **Card** (line 368) - `card`
+  - Context: `<Card className="text-center p-8">`
+- **CardContent** (line 369) - `cardcontent`
+  - Context: `<CardContent>`
+- **CalendarDays** (line 370) - `calendardays`
+  - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
+- **Card** (line 378) - `card`
+  - Context: `<Card key={event.id} className="hover:shadow-lg transition-shadow">`
+- **CardHeader** (line 379) - `cardheader`
+  - Context: `<CardHeader>`
+- **CardTitle** (line 381) - `cardtitle`
+  - Context: `<CardTitle className="text-lg">{event.title}</CardTitle>`
+- **Badge** (line 383) - `badge`
+  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
+- **CardDescription** (line 388) - `carddescription`
+  - Context: `<CardDescription>{event.description}</CardDescription>`
+- **CardContent** (line 390) - `cardcontent`
+  - Context: `<CardContent className="space-y-4">`
+- **CalendarDays** (line 393) - `calendardays`
+  - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
+- **MapPin** (line 397) - `mappin`
+  - Context: `<MapPin className="h-4 w-4 mr-2" />`
+- **Users** (line 401) - `users`
+  - Context: `<Users className="h-4 w-4 mr-2" />`
+- **Button** (line 406) - `button`
+  - Context: `<Button`
+- **Button** (line 414) - `button`
   - Context: `<Button variant="outline" size="sm" asChild>`
-- **Link** (line 362) - `link`
+- **Link** (line 415) - `link`
   - Context: `<Link to={`/events/${event.id}`}>View Details</Link>`
 
 #### location
@@ -1381,41 +1442,41 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/pages/Groups.tsx`
-**Lines:** 281
-**Last Modified:** 2025-07-06T03:07:59.927Z
+**Lines:** 330
+**Last Modified:** 2025-07-06T19:43:23.654Z
 
 **Key Elements:**
 - **Group** (line 25) - `group`
   - Context: `const [groups, setGroups] = useState<Group[]>([]);`
-- **Card** (line 205) - `card`
+- **Card** (line 254) - `card`
   - Context: `<Card`
-- **CardHeader** (line 213) - `cardheader`
+- **CardHeader** (line 262) - `cardheader`
   - Context: `<CardHeader>`
-- **Avatar** (line 216) - `avatar`
+- **Avatar** (line 265) - `avatar`
   - Context: `<Avatar className="h-12 w-12">`
-- **AvatarImage** (line 217) - `avatarimage`
+- **AvatarImage** (line 266) - `avatarimage`
   - Context: `<AvatarImage src={group.avatar_url || undefined} />`
-- **AvatarFallback** (line 218) - `avatarfallback`
+- **AvatarFallback** (line 267) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **CardTitle** (line 223) - `cardtitle`
+- **CardTitle** (line 272) - `cardtitle`
   - Context: `<CardTitle className="text-lg flex items-center gap-2">`
-- **Badge** (line 230) - `badge`
+- **Badge** (line 279) - `badge`
   - Context: `<Badge variant="secondary" className="mt-1">`
-- **CardContent** (line 238) - `cardcontent`
+- **CardContent** (line 287) - `cardcontent`
   - Context: `<CardContent className="space-y-4">`
-- **CardDescription** (line 239) - `carddescription`
+- **CardDescription** (line 288) - `carddescription`
   - Context: `<CardDescription>{group.description}</CardDescription>`
-- **Users** (line 243) - `users`
+- **Users** (line 292) - `users`
   - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 251) - `button`
+- **Button** (line 300) - `button`
   - Context: `<Button`
-- **MessageSquare** (line 255) - `messagesquare`
+- **MessageSquare** (line 304) - `messagesquare`
   - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 258) - `button`
+- **Button** (line 307) - `button`
   - Context: `<Button`
-- **Button** (line 266) - `button`
+- **Button** (line 315) - `button`
   - Context: `<Button`
-- **ArrowRight** (line 271) - `arrowright`
+- **ArrowRight** (line 320) - `arrowright`
   - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
 
 #### Home

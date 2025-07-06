@@ -248,7 +248,7 @@ export default function Events() {
     <div className="space-y-6">
       {myEvents.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900">My Events</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Joined Events</h2>
           <div className="space-y-3">
             {myEvents.map((event) => (
               <Card key={event.id} className="p-3 sm:p-4">
@@ -256,38 +256,38 @@ export default function Events() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 sm:space-x-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-lg md:text-xl truncate">{event.title}</h3>
+                        <h3 className="font-semibold text-lg md:text-xl truncate pr-2">{event.title}</h3>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-gray-600 mt-1 space-y-1 sm:space-y-0">
-                          <div className="flex items-center">
-                            <CalendarDays className="h-4 w-4 mr-1" />
-                            {format(new Date(event.event_date), 'PPP p')}
+                          <div className="flex items-center truncate">
+                            <CalendarDays className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{format(new Date(event.event_date), 'PPP p')}</span>
                           </div>
-                          <div className="flex items-center">
-                            <MapPin className="h-4 w-4 mr-1" />
-                            {event.location}
+                          <div className="flex items-center truncate">
+                            <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{event.location}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-shrink-0 items-center space-x-1 sm:space-x-2">
+                  <div className="flex flex-shrink-0 items-center space-x-2 sm:space-x-2">
                     <Button
                       variant="outline"
                       size="icon"
                       asChild
-                      className="h-8 w-8"
+                      className="h-20 w-20 sm:h-8 sm:w-8"
                     >
                       <Link to={`/events/${event.id}/chat`}>
-                        <MessageSquare className="h-4 w-4" />
+                        <MessageSquare className="h-8 w-8 sm:h-4 sm:w-4" />
                       </Link>
                     </Button>
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={() => toggleParticipation(event.id, true)}
-                      className="h-8 w-8"
+                      className="h-20 w-20 sm:h-8 sm:w-8"
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-8 w-8 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function Events() {
       )}
       
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Climbing Events</h1>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button className="bg-green-600 hover:bg-green-700">

@@ -248,21 +248,22 @@ export default function EventChat() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-screen max-h-screen">
       {/* Header */}
-      <div className="border-b p-4 bg-white">
+      <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate('/events')}
+              className="h-8 w-8 sm:h-10 sm:w-10"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <div>
-              <h1 className="text-xl font-bold">{event?.title}</h1>
-              <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl font-bold truncate">{event?.title}</h1>
+              <div className="hidden sm:flex items-center space-x-4 text-sm text-gray-600 mt-1">
                 <div className="flex items-center">
                   <CalendarDays className="h-4 w-4 mr-1" />
                   {event && format(new Date(event.event_date), 'PPP')}
@@ -276,13 +277,20 @@ export default function EventChat() {
                   {event?.participant_count} participants
                 </div>
               </div>
+              {/* Mobile event info - condensed */}
+              <div className="sm:hidden text-xs text-gray-600 mt-1">
+                <div className="flex items-center">
+                  <Users className="h-3 w-3 mr-1" />
+                  {event?.participant_count} • {event && format(new Date(event.event_date), 'MMM d')}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={viewportRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             No messages yet. Start the conversation!
@@ -293,31 +301,31 @@ export default function EventChat() {
             return (
               <div
                 key={message.id}
-                className={`flex items-start space-x-3 ${
+                className={`flex items-start space-x-2 sm:space-x-3 ${
                   isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''
                 }`}
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
                   <AvatarImage src={message.profiles?.avatar_url} />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-xs">
                     {message.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div
-                  className={`flex flex-col ${
+                  className={`flex flex-col min-w-0 flex-1 ${
                     isOwnMessage ? 'items-end' : 'items-start'
                   }`}
                 >
                   <div className="flex items-center space-x-2 mb-1">
-                    <span className="text-sm font-medium">
+                    <span className="text-xs sm:text-sm font-medium truncate">
                       {message.profiles?.display_name || 'Unknown User'}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 flex-shrink-0">
                       {format(new Date(message.created_at), 'p')}
                     </span>
                   </div>
                   <div
-                    className={`px-4 py-2 rounded-lg max-w-md ${
+                    className={`px-3 py-2 rounded-lg max-w-[85%] sm:max-w-md break-words ${
                       isOwnMessage
                         ? 'bg-green-600 text-white'
                         : 'bg-gray-100 text-gray-900'
@@ -333,7 +341,7 @@ export default function EventChat() {
       </div>
 
       {/* Input */}
-      <div className="border-t p-4 bg-white">
+      <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -346,8 +354,14 @@ export default function EventChat() {
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
             className="flex-1"
+            autoComplete="off"
           />
-          <Button type="submit" size="icon" className="bg-green-600 hover:bg-green-700">
+          <Button 
+            type="submit" 
+            size="icon" 
+            className="bg-green-600 hover:bg-green-700 flex-shrink-0"
+            disabled={!newMessage.trim()}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </form>
