@@ -17,6 +17,8 @@ interface Group {
   created_at: string;
   member_count?: number;
   is_member?: boolean;
+  has_unread?: boolean;
+  latest_message_time?: string;
 }
 
 export default function Groups() {
@@ -32,44 +34,120 @@ export default function Groups() {
 
   const loadGroups = async () => {
     try {
-      // Fetch all groups
-      const { data: groupsData, error: groupsError } = await supabase
+      if (!user) {
+        // If no user, just fetch basic group data
+        const { data: groupsData, error: groupsError } = await supabase
+          .from('groups')
+          .select('*')
+          .order('name');
+
+        if (groupsError) throw groupsError;
+        setGroups(groupsData || []);
+        return;
+      }
+
+      // Efficient single query to get all group info including unread status
+      const { data: groupsWithInfo, error } = await supabase
+        .from('groups')
+        .select(`
+          *,
+          group_members!inner (
+            user_id,
+            last_read_at,
+            member_count:group_id.count()
+          ),
+          latest_message:group_messages (
+            created_at
+          )
+        `)
+        .eq('group_members.user_id', user.id)
+        .order('name');
+
+      if (error) throw error;
+
+      // Process the data to determine unread status and member counts
+      const processedGroups = await Promise.all(
+        (groupsWithInfo || []).map(async (group) => {
+          // Get total member count for this group
+          const { count: totalMembers } = await supabase
+            .from('group_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', group.id);
+
+          // Get the actual latest message
+          const { data: latestMessage } = await supabase
+            .from('group_messages')
+            .select('created_at')
+            .eq('group_id', group.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          let hasUnread = false;
+          const memberInfo = group.group_members[0]; // Since we filtered by user_id, there's only one
+
+          if (latestMessage && memberInfo) {
+            const lastReadAt = memberInfo.last_read_at;
+            const latestMessageTime = new Date(latestMessage.created_at);
+            
+            if (!lastReadAt) {
+              // Never read any messages in this group
+              hasUnread = true;
+            } else {
+              const lastReadTime = new Date(lastReadAt);
+              hasUnread = latestMessageTime > lastReadTime;
+            }
+
+            // Fallback to localStorage for backward compatibility
+            if (!hasUnread && !lastReadAt) {
+              const lastVisitKey = `group_last_visit_${group.id}`;
+              const lastVisit = localStorage.getItem(lastVisitKey);
+              if (!lastVisit || latestMessageTime > new Date(lastVisit)) {
+                hasUnread = true;
+              }
+            }
+          }
+
+          return {
+            id: group.id,
+            name: group.name,
+            description: group.description,
+            avatar_url: group.avatar_url,
+            created_at: group.created_at,
+            member_count: totalMembers || 0,
+            is_member: true, // Since we filtered by membership
+            has_unread: hasUnread,
+            latest_message_time: latestMessage?.created_at || null
+          };
+        })
+      );
+
+      // Also fetch groups where user is not a member
+      const { data: allGroups } = await supabase
         .from('groups')
         .select('*')
         .order('name');
 
-      if (groupsError) throw groupsError;
-
-      if (groupsData && user) {
-        // Fetch member counts and check if current user is a member
-        const groupsWithInfo = await Promise.all(
-          groupsData.map(async (group) => {
-            // Get member count
-            const { count } = await supabase
+      const nonMemberGroups = await Promise.all(
+        (allGroups || [])
+          .filter(group => !processedGroups.some(pg => pg.id === group.id))
+          .map(async (group) => {
+            const { count: totalMembers } = await supabase
               .from('group_members')
               .select('*', { count: 'exact', head: true })
               .eq('group_id', group.id);
 
-            // Check if current user is a member
-            const { data: memberData } = await supabase
-              .from('group_members')
-              .select('*')
-              .eq('group_id', group.id)
-              .eq('user_id', user.id)
-              .single();
-
             return {
               ...group,
-              member_count: count || 0,
-              is_member: !!memberData
+              member_count: totalMembers || 0,
+              is_member: false,
+              has_unread: false,
+              latest_message_time: null
             };
           })
-        );
+      );
 
-        setGroups(groupsWithInfo);
-      } else {
-        setGroups(groupsData || []);
-      }
+      setGroups([...processedGroups, ...nonMemberGroups]);
     } catch (error) {
       console.error('Error loading groups:', error);
       toast({
@@ -146,6 +224,11 @@ export default function Groups() {
   };
 
   const navigateToGroupChat = (groupId: string, groupName: string) => {
+    // Mark group as visited
+    const lastVisitKey = `group_last_visit_${groupId}`;
+    localStorage.setItem(lastVisitKey, new Date().toISOString());
+    
+    // Navigate to group chat
     navigate(`/groups/${groupId}/chat`, { state: { groupName } });
   };
 
@@ -168,7 +251,14 @@ export default function Groups() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groups.map((group) => (
-          <Card key={group.id} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={group.id} 
+            className={`hover:shadow-lg transition-all duration-300 ${
+              group.has_unread 
+                ? 'ring-2 ring-orange-400 shadow-orange-200 shadow-lg' 
+                : ''
+            }`}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -179,7 +269,12 @@ export default function Groups() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{group.name}</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {group.name}
+                      {group.has_unread && (
+                        <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                      )}
+                    </CardTitle>
                     {group.is_member && (
                       <Badge variant="secondary" className="mt-1">
                         Member

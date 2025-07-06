@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { MessageCircle, Calendar, Users, Mountain } from 'lucide-react';
+import { Calendar, Users, Mountain } from 'lucide-react';
 
 export default function Home() {
   const { user } = useAuth();
@@ -31,10 +31,10 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             <Card>
               <CardHeader>
-                <MessageCircle className="h-8 w-8 text-green-600 mb-2" />
-                <CardTitle>Community Chat</CardTitle>
+                <Users className="h-8 w-8 text-green-600 mb-2" />
+                <CardTitle>Group Chats</CardTitle>
                 <CardDescription>
-                  Connect with climbers, share tips, and plan impromptu sessions
+                  Join gym-specific chats and connect with climbers from your favorite locations
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -88,15 +88,15 @@ export default function Home() {
       <div className="grid md:grid-cols-3 gap-6">
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <MessageCircle className="h-8 w-8 text-green-600 mb-2" />
-            <CardTitle>Join the Chat</CardTitle>
+            <Users className="h-8 w-8 text-purple-600 mb-2" />
+            <CardTitle>Group Chats</CardTitle>
             <CardDescription>
-              Connect with the community and share your climbing experiences
+              Connect with climbers from Basecamp, True North, and Joe Rockheads
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link to="/chat">Open Chat</Link>
+              <Link to="/groups">View Groups</Link>
             </Button>
           </CardContent>
         </Card>

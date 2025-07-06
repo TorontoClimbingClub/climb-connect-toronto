@@ -1,9 +1,5 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* App.css - Vite default styles removed to prevent layout conflicts
+   Layout is now handled by Layout.tsx component for better mobile responsiveness */
 
 .logo {
   height: 6em;

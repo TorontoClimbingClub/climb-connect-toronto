@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, ArrowLeft } from 'lucide-react';
+import { Send, Search, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { ChatActionsMenu } from '@/components/chat-actions-menu';
+import { CreateEventModal } from '@/components/create-event-modal';
 
 interface GroupMessage {
   id: string;
@@ -31,7 +33,9 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -109,10 +113,97 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
       console.log('Group message sent successfully:', data);
       setNewMessage('');
+      
+      // Mark messages as read when user sends a message
+      updateReadStatus();
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
   };
+
+  // Function to post event creation message to chat
+  const postEventCreationMessage = async (eventTitle: string, eventDate: string) => {
+    if (!user) return;
+
+    try {
+      const eventDateFormatted = new Date(eventDate).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+
+      const eventMessage = `📅 Created event: "${eventTitle}" on ${eventDateFormatted}`;
+
+      await supabase
+        .from('group_messages')
+        .insert([
+          {
+            content: eventMessage,
+            user_id: user.id,
+            group_id: groupId,
+          },
+        ]);
+    } catch (error) {
+      console.error('Error posting event creation message:', error);
+    }
+  };
+
+  // Function to update read status in database
+  const updateReadStatus = useCallback(async () => {
+    if (!user || !groupId) return;
+    
+    try {
+      const now = new Date().toISOString();
+      
+      // Update database
+      await supabase
+        .from('group_members')
+        .update({ last_read_at: now })
+        .eq('group_id', groupId)
+        .eq('user_id', user.id);
+      
+      // Also update localStorage for backward compatibility
+      const lastVisitKey = `group_last_visit_${groupId}`;
+      localStorage.setItem(lastVisitKey, now);
+    } catch (error) {
+      console.error('Error updating read status:', error);
+    }
+  }, [user, groupId]);
+
+  // Debounced scroll handler to prevent excessive database calls
+  const handleScroll = useCallback(() => {
+    if (!viewportRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+    
+    if (isAtBottom) {
+      // Clear any existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // Debounce the update to avoid excessive calls
+      scrollTimeoutRef.current = setTimeout(() => {
+        updateReadStatus();
+        scrollTimeoutRef.current = null;
+      }, 1000); // Wait 1 second before marking as read
+    }
+  }, [updateReadStatus]);
+
+  // Mark as read when component unmounts (user leaves chat)
+  useEffect(() => {
+    return () => {
+      // Clear any pending scroll timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      // Mark as read when leaving
+      updateReadStatus();
+    };
+  }, [updateReadStatus]);
 
   // Set up real-time subscription
   useEffect(() => {
@@ -222,17 +313,21 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             variant="ghost"
             size="sm"
             onClick={() => {
-              setShowSearch(!showSearch);
-              if (showSearch) setSearchTerm('');
+              if (showSearch) {
+                setSearchTerm('');
+                setShowSearch(false);
+              } else {
+                setShowSearch(true);
+              }
             }}
           >
-            <Search className="h-4 w-4" />
+            {showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
           </Button>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4" ref={viewportRef}>
+      <div className="flex-1 overflow-y-auto p-4" ref={viewportRef} onScroll={handleScroll}>
         <div className="space-y-4">
           {filteredMessages.map((message) => {
             const isOwnMessage = message.user_id === user?.id;
@@ -278,18 +373,23 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       {/* Message Input */}
       <div className="p-4 border-t">
         <div className="flex gap-2">
-          <Input
-            placeholder={`Message ${groupName}...`}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            className="flex-1"
-          />
+          <div className="relative flex-1">
+            <ChatActionsMenu 
+              onCreateEvent={() => setIsEventModalOpen(true)}
+            />
+            <Input
+              placeholder={`Message ${groupName}...`}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="pl-10"
+            />
+          </div>
           <Button 
             onClick={handleSendMessage}
             disabled={!newMessage.trim()}
@@ -299,6 +399,16 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           </Button>
         </div>
       </div>
+
+      {/* Event Creation Modal */}
+      <CreateEventModal
+        isOpen={isEventModalOpen}
+        onClose={() => setIsEventModalOpen(false)}
+        groupName={groupName}
+        onEventCreated={(eventTitle, eventDate) => {
+          postEventCreationMessage(eventTitle, eventDate);
+        }}
+      />
     </Card>
   );
 }

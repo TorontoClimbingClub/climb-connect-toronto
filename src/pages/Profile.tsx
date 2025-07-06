@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { Upload, User, Calendar } from 'lucide-react';
+import { Upload, User } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -181,27 +181,6 @@ export default function Profile() {
 
   return (
     <div className="w-full space-y-6 p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5" />
-            <span>Activity Stats</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-green-600">0</p>
-              <p className="text-sm text-gray-500">Events Joined</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-orange-600">0</p>
-              <p className="text-sm text-gray-500">Messages Sent</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">

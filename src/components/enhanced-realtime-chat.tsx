@@ -34,12 +34,12 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
   const { user } = useAuth();
 
   // Function to scroll to bottom
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (viewportRef.current) {
       const scrollContainer = viewportRef.current;
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  };
+  }, []);
 
   // Load existing messages
   const loadMessages = useCallback(async () => {

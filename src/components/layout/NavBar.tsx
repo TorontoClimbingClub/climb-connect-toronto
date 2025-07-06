@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { Mountain, Menu, MessageCircle, Calendar, User, LogOut, Users } from 'lucide-react';
+import { Mountain, Menu, Calendar, User, LogOut, Users } from 'lucide-react';
 
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +13,6 @@ export function NavBar() {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Chat', href: '/chat', icon: MessageCircle },
     { name: 'Groups', href: '/groups', icon: Users },
     { name: 'Events', href: '/events', icon: Calendar },
     { name: 'Profile', href: '/profile', icon: User },
@@ -22,10 +21,10 @@ export function NavBar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
+    <nav className="bg-white shadow-sm border-b border-gray-200 w-full overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 w-full">
+          <div className="flex items-center min-w-0 flex-shrink-0">
             <Link to="/" className="flex items-center space-x-2">
               <Mountain className="h-8 w-8 text-green-600" />
               <span className="text-xl font-bold text-green-800 hidden sm:block">

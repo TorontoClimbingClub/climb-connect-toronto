@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { CalendarDays, MapPin, Users, Plus } from 'lucide-react';
+import { CalendarDays, MapPin, Users, Plus, MessageSquare, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Event {
@@ -232,23 +232,71 @@ export default function Events() {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-t-lg" />
-              <CardContent className="p-4 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading events...</p>
+          </div>
         </div>
       </div>
     );
   }
 
+  const myEvents = events.filter(event => event.is_participant);
+
   return (
     <div className="space-y-6">
+      {myEvents.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-gray-900">My Events</h2>
+          <div className="space-y-3">
+            {myEvents.map((event) => (
+              <Card key={event.id} className="p-3 sm:p-4">
+                <div className="flex items-start sm:items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-lg md:text-xl truncate">{event.title}</h3>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-gray-600 mt-1 space-y-1 sm:space-y-0">
+                          <div className="flex items-center">
+                            <CalendarDays className="h-4 w-4 mr-1" />
+                            {format(new Date(event.event_date), 'PPP p')}
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {event.location}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-shrink-0 items-center space-x-1 sm:space-x-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      asChild
+                      className="h-8 w-8"
+                    >
+                      <Link to={`/events/${event.id}/chat`}>
+                        <MessageSquare className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => toggleParticipation(event.id, true)}
+                      className="h-8 w-8"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

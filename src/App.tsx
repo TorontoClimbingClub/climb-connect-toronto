@@ -9,11 +9,12 @@ import { Layout } from "@/components/layout/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import Chat from "./pages/Chat";
 import Events from "./pages/Events";
+import EventChat from "./pages/EventChat";
 import Profile from "./pages/Profile";
 import Groups from "./pages/Groups";
 import GroupChat from "./pages/GroupChat";
+import Administrator from "./pages/Administrator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,17 +35,17 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
-            <Route path="/chat" element={
-              <ProtectedRoute>
-                <Layout fullscreen>
-                  <Chat />
-                </Layout>
-              </ProtectedRoute>
-            } />
             <Route path="/events" element={
               <ProtectedRoute>
                 <Layout>
                   <Events />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/events/:eventId/chat" element={
+              <ProtectedRoute>
+                <Layout fullscreen>
+                  <EventChat />
                 </Layout>
               </ProtectedRoute>
             } />
@@ -66,6 +67,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout fullscreen>
                   <GroupChat />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Administrator />
                 </Layout>
               </ProtectedRoute>
             } />
