@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, ArrowLeft, CalendarDays, MapPin, Users, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useUnreadTracking } from '@/hooks/useUnreadTracking';
 import { format } from 'date-fns';
 
 interface EventMessage {
@@ -37,6 +38,12 @@ export default function EventChat() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Use unified unread tracking system
+  const { markAsRead } = useUnreadTracking({
+    chatType: 'event_chat',
+    chatIdentifier: eventId || ''
+  });
   
   const [event, setEvent] = useState<Event | null>(null);
   const [messages, setMessages] = useState<EventMessage[]>([]);
@@ -207,7 +214,7 @@ export default function EventChat() {
       setNewMessage('');
       
       // Mark messages as read when user sends a message
-      updateReadStatus();
+      markAsRead();
       
       if (data) {
         setMessages(prev => [...prev, data]);
@@ -223,39 +230,6 @@ export default function EventChat() {
     }
   };
 
-  // Function to update read status in database
-  const updateReadStatus = useCallback(async () => {
-    if (!user || !eventId) return;
-    
-    try {
-      const now = new Date().toISOString();
-      
-      // Update database with error checking
-      const { error } = await supabase
-        .from('event_participants')
-        .update({ last_read_at: now })
-        .eq('event_id', eventId)
-        .eq('user_id', user.id);
-      
-      if (error) {
-        console.error('Database update error:', error);
-        // Still update localStorage as fallback
-      }
-      
-      // Always update localStorage for backward compatibility
-      const lastVisitKey = `event_last_visit_${eventId}`;
-      localStorage.setItem(lastVisitKey, now);
-    } catch (error) {
-      console.error('Error updating read status:', error);
-      // Ensure localStorage is updated even if database fails
-      try {
-        const lastVisitKey = `event_last_visit_${eventId}`;
-        localStorage.setItem(lastVisitKey, new Date().toISOString());
-      } catch (storageError) {
-        console.error('localStorage fallback failed:', storageError);
-      }
-    }
-  }, [user, eventId]);
 
   // Debounced scroll handler to prevent excessive database calls
   const handleScroll = useCallback(() => {
@@ -272,11 +246,11 @@ export default function EventChat() {
       
       // Debounce the update to avoid excessive calls
       scrollTimeoutRef.current = setTimeout(() => {
-        updateReadStatus();
+        markAsRead();
         scrollTimeoutRef.current = null;
       }, 500); // Wait 500ms before marking as read
     }
-  }, [updateReadStatus]);
+  }, [markAsRead]);
 
   // Mark as read when component unmounts (user leaves chat)
   useEffect(() => {
@@ -286,9 +260,9 @@ export default function EventChat() {
         clearTimeout(scrollTimeoutRef.current);
       }
       // Mark as read when leaving
-      updateReadStatus();
+      markAsRead();
     };
-  }, [updateReadStatus]);
+  }, [markAsRead]);
 
   // Check admin status when user changes
   useEffect(() => {
@@ -403,7 +377,7 @@ export default function EventChat() {
               size="icon"
               onClick={async () => {
                 // Update read status immediately when navigating back
-                await updateReadStatus();
+                await markAsRead();
                 navigate('/events');
               }}
               className="h-8 w-8 sm:h-10 sm:w-10"
