@@ -251,11 +251,7 @@ export default function Groups() {
   };
 
   const navigateToGroupChat = (groupId: string, groupName: string) => {
-    // Mark group as visited
-    const lastVisitKey = `group_last_visit_${groupId}`;
-    localStorage.setItem(lastVisitKey, new Date().toISOString());
-    
-    // Navigate to group chat
+    // Navigate to group chat (read status will be updated when user actually reads messages)
     navigate(`/groups/${groupId}/chat`, { state: { groupName } });
   };
 

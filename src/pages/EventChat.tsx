@@ -106,14 +106,19 @@ export default function EventChat() {
   const checkParticipation = async () => {
     if (!user || !eventId) return;
 
-    const { data } = await supabase
-      .from('event_participants')
-      .select('user_id')
-      .eq('event_id', eventId)
-      .eq('user_id', user.id)
-      .single();
+    try {
+      const { data } = await supabase
+        .from('event_participants')
+        .select('user_id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .single();
 
-    setIsParticipant(!!data);
+      setIsParticipant(!!data);
+    } catch (error) {
+      console.error('Error checking participation:', error);
+      setIsParticipant(false);
+    }
   };
 
   // Load event details
@@ -170,8 +175,6 @@ export default function EventChat() {
       setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error loading messages:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -271,7 +274,7 @@ export default function EventChat() {
       scrollTimeoutRef.current = setTimeout(() => {
         updateReadStatus();
         scrollTimeoutRef.current = null;
-      }, 1000); // Wait 1 second before marking as read
+      }, 500); // Wait 500ms before marking as read
     }
   }, [updateReadStatus]);
 
@@ -294,13 +297,29 @@ export default function EventChat() {
     }
   }, [user, checkAdminStatus]);
 
+  // Initialize component data
+  const initializeChat = async () => {
+    if (!eventId || !user) return;
+
+    try {
+      // Run all initialization tasks in parallel
+      await Promise.all([
+        checkParticipation(),
+        loadEvent(),
+        loadMessages()
+      ]);
+    } catch (error) {
+      console.error('Error initializing chat:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || !user) return;
 
-    checkParticipation();
-    loadEvent();
-    loadMessages();
+    initializeChat();
 
     const channel = supabase
       .channel(`event-messages-realtime-${eventId}`)
@@ -353,6 +372,14 @@ export default function EventChat() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
   if (!isParticipant) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -361,14 +388,6 @@ export default function EventChat() {
           <p className="text-gray-500 mb-4">You must join this event to access the chat.</p>
           <Button onClick={() => navigate('/events')}>Back to Events</Button>
         </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
       </div>
     );
   }
@@ -382,7 +401,11 @@ export default function EventChat() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/events')}
+              onClick={async () => {
+                // Update read status immediately when navigating back
+                await updateReadStatus();
+                navigate('/events');
+              }}
               className="h-8 w-8 sm:h-10 sm:w-10"
             >
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />

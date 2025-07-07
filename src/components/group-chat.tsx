@@ -328,7 +328,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       scrollTimeoutRef.current = setTimeout(() => {
         updateReadStatus();
         scrollTimeoutRef.current = null;
-      }, 1000); // Wait 1 second before marking as read
+      }, 500); // Wait 500ms before marking as read
     }
   }, [updateReadStatus]);
 
@@ -439,7 +439,11 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/groups')}
+            onClick={async () => {
+              // Update read status immediately when navigating back
+              await updateReadStatus();
+              navigate('/groups');
+            }}
             className="p-1"
           >
             <ArrowLeft className="h-5 w-5" />

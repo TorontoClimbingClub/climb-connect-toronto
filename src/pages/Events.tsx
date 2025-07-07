@@ -196,9 +196,8 @@ export default function Events() {
   };
 
   const navigateToEventChat = (eventId: string) => {
-    // Mark event as visited
-    const lastVisitKey = `event_last_visit_${eventId}`;
-    localStorage.setItem(lastVisitKey, new Date().toISOString());
+    // Navigate to event chat (read status will be updated when user actually reads messages)
+    navigate(`/events/${eventId}/chat`);
   };
 
   const handleLeaveClick = (eventId: string) => {
