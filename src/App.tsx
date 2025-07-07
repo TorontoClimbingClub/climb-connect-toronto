@@ -14,6 +14,8 @@ import EventChat from "./pages/EventChat";
 import Profile from "./pages/Profile";
 import Groups from "./pages/Groups";
 import GroupChat from "./pages/GroupChat";
+import Community from "./pages/Community";
+import ClubTalk from "./pages/ClubTalk";
 import Administrator from "./pages/Administrator";
 import NotFound from "./pages/NotFound";
 
@@ -67,6 +69,20 @@ const App = () => (
               <ProtectedRoute>
                 <Layout fullscreen>
                   <GroupChat />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute>
+                <Layout fullscreen>
+                  <Community />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/club-talk" element={
+              <ProtectedRoute>
+                <Layout fullscreen>
+                  <ClubTalk />
                 </Layout>
               </ProtectedRoute>
             } />

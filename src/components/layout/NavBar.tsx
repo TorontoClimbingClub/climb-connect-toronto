@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { Mountain, Menu, Calendar, User, LogOut, Users } from 'lucide-react';
+import { Mountain, Menu, Calendar, User, LogOut, Users, MessageCircle, Hash } from 'lucide-react';
 
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,9 +13,10 @@ export function NavBar() {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Groups', href: '/groups', icon: Users },
+    { name: 'Club Talk', href: '/club-talk', icon: Hash },
+    { name: 'Gym Talk', href: '/groups', icon: Users },
+    { name: 'Crag Talk', href: '/chat', icon: MessageCircle },
     { name: 'Events', href: '/events', icon: Calendar },
-    { name: 'Profile', href: '/profile', icon: User },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -56,12 +57,14 @@ export function NavBar() {
               );
             })}
             <div className="flex items-center space-x-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback>
-                  {user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <Link to="/profile">
+                <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-green-300 transition-all">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} />
+                  <AvatarFallback>
+                    {user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
               <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -78,7 +81,11 @@ export function NavBar() {
               </SheetTrigger>
               <SheetContent side="right" className="w-64">
                 <div className="flex flex-col space-y-4 mt-8">
-                  <div className="flex items-center space-x-3 px-4 py-2">
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-2 hover:bg-green-50 rounded-md transition-colors"
+                  >
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
                       <AvatarFallback>
@@ -90,7 +97,7 @@ export function NavBar() {
                         {user?.user_metadata?.display_name || user?.email}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <hr />
                   {navigation.map((item) => {
                     const Icon = item.icon;

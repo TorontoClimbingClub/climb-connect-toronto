@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Users, MessageSquare, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +25,8 @@ interface Group {
 export default function Groups() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -32,13 +35,21 @@ export default function Groups() {
     loadGroups();
   }, [user]);
 
+  // Define community chat names to exclude from groups page
+  const communityChats = [
+    'Toronto Climbing Club Main Chat',
+    'Outdoors Chat', 
+    'Bouldering'
+  ];
+
   const loadGroups = async () => {
     try {
       if (!user) {
-        // If no user, just fetch basic group data
+        // If no user, just fetch basic group data excluding community chats
         const { data: groupsData, error: groupsError } = await supabase
           .from('groups')
           .select('*')
+          .not('name', 'in', `(${communityChats.map(name => `"${name}"`).join(',')})`)
           .order('name');
 
         if (groupsError) throw groupsError;
@@ -46,21 +57,18 @@ export default function Groups() {
         return;
       }
 
-      // Efficient single query to get all group info including unread status
+      // Get groups where user is a member, excluding community chats
       const { data: groupsWithInfo, error } = await supabase
         .from('groups')
         .select(`
           *,
           group_members!inner (
             user_id,
-            last_read_at,
-            member_count:group_id.count()
-          ),
-          latest_message:group_messages (
-            created_at
+            last_read_at
           )
         `)
         .eq('group_members.user_id', user.id)
+        .not('name', 'in', `(${communityChats.map(name => `"${name}"`).join(',')})`)
         .order('name');
 
       if (error) throw error;
@@ -98,8 +106,8 @@ export default function Groups() {
               hasUnread = latestMessageTime > lastReadTime;
             }
 
-            // Fallback to localStorage for backward compatibility
-            if (!hasUnread && !lastReadAt) {
+            // Fallback to localStorage ONLY if no database timestamp exists
+            if (!lastReadAt) {
               const lastVisitKey = `group_last_visit_${group.id}`;
               const lastVisit = localStorage.getItem(lastVisitKey);
               if (!lastVisit || latestMessageTime > new Date(lastVisit)) {
@@ -122,10 +130,11 @@ export default function Groups() {
         })
       );
 
-      // Also fetch groups where user is not a member
+      // Also fetch groups where user is not a member, excluding community chats
       const { data: allGroups } = await supabase
         .from('groups')
         .select('*')
+        .not('name', 'in', `(${communityChats.map(name => `"${name}"`).join(',')})`)
         .order('name');
 
       const nonMemberGroups = await Promise.all(
@@ -148,11 +157,11 @@ export default function Groups() {
       );
 
       setGroups([...processedGroups, ...nonMemberGroups]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading groups:', error);
       toast({
         title: 'Error loading groups',
-        description: 'Please try again later.',
+        description: error?.message || 'Please try again later.',
         variant: 'destructive'
       });
     } finally {
@@ -223,6 +232,24 @@ export default function Groups() {
     }
   };
 
+  const handleLeaveClick = (groupId: string) => {
+    setLeaveGroupId(groupId);
+    setIsLeaveDialogOpen(true);
+  };
+
+  const confirmLeave = () => {
+    if (leaveGroupId) {
+      handleLeaveGroup(leaveGroupId);
+      setIsLeaveDialogOpen(false);
+      setLeaveGroupId(null);
+    }
+  };
+
+  const cancelLeave = () => {
+    setIsLeaveDialogOpen(false);
+    setLeaveGroupId(null);
+  };
+
   const navigateToGroupChat = (groupId: string, groupName: string) => {
     // Mark group as visited
     const lastVisitKey = `group_last_visit_${groupId}`;
@@ -243,14 +270,23 @@ export default function Groups() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Climbing Groups</h1>
+        <h1 className="text-3xl font-bold mb-2">Gym Talk</h1>
         <p className="text-gray-600">
           Join group chats for your favorite climbing gyms in Toronto
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {groups.map((group) => (
+      {groups.length === 0 ? (
+        <Card className="text-center p-8">
+          <CardContent>
+            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No groups available</h3>
+            <p className="text-gray-500">Groups will appear here once they are created.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {groups.map((group) => (
           <Card 
             key={group.id} 
             className={`hover:shadow-lg transition-all duration-300 ${
@@ -306,7 +342,7 @@ export default function Groups() {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleLeaveGroup(group.id)}
+                      onClick={() => handleLeaveClick(group.id)}
                     >
                       Leave
                     </Button>
@@ -323,8 +359,29 @@ export default function Groups() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* Leave Group Confirmation Dialog */}
+      <Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Leave Group</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to leave this group? You'll need to be re-invited to join again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelLeave}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmLeave}>
+              Leave Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

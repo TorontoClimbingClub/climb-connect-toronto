@@ -9,10 +9,10 @@ interface LayoutProps {
 
 export function Layout({ children, fullscreen = false }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-hidden w-full max-w-full">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-x-hidden w-full max-w-full">
       <NavBar />
       {fullscreen ? (
-        <main className="flex-1 overflow-hidden h-screen w-full">
+        <main className="flex-1 overflow-hidden w-full relative">
           {children}
         </main>
       ) : (

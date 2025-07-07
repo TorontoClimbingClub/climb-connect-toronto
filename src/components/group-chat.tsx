@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, ArrowLeft, X } from 'lucide-react';
+import { Send, Search, ArrowLeft, X, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ChatActionsMenu } from '@/components/chat-actions-menu';
 import { CreateEventModal } from '@/components/create-event-modal';
@@ -16,6 +17,14 @@ interface GroupMessage {
   created_at: string;
   user_id: string;
   group_id: string;
+  message_type?: string;
+  event_id?: string;
+  event_metadata?: {
+    title: string;
+    date: string;
+    location: string;
+    max_participants: number;
+  };
   profiles: {
     display_name: string;
     avatar_url?: string;
@@ -34,16 +43,123 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [joiningEventIds, setJoiningEventIds] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
     if (viewportRef.current) {
       const scrollContainer = viewportRef.current;
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  };
+
+  // Check if user is admin
+  const checkAdminStatus = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setIsAdmin(data?.is_admin || false);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  }, [user]);
+
+  // Delete message function for admins
+  const deleteMessage = async (messageId: string) => {
+    if (!isAdmin) return;
+    
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('group_messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      // Remove message from local state
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      alert('Failed to delete message. Please try again.');
+    }
+  };
+
+  // Join event function
+  const joinEvent = async (eventId: string) => {
+    if (!user || joiningEventIds.has(eventId)) return;
+
+    // Add to joining state
+    setJoiningEventIds(prev => new Set([...prev, eventId]));
+
+    try {
+      // Check if already participating
+      const { data: existingParticipation, error: checkError } = await supabase
+        .from('event_participants')
+        .select('user_id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingParticipation) {
+        toast({
+          title: "Already joined!",
+          description: "You're already participating in this event.",
+        });
+        return;
+      }
+
+      // Insert participation
+      const { error: insertError } = await supabase
+        .from('event_participants')
+        .insert([
+          {
+            event_id: eventId,
+            user_id: user.id,
+          },
+        ]);
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Joined event!",
+        description: "You've successfully joined the event.",
+      });
+    } catch (error) {
+      console.error('Error joining event:', error);
+      toast({
+        title: "Failed to join event",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      // Remove from joining state
+      setJoiningEventIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(eventId);
+        return newSet;
+      });
     }
   };
 
@@ -59,7 +175,10 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           created_at,
           user_id,
           group_id,
-          profiles!inner(display_name, avatar_url)
+          message_type,
+          event_id,
+          event_metadata,
+          profiles(display_name, avatar_url)
         `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: true });
@@ -94,6 +213,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             content: newMessage,
             user_id: user.id,
             group_id: groupId,
+            client_message_id: generateClientMessageId(), // Prevent duplicates
           },
         ])
         .select(`
@@ -102,7 +222,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           created_at,
           user_id,
           group_id,
-          profiles!inner(display_name, avatar_url)
+          profiles(display_name, avatar_url)
         `)
         .single();
 
@@ -122,7 +242,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   };
 
   // Function to post event creation message to chat
-  const postEventCreationMessage = async (eventTitle: string, eventDate: string) => {
+  const postEventCreationMessage = async (eventTitle: string, eventDate: string, eventId: string, location: string, maxParticipants: number) => {
     if (!user) return;
 
     try {
@@ -134,15 +254,22 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         minute: '2-digit'
       });
 
-      const eventMessage = `📅 Created event: "${eventTitle}" on ${eventDateFormatted}`;
-
+      // Create interactive event message instead of plain text
       await supabase
         .from('group_messages')
         .insert([
           {
-            content: eventMessage,
+            content: `📅 Created event: "${eventTitle}"`, // Shorter text, details in metadata
             user_id: user.id,
             group_id: groupId,
+            message_type: 'event',
+            event_id: eventId,
+            event_metadata: {
+              title: eventTitle,
+              date: eventDateFormatted,
+              location: location,
+              max_participants: maxParticipants
+            }
           },
         ]);
     } catch (error) {
@@ -157,18 +284,30 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     try {
       const now = new Date().toISOString();
       
-      // Update database
-      await supabase
+      // Update database with error checking
+      const { error } = await supabase
         .from('group_members')
         .update({ last_read_at: now })
         .eq('group_id', groupId)
         .eq('user_id', user.id);
       
-      // Also update localStorage for backward compatibility
+      if (error) {
+        console.error('Database update error:', error);
+        // Still update localStorage as fallback
+      }
+      
+      // Always update localStorage for backward compatibility
       const lastVisitKey = `group_last_visit_${groupId}`;
       localStorage.setItem(lastVisitKey, now);
     } catch (error) {
       console.error('Error updating read status:', error);
+      // Ensure localStorage is updated even if database fails
+      try {
+        const lastVisitKey = `group_last_visit_${groupId}`;
+        localStorage.setItem(lastVisitKey, new Date().toISOString());
+      } catch (storageError) {
+        console.error('localStorage fallback failed:', storageError);
+      }
     }
   }, [user, groupId]);
 
@@ -205,12 +344,19 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     };
   }, [updateReadStatus]);
 
+  // Check admin status when user changes
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+    }
+  }, [user, checkAdminStatus]);
+
   // Set up real-time subscription
   useEffect(() => {
     loadMessages();
 
     const channel = supabase
-      .channel(`group-messages-${groupId}`)
+      .channel(`group-messages-realtime-${groupId}`)
       .on(
         'postgres_changes',
         {
@@ -231,7 +377,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
               created_at,
               user_id,
               group_id,
-              profiles!inner(display_name, avatar_url)
+              profiles(display_name, avatar_url)
             `)
             .eq('id', payload.new.id)
             .single();
@@ -283,9 +429,9 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   }
 
   return (
-    <Card className="h-full w-full flex flex-col border-0 rounded-none bg-white">
+    <div className="h-full w-full flex flex-col bg-white">
       {/* Chat Header */}
-      <div className="p-4 border-b flex items-center justify-between">
+      <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -327,51 +473,127 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4" ref={viewportRef} onScroll={handleScroll}>
+      <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={viewportRef} onScroll={handleScroll}>
         <div className="space-y-4">
-          {filteredMessages.map((message) => {
-            const isOwnMessage = message.user_id === user?.id;
-            
-            return (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}
-              >
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={message.profiles?.avatar_url} />
-                  <AvatarFallback>
-                    {message.profiles?.display_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium">
-                      {message.profiles?.display_name || 'Unknown User'}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {formatTimestamp(message.created_at)}
-                    </span>
-                  </div>
+          {filteredMessages.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              No messages yet. Start the conversation!
+            </div>
+          ) : (
+            filteredMessages.map((message) => {
+              const isOwnMessage = message.user_id === user?.id;
+              const isEventMessage = false; // Group messages don't support events
+              
+              return (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}
+                >
+                  <Avatar className="h-8 w-8 flex-shrink-0">
+                    <AvatarImage src={message.profiles?.avatar_url} />
+                    <AvatarFallback>
+                      {message.profiles?.display_name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                   
-                  <div
-                    className={`rounded-lg px-3 py-2 max-w-full break-words ${
-                      isOwnMessage
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    {message.content}
+                  <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} ${isEventMessage ? 'max-w-[85%]' : 'max-w-[70%]'}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium">
+                        {message.profiles?.display_name || 'Unknown User'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatTimestamp(message.created_at)}
+                      </span>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteMessage(message.id)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          title="Delete message (Admin)"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {isEventMessage && message.event_metadata ? (
+                      // Event message with join button
+                      <div className={`border-2 border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3 w-full ${
+                        isOwnMessage ? 'border-blue-300' : ''
+                      }`}>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <h4 className="font-semibold text-blue-900">
+                              📅 {message.event_metadata.title}
+                            </h4>
+                            <p className="text-sm text-blue-700">
+                              📍 {message.event_metadata.location}
+                            </p>
+                            <p className="text-sm text-blue-700">
+                              🕒 {new Date(message.event_metadata.date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                            <p className="text-sm text-blue-600">
+                              👥 Max: {message.event_metadata.max_participants} participants
+                            </p>
+                          </div>
+                          
+                          {message.event_id && !isOwnMessage && (
+                            <Button
+                              size="sm"
+                              onClick={() => joinEvent(message.event_id!)}
+                              disabled={joiningEventIds.has(message.event_id)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                            >
+                              {joiningEventIds.has(message.event_id) ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                                  Joining...
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus className="h-3 w-3" />
+                                  Join
+                                </>
+                              )}
+                            </Button>
+                          )}
+                          
+                          {isOwnMessage && (
+                            <div className="text-xs text-blue-600 font-medium">
+                              Your event
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      // Regular text message
+                      <div
+                        className={`rounded-lg px-3 py-2 max-w-full break-words ${
+                          isOwnMessage
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 text-gray-900'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
-      {/* Message Input */}
-      <div className="p-4 border-t">
+      {/* Message Input - Fixed to bottom */}
+      <div className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0">
         <div className="flex gap-2">
           <div className="relative flex-1">
             <ChatActionsMenu 
@@ -405,10 +627,10 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         isOpen={isEventModalOpen}
         onClose={() => setIsEventModalOpen(false)}
         groupName={groupName}
-        onEventCreated={(eventTitle, eventDate) => {
-          postEventCreationMessage(eventTitle, eventDate);
+        onEventCreated={(eventTitle, eventDate, eventId, location, maxParticipants) => {
+          postEventCreationMessage(eventTitle, eventDate, eventId, location, maxParticipants);
         }}
       />
-    </Card>
+    </div>
   );
 }

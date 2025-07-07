@@ -18,7 +18,7 @@ interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   groupName?: string;
-  onEventCreated?: (eventTitle: string, eventDate: string) => void;
+  onEventCreated?: (eventTitle: string, eventDate: string, eventId: string, location: string, maxParticipants: number) => void;
 }
 
 export function CreateEventModal({ 
@@ -108,7 +108,7 @@ export function CreateEventModal({
 
     setIsCreating(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('events')
         .insert([
           {
@@ -119,7 +119,9 @@ export function CreateEventModal({
             max_participants: parseInt(formData.max_participants) || 8,
             created_by: user.id,
           },
-        ]);
+        ])
+        .select('id')
+        .single();
 
       if (error) throw error;
 
@@ -128,8 +130,14 @@ export function CreateEventModal({
         description: 'Your event has been created successfully.',
       });
 
-      // Call callback with event details
-      onEventCreated?.(formData.title, formData.event_date);
+      // Call callback with event details including event ID
+      onEventCreated?.(
+        formData.title, 
+        formData.event_date, 
+        data.id, 
+        formData.location, 
+        parseInt(formData.max_participants) || 8
+      );
 
       // Reset form
       setFormData({

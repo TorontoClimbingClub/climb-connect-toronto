@@ -89,15 +89,23 @@ export default function Home() {
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <Users className="h-8 w-8 text-purple-600 mb-2" />
-            <CardTitle>Group Chats</CardTitle>
+            <CardTitle>Your Community</CardTitle>
             <CardDescription>
-              Connect with climbers from Basecamp, True North, and Joe Rockheads
+              Find Partners, Explore Crags, Join the Conversation
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/groups">View Groups</Link>
-            </Button>
+            <div className="grid grid-cols-3 gap-2">
+              <Button asChild size="sm">
+                <Link to="/club-talk">Club Talk</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/groups">Gym Talk</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/community">Crag Talk</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

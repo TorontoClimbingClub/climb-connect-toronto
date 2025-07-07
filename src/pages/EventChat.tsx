@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, ArrowLeft, CalendarDays, MapPin, Users } from 'lucide-react';
+import { Send, ArrowLeft, CalendarDays, MapPin, Users, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -43,7 +43,9 @@ export default function EventChat() {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isParticipant, setIsParticipant] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -52,6 +54,53 @@ export default function EventChat() {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
   }, []);
+
+  // Check if user is admin
+  const checkAdminStatus = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setIsAdmin(data?.is_admin || false);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  }, [user]);
+
+  // Delete message function for admins
+  const deleteMessage = async (messageId: string) => {
+    if (!isAdmin) return;
+    
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('event_messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      // Remove message from local state
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete message. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Check if user is participant
   const checkParticipation = async () => {
@@ -110,7 +159,7 @@ export default function EventChat() {
           created_at,
           user_id,
           event_id,
-          profiles!inner(display_name, avatar_url)
+          profiles(display_name, avatar_url)
         `)
         .eq('event_id', eventId)
         .order('created_at', { ascending: true });
@@ -146,13 +195,16 @@ export default function EventChat() {
           created_at,
           user_id,
           event_id,
-          profiles!inner(display_name, avatar_url)
+          profiles(display_name, avatar_url)
         `)
         .single();
 
       if (error) throw error;
 
       setNewMessage('');
+      
+      // Mark messages as read when user sends a message
+      updateReadStatus();
       
       if (data) {
         setMessages(prev => [...prev, data]);
@@ -168,6 +220,80 @@ export default function EventChat() {
     }
   };
 
+  // Function to update read status in database
+  const updateReadStatus = useCallback(async () => {
+    if (!user || !eventId) return;
+    
+    try {
+      const now = new Date().toISOString();
+      
+      // Update database with error checking
+      const { error } = await supabase
+        .from('event_participants')
+        .update({ last_read_at: now })
+        .eq('event_id', eventId)
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Database update error:', error);
+        // Still update localStorage as fallback
+      }
+      
+      // Always update localStorage for backward compatibility
+      const lastVisitKey = `event_last_visit_${eventId}`;
+      localStorage.setItem(lastVisitKey, now);
+    } catch (error) {
+      console.error('Error updating read status:', error);
+      // Ensure localStorage is updated even if database fails
+      try {
+        const lastVisitKey = `event_last_visit_${eventId}`;
+        localStorage.setItem(lastVisitKey, new Date().toISOString());
+      } catch (storageError) {
+        console.error('localStorage fallback failed:', storageError);
+      }
+    }
+  }, [user, eventId]);
+
+  // Debounced scroll handler to prevent excessive database calls
+  const handleScroll = useCallback(() => {
+    if (!viewportRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+    
+    if (isAtBottom) {
+      // Clear any existing timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      
+      // Debounce the update to avoid excessive calls
+      scrollTimeoutRef.current = setTimeout(() => {
+        updateReadStatus();
+        scrollTimeoutRef.current = null;
+      }, 1000); // Wait 1 second before marking as read
+    }
+  }, [updateReadStatus]);
+
+  // Mark as read when component unmounts (user leaves chat)
+  useEffect(() => {
+    return () => {
+      // Clear any pending scroll timeout
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      // Mark as read when leaving
+      updateReadStatus();
+    };
+  }, [updateReadStatus]);
+
+  // Check admin status when user changes
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+    }
+  }, [user, checkAdminStatus]);
+
   // Set up real-time subscriptions
   useEffect(() => {
     if (!eventId) return;
@@ -177,7 +303,7 @@ export default function EventChat() {
     loadMessages();
 
     const channel = supabase
-      .channel(`event_messages:${eventId}`)
+      .channel(`event-messages-realtime-${eventId}`)
       .on(
         'postgres_changes',
         {
@@ -248,7 +374,7 @@ export default function EventChat() {
   }
 
   return (
-    <div className="flex flex-col h-screen max-h-screen">
+    <div className="h-full w-full flex flex-col chat-container bg-white">
       {/* Header */}
       <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -290,58 +416,71 @@ export default function EventChat() {
       </div>
 
       {/* Messages */}
-      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0">
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
-            No messages yet. Start the conversation!
-          </div>
-        ) : (
-          messages.map((message) => {
-            const isOwnMessage = message.user_id === user?.id;
-            return (
-              <div
-                key={message.id}
-                className={`flex items-start space-x-2 sm:space-x-3 ${
-                  isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''
-                }`}
-              >
-                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                  <AvatarImage src={message.profiles?.avatar_url} />
-                  <AvatarFallback className="text-xs">
-                    {message.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0" onScroll={handleScroll}>
+        <div className="space-y-3 sm:space-y-4">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              No messages yet. Start the conversation!
+            </div>
+          ) : (
+            messages.map((message) => {
+              const isOwnMessage = message.user_id === user?.id;
+              return (
                 <div
-                  className={`flex flex-col min-w-0 flex-1 ${
-                    isOwnMessage ? 'items-end' : 'items-start'
+                  key={message.id}
+                  className={`flex items-start space-x-2 sm:space-x-3 ${
+                    isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''
                   }`}
                 >
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="text-xs sm:text-sm font-medium truncate">
-                      {message.profiles?.display_name || 'Unknown User'}
-                    </span>
-                    <span className="text-xs text-gray-500 flex-shrink-0">
-                      {format(new Date(message.created_at), 'p')}
-                    </span>
-                  </div>
+                  <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                    <AvatarImage src={message.profiles?.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {message.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                   <div
-                    className={`px-3 py-2 rounded-lg max-w-[85%] sm:max-w-md break-words ${
-                      isOwnMessage
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                    className={`flex flex-col min-w-0 flex-1 ${
+                      isOwnMessage ? 'items-end' : 'items-start'
                     }`}
                   >
-                    {message.content}
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="text-xs sm:text-sm font-medium truncate">
+                        {message.profiles?.display_name || 'Unknown User'}
+                      </span>
+                      <span className="text-xs text-gray-500 flex-shrink-0">
+                        {format(new Date(message.created_at), 'p')}
+                      </span>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteMessage(message.id)}
+                          className="h-5 w-5 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          title="Delete message (Admin)"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                    <div
+                      className={`px-3 py-2 rounded-lg max-w-[85%] sm:max-w-md break-words ${
+                        isOwnMessage
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                      }`}
+                    >
+                      {message.content}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
 
-      {/* Input */}
-      <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0">
+      {/* Input - Fixed to bottom */}
+      <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0 sticky bottom-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
