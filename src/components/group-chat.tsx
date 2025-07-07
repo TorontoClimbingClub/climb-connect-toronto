@@ -377,6 +377,9 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
               created_at,
               user_id,
               group_id,
+              message_type,
+              event_id,
+              event_metadata,
               profiles(display_name, avatar_url)
             `)
             .eq('id', payload.new.id)
@@ -482,7 +485,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           ) : (
             filteredMessages.map((message) => {
               const isOwnMessage = message.user_id === user?.id;
-              const isEventMessage = false; // Group messages don't support events
+              const isEventMessage = message.message_type === 'event' && message.event_metadata;
               
               return (
                 <div
@@ -518,30 +521,22 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                     </div>
                     
                     {isEventMessage && message.event_metadata ? (
-                      // Event message with join button
-                      <div className={`border-2 border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3 w-full ${
-                        isOwnMessage ? 'border-blue-300' : ''
+                      // Compact event message with minimal join button
+                      <div className={`border border-blue-200 rounded-lg px-3 py-2 bg-blue-50 w-full ${
+                        isOwnMessage ? 'bg-blue-100 border-blue-300' : ''
                       }`}>
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <h4 className="font-semibold text-blue-900">
-                              📅 {message.event_metadata.title}
-                            </h4>
-                            <p className="text-sm text-blue-700">
-                              📍 {message.event_metadata.location}
-                            </p>
-                            <p className="text-sm text-blue-700">
-                              🕒 {new Date(message.event_metadata.date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: 'numeric',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                            <p className="text-sm text-blue-600">
-                              👥 Max: {message.event_metadata.max_participants} participants
-                            </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1 mb-1">
+                              <span className="font-medium text-blue-900 text-sm truncate">
+                                📅 {message.event_metadata.title}
+                              </span>
+                            </div>
+                            <div className="text-xs text-blue-700 space-x-3">
+                              <span>📍 {message.event_metadata.location}</span>
+                              <span>🕒 {message.event_metadata.date}</span>
+                              <span>👥 {message.event_metadata.max_participants}</span>
+                            </div>
                           </div>
                           
                           {message.event_id && !isOwnMessage && (
@@ -549,24 +544,18 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                               size="sm"
                               onClick={() => joinEvent(message.event_id!)}
                               disabled={joiningEventIds.has(message.event_id)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                              className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs flex-shrink-0"
                             >
                               {joiningEventIds.has(message.event_id) ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
-                                  Joining...
-                                </>
+                                <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent" />
                               ) : (
-                                <>
-                                  <UserPlus className="h-3 w-3" />
-                                  Join
-                                </>
+                                <UserPlus className="h-3 w-3" />
                               )}
                             </Button>
                           )}
                           
                           {isOwnMessage && (
-                            <div className="text-xs text-blue-600 font-medium">
+                            <div className="text-xs text-blue-600 font-medium flex-shrink-0">
                               Your event
                             </div>
                           )}
