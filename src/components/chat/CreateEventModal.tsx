@@ -116,7 +116,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Bouldering Session at CRG"
+              placeholder="e.g., Weekly Bouldering Session"
               required
             />
           </div>
@@ -139,7 +139,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g., CRG Toronto, Basecamp Fitness"
+              placeholder="e.g., Local climbing gym or outdoor crag"
               required
             />
           </div>

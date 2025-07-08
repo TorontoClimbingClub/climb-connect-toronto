@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Users, MessageSquare, ArrowRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Users, MessageSquare, ArrowRight, Search, Filter, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
+import { ActivityFeed, ContextPanel } from '@/components/layout/MultiPanelLayout';
 
 interface Group {
   id: string;
@@ -25,6 +27,8 @@ export default function Groups() {
   const [loading, setLoading] = useState(true);
   const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'joined' | 'available'>('all');
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -230,14 +234,89 @@ export default function Groups() {
     );
   }
 
+  // Filter groups based on search and filter type
+  const filteredGroups = groups.filter(group => {
+    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    
+    switch (filterType) {
+      case 'joined':
+        return matchesSearch && group.is_member;
+      case 'available':
+        return matchesSearch && !group.is_member;
+      default:
+        return matchesSearch;
+    }
+  });
+
+  const joinedGroups = filteredGroups.filter(group => group.is_member);
+  const availableGroups = filteredGroups.filter(group => !group.is_member);
+
+  // Context panel for desktop
+
+  const recentActivities = groups.slice(0, 5).map(group => ({
+    id: group.id,
+    type: 'group',
+    content: `Activity in ${group.name}`,
+    user: 'Community',
+    timestamp: group.created_at
+  }));
+
+  const contextPanel = (
+    <>
+      <ContextPanel title="Group Stats">
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Total Groups</span>
+            <span className="text-sm font-medium">{groups.length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Joined</span>
+            <span className="text-sm font-medium">{joinedGroups.length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Available</span>
+            <span className="text-sm font-medium">{availableGroups.length}</span>
+          </div>
+        </div>
+      </ContextPanel>
+      
+      <ActivityFeed activities={recentActivities} />
+    </>
+  );
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Gym Talk</h1>
-        <p className="text-gray-600">
-          Join group chats for your favorite climbing gyms in Toronto
-        </p>
-      </div>
+    <div className="space-y-6 bg-white md:bg-white min-h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
+        {/* Header with Search and Filters */}
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gym Groups</h1>
+            <p className="text-gray-600 mt-1">Find partners at your local climbing gym</p>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="group-search"
+                placeholder="Search groups..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+            
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as 'all' | 'joined' | 'available')}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="all">All Groups</option>
+              <option value="joined">Joined</option>
+              <option value="available">Available</option>
+            </select>
+          </div>
+        </div>
 
       {groups.length === 0 ? (
         <Card className="text-center p-8">
@@ -248,11 +327,82 @@ export default function Groups() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {groups.map((group) => (
+        <>
+          {/* Desktop Layout: Each group as a row */}
+          <div className="hidden md:block space-y-4">
+          {filteredGroups.map((group) => (
+            <Card key={group.id} className="desktop-card-hover">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  {/* Left section: Avatar, name, description, and stats */}
+                  <div className="flex items-center gap-4 flex-1">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={group.avatar_url || undefined} />
+                      <AvatarFallback className="text-lg">
+                        {group.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">{group.name}</h3>
+                        {group.is_member && (
+                          <Badge variant="secondary">Member</Badge>
+                        )}
+                      </div>
+                      
+                      <p className="text-gray-600 mb-3 max-w-2xl">
+                        {group.description || "No description available"}
+                      </p>
+                      
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <Users className="h-4 w-4" />
+                        <span>{group.member_count || 0} members</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right section: Action buttons */}
+                  <div className="flex items-center gap-3 ml-6">
+                    {group.is_member ? (
+                      <>
+                        <Button
+                          onClick={() => navigateToGroupChat(group.id, group.name)}
+                          className="min-w-[140px]"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Open Chat
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleLeaveClick(group.id)}
+                          className="min-w-[100px]"
+                        >
+                          Leave
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={() => handleJoinGroup(group.id)}
+                        className="min-w-[140px]"
+                      >
+                        Join Group
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Mobile Layout: Keep original grid layout */}
+        <div className="md:hidden desktop-grid-3">
+          {filteredGroups.map((group) => (
           <Card 
             key={group.id} 
-            className="hover:shadow-lg transition-all duration-300"
+            className="desktop-card-hover"
           >
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -317,6 +467,7 @@ export default function Groups() {
           </Card>
           ))}
         </div>
+        </>
       )}
 
       {/* Leave Group Confirmation Dialog */}

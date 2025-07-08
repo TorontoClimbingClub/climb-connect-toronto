@@ -258,6 +258,151 @@ All colors MUST be HSL.
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
   }
+
+  /* Desktop-specific layout utilities */
+  .desktop-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: 1fr;
+    height: calc(100vh - 64px); /* Account for navbar */
+    overflow: hidden;
+  }
+
+  .desktop-layout-three-panel {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: 1fr;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+
+  .desktop-layout-four-panel {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px 280px;
+    grid-template-rows: 1fr;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+
+
+  .sidebar-panel {
+    background: hsl(var(--sidebar-background));
+    border-right: 1px solid hsl(var(--sidebar-border));
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .main-panel {
+    background: hsl(var(--background));
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .context-panel {
+    background: hsl(var(--sidebar-background));
+    border-left: 1px solid hsl(var(--sidebar-border));
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Grid layouts for content */
+  .desktop-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .desktop-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .desktop-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* Enhanced card layouts for desktop */
+  .desktop-card-hover {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .desktop-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Activity indicators */
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: hsl(var(--destructive));
+    animation: pulse 2s infinite;
+  }
+
+  .activity-dot.green {
+    background: #10b981;
+  }
+
+  .activity-dot.blue {
+    background: #3b82f6;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Responsive utilities */
+  @media (max-width: 768px) {
+    .desktop-layout,
+    .desktop-layout-three-panel,
+    .desktop-layout-four-panel {
+      display: block;
+      height: auto;
+    }
+
+    .desktop-grid-2,
+    .desktop-grid-3,
+    .desktop-grid-4 {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .sidebar-panel,
+    .context-panel {
+      display: none;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .desktop-layout-three-panel,
+    .desktop-layout-four-panel {
+      grid-template-columns: 240px 1fr;
+    }
+
+    .desktop-grid-3,
+    .desktop-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1440px) {
+    .desktop-layout-four-panel {
+      grid-template-columns: 280px 1fr 320px;
+    }
+
+    .desktop-grid-4 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 }
 
   body {

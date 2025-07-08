@@ -15,11 +15,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **This map may be outdated:** Source files have been modified since last MAP generation
 **Action Required:** Run `npm run ui:update-map` before proceeding
 
-**Last Updated:** 2025-07-07T18:24:50.055Z
+**Last Updated:** 2025-07-08T21:55:26.214Z
 **Project:** climb-connect-toronto
-**Components Scanned:** 105
-**Total Files:** 105
-**Latest File Modified:** Mon Jul 07 2025 14:06:25 GMT-0400 (Eastern Daylight Time)
+**Components Scanned:** 71
+**Total Files:** 71
+**Latest File Modified:** Tue Jul 08 2025 17:46:41 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -43,10 +43,47 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 ### 📁 src/components/
 
+#### navigate
+**File:** `src/components/GlobalSearch.tsx`
+**Lines:** 235
+**Last Modified:** 2025-07-08T19:47:16.390Z
+
+**Key Elements:**
+- **SearchResult** (line 26) - `searchresult`
+  - Context: `const [results, setResults] = useState<SearchResult[]>([]);`
+- **Calendar** (line 131) - `calendar`
+  - Context: `return <Calendar className="h-4 w-4 text-orange-600" />;`
+- **Users** (line 133) - `users`
+  - Context: `return <Users className="h-4 w-4 text-blue-600" />;`
+- **MessageSquare** (line 135) - `messagesquare`
+  - Context: `return <MessageSquare className="h-4 w-4 text-green-600" />;`
+- **Search** (line 137) - `search`
+  - Context: `return <Search className="h-4 w-4 text-gray-600" />;`
+- **Dialog** (line 155) - `dialog`
+  - Context: `<Dialog open={isOpen} onOpenChange={onClose}>`
+- **DialogContent** (line 156) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[600px]">`
+- **DialogHeader** (line 157) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 158) - `dialogtitle`
+  - Context: `<DialogTitle className="flex items-center gap-2">`
+- **Search** (line 159) - `search`
+  - Context: `<Search className="h-5 w-5" />`
+- **Search** (line 166) - `search`
+  - Context: `<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 te...`
+- **Input** (line 167) - `input`
+  - Context: `<Input`
+- **Search** (line 185) - `search`
+  - Context: `<Search className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
+- **Badge** (line 212) - `badge`
+  - Context: `<Badge variant="secondary" className={`text-xs ${getResultBadgeColor(result.type...`
+- **ArrowRight** (line 215) - `arrowright`
+  - Context: `<ArrowRight className="h-3 w-3 text-gray-400" />`
+
 #### ProtectedRoute
 **File:** `src/components/ProtectedRoute.tsx`
 **Lines:** 32
-**Last Modified:** 2025-07-03T21:42:28.127Z
+**Last Modified:** 2025-07-08T18:09:39.483Z
 
 **Key Elements:**
 - **Skeleton** (line 18) - `skeleton`
@@ -58,768 +95,202 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Navigate** (line 27) - `navigate`
   - Context: `return <Navigate to="/auth" replace />;`
 
-#### handleCreateEvent
-**File:** `src/components/chat-actions-menu.tsx`
-**Lines:** 45
-**Last Modified:** 2025-07-06T03:22:56.345Z
+#### navigate
+**File:** `src/components/group-chat.tsx`
+**Lines:** 486
+**Last Modified:** 2025-07-08T18:53:19.855Z
 
 **Key Elements:**
-- **DropdownMenu** (line 24) - `dropdownmenu`
-  - Context: `<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>`
-- **DropdownMenuTrigger** (line 25) - `dropdownmenutrigger`
-  - Context: `<DropdownMenuTrigger asChild>`
-- **Button** (line 26) - `button`
-  - Context: `<Button`
-- **Plus** (line 31) - `plus`
-  - Context: `<Plus className="h-4 w-4 text-gray-500" />`
-- **DropdownMenuContent** (line 34) - `dropdownmenucontent`
-  - Context: `<DropdownMenuContent align="start" className="w-48">`
-- **DropdownMenuItem** (line 35) - `dropdownmenuitem`
-  - Context: `<DropdownMenuItem`
-- **Calendar** (line 39) - `calendar`
-  - Context: `<Calendar className="h-4 w-4" />`
-
-#### getLocationSuggestion
-**File:** `src/components/create-event-modal.tsx`
-**Lines:** 263
-**Last Modified:** 2025-07-07T02:17:32.664Z
-
-**Key Elements:**
-- **HTMLInputElement** (line 81) - `htmlinputelement`
-  - Context: `const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaE...`
-- **Dialog** (line 176) - `dialog`
-  - Context: `<Dialog open={isOpen} onOpenChange={handleClose}>`
-- **DialogContent** (line 177) - `dialogcontent`
-  - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 178) - `dialogheader`
-  - Context: `<DialogHeader>`
-- **DialogTitle** (line 179) - `dialogtitle`
-  - Context: `<DialogTitle className="flex items-center gap-2">`
-- **CalendarDays** (line 180) - `calendardays`
-  - Context: `<CalendarDays className="h-5 w-5" />`
-- **Label** (line 191) - `label`
-  - Context: `<Label htmlFor="title">Event Title *</Label>`
-- **Input** (line 192) - `input`
-  - Context: `<Input`
-- **Label** (line 203) - `label`
-  - Context: `<Label htmlFor="description">Description</Label>`
-- **Textarea** (line 204) - `textarea`
-  - Context: `<Textarea`
-- **Label** (line 215) - `label`
-  - Context: `<Label htmlFor="location">Location *</Label>`
-- **Input** (line 216) - `input`
-  - Context: `<Input`
-- **Label** (line 227) - `label`
-  - Context: `<Label htmlFor="event_date">Date & Time *</Label>`
-- **Input** (line 228) - `input`
-  - Context: `<Input`
-- **Label** (line 239) - `label`
-  - Context: `<Label htmlFor="max_participants">Max Participants</Label>`
-- **Input** (line 240) - `input`
-  - Context: `<Input`
-- **Button** (line 252) - `button`
-  - Context: `<Button type="button" variant="outline" onClick={handleClose} className="flex-1"...`
-- **Button** (line 255) - `button`
-  - Context: `<Button type="submit" disabled={isCreating} className="flex-1">`
-
-#### viewport
-**File:** `src/components/enhanced-realtime-chat.tsx`
-**Lines:** 530
-**Last Modified:** 2025-07-07T18:04:10.387Z
-
-**Key Elements:**
-- **ChatMessage** (line 38) - `chatmessage`
-  - Context: `const [messages, setMessages] = useState<ChatMessage[]>([]);`
-- **Set** (line 44) - `set`
-  - Context: `const [joiningEventIds, setJoiningEventIds] = useState<Set<string>>(new Set());`
-- **HTMLDivElement** (line 45) - `htmldivelement`
+- **GroupMessage** (line 33) - `groupmessage`
+  - Context: `const [messages, setMessages] = useState<GroupMessage[]>([]);`
+- **HTMLDivElement** (line 41) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 331) - `card`
-  - Context: `<Card className="h-full flex items-center justify-center">`
+- **Button** (line 332) - `button`
+  - Context: `<Button`
+- **ArrowLeft** (line 338) - `arrowleft`
+  - Context: `<ArrowLeft className="h-5 w-5" />`
 - **Input** (line 347) - `input`
   - Context: `<Input`
 - **Button** (line 354) - `button`
   - Context: `<Button`
-- **Search** (line 362) - `search`
-  - Context: `<Search className="h-4 w-4" />`
-- **Avatar** (line 390) - `avatar`
-  - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 391) - `avatarimage`
-  - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 392) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **Button** (line 406) - `button`
-  - Context: `<Button`
-- **X** (line 413) - `x`
-  - Context: `<X className="h-3 w-3" />`
-- **Button** (line 446) - `button`
-  - Context: `<Button`
-- **UserPlus** (line 459) - `userplus`
-  - Context: `<UserPlus className="h-3 w-3" />`
-- **Input** (line 505) - `input`
-  - Context: `<Input`
-- **Button** (line 518) - `button`
-  - Context: `<Button`
-- **Send** (line 524) - `send`
-  - Context: `<Send className="h-4 w-4" />`
-
-#### navigate
-**File:** `src/components/group-chat.tsx`
-**Lines:** 626
-**Last Modified:** 2025-07-07T16:13:30.326Z
-
-**Key Elements:**
-- **GroupMessage** (line 40) - `groupmessage`
-  - Context: `const [messages, setMessages] = useState<GroupMessage[]>([]);`
-- **Set** (line 47) - `set`
-  - Context: `const [joiningEventIds, setJoiningEventIds] = useState<Set<string>>(new Set());`
-- **HTMLDivElement** (line 48) - `htmldivelement`
-  - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **NodeJS** (line 49) - `nodejs`
-  - Context: `const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-- **Card** (line 415) - `card`
-  - Context: `<Card className="h-full flex items-center justify-center">`
-- **Button** (line 426) - `button`
-  - Context: `<Button`
-- **ArrowLeft** (line 432) - `arrowleft`
-  - Context: `<ArrowLeft className="h-5 w-5" />`
-- **Input** (line 441) - `input`
-  - Context: `<Input`
-- **Button** (line 448) - `button`
-  - Context: `<Button`
-- **X** (line 460) - `x`
+- **X** (line 366) - `x`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Search** (line 460) - `search`
+- **Search** (line 366) - `search`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Avatar** (line 482) - `avatar`
+- **Avatar** (line 402) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 483) - `avatarimage`
+- **AvatarImage** (line 403) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 484) - `avatarfallback`
+- **AvatarFallback** (line 404) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 498) - `button`
+- **Button** (line 418) - `button`
   - Context: `<Button`
-- **X** (line 505) - `x`
+- **X** (line 425) - `x`
   - Context: `<X className="h-3 w-3" />`
-- **Button** (line 538) - `button`
-  - Context: `<Button`
-- **UserPlus** (line 551) - `userplus`
-  - Context: `<UserPlus className="h-3 w-3" />`
-- **ChatActionsMenu** (line 589) - `chatactionsmenu`
-  - Context: `<ChatActionsMenu`
-- **Input** (line 592) - `input`
+- **ChatActionsMenu** (line 450) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu onCreateEvent={handleCreateEvent} />`
+- **Input** (line 452) - `input`
   - Context: `<Input`
-- **Button** (line 605) - `button`
+- **EmojiPickerComponent** (line 465) - `emojipickercomponent`
+  - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
+- **Button** (line 468) - `button`
   - Context: `<Button`
-- **Send** (line 610) - `send`
+- **Send** (line 473) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 616) - `createeventmodal`
+- **CreateEventModal** (line 478) - `createeventmodal`
   - Context: `<CreateEventModal`
 
 ### 📁 src/components/chat/
 
-#### Chat
-**File:** `src/components/chat/Chat.tsx`
-**Lines:** 131
-**Last Modified:** 2025-07-06T21:50:02.367Z
-
-**Key Elements:**
-- **ChatConfig** (line 11) - `chatconfig`
-  - Context: `config?: Partial<ChatConfig>;`
-- **LoadingSpinner** (line 31) - `loadingspinner`
-  - Context: `return <LoadingSpinner message={`Loading ${config.type} chat...`} className={cla...`
-- **ChatContainer** (line 37) - `chatcontainer`
-  - Context: `<ChatContainer className={className}>`
-- **ChatHeader** (line 38) - `chatheader`
-  - Context: `<ChatHeader`
-- **MessageList** (line 55) - `messagelist`
-  - Context: `<MessageList`
-- **MessageInput** (line 63) - `messageinput`
-  - Context: `<MessageInput`
-- **ChatProvider** (line 105) - `chatprovider`
-  - Context: `<ChatProvider`
-- **ChatInternal** (line 111) - `chatinternal`
-  - Context: `<ChatInternal`
-- **ChatProps** (line 121) - `chatprops`
-  - Context: `export function CommunityChat(props: Omit<ChatProps, 'chatType'>) {`
-- **Chat** (line 122) - `chat`
-  - Context: `return <Chat {...props} chatType="community" />;`
-- **ChatProps** (line 125) - `chatprops`
-  - Context: `export function GroupChat(props: Omit<ChatProps, 'chatType'>) {`
-- **Chat** (line 126) - `chat`
-  - Context: `return <Chat {...props} chatType="group" />;`
-- **ChatProps** (line 129) - `chatprops`
-  - Context: `export function EventChat(props: Omit<ChatProps, 'chatType'>) {`
-- **Chat** (line 130) - `chat`
-  - Context: `return <Chat {...props} chatType="event" />;`
-
-#### ChatContext
-**File:** `src/components/chat/ChatContext.ts`
-**Lines:** 83
-**Last Modified:** 2025-07-06T21:48:51.522Z
-
-**Key Elements:**
-- **ChatContextValue** (line 42) - `chatcontextvalue`
-  - Context: `export const ChatContext = createContext<ChatContextValue | null>(null);`
-
-#### state
-**File:** `src/components/chat/ChatProvider.tsx`
-**Lines:** 301
-**Last Modified:** 2025-07-06T21:49:32.495Z
-
-**Key Elements:**
-- **IChatServices** (line 29) - `ichatservices`
-  - Context: `services?: Partial<IChatServices>;`
-- **ChatContext** (line 291) - `chatcontext`
-  - Context: `<ChatContext.Provider value={contextValue}>`
-
-#### handleSendMessage
-**File:** `src/components/chat/EnhancedChatDemo.tsx`
-**Lines:** 343
-**Last Modified:** 2025-07-07T16:28:29.671Z
-
-**Key Elements:**
-- **ConnectionBanner** (line 105) - `connectionbanner`
-  - Context: `<ConnectionBanner`
-- **Card** (line 112) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 113) - `cardheader`
-  - Context: `<CardHeader className="pb-3">`
-- **MessageSquare** (line 116) - `messagesquare`
-  - Context: `<MessageSquare className="h-5 w-5" />`
-- **CardTitle** (line 117) - `cardtitle`
-  - Context: `<CardTitle className="text-lg">{roomName}</CardTitle>`
-- **Badge** (line 118) - `badge`
-  - Context: `<Badge variant="outline" className="text-xs">`
-- **ConnectionIndicator** (line 125) - `connectionindicator`
-  - Context: `<ConnectionIndicator connectionState={connectionState} />`
-- **Badge** (line 129) - `badge`
-  - Context: `<Badge variant="secondary" className="text-xs">`
-- **Badge** (line 136) - `badge`
-  - Context: `<Badge variant="outline" className="text-xs">`
-- **Button** (line 142) - `button`
-  - Context: `<Button`
-- **Settings** (line 147) - `settings`
-  - Context: `<Settings className="h-4 w-4" />`
-- **ConnectionStatus** (line 154) - `connectionstatus`
-  - Context: `<ConnectionStatus`
-- **CardContent** (line 164) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **ConnectionMonitor** (line 166) - `connectionmonitor`
-  - Context: `<ConnectionMonitor`
-- **Input** (line 204) - `input`
-  - Context: `<Input`
-- **Button** (line 215) - `button`
-  - Context: `<Button`
-- **Send** (line 220) - `send`
-  - Context: `<Send className="h-4 w-4" />`
-- **Separator** (line 224) - `separator`
-  - Context: `<Separator />`
-- **Button** (line 228) - `button`
-  - Context: `<Button`
-- **RotateCcw** (line 234) - `rotateccw`
-  - Context: `<RotateCcw className="h-3 w-3 mr-1" />`
-- **Button** (line 238) - `button`
-  - Context: `<Button`
-- **Activity** (line 244) - `activity`
-  - Context: `<Activity className="h-3 w-3 mr-1" />`
-- **Button** (line 248) - `button`
-  - Context: `<Button`
-- **Button** (line 256) - `button`
-  - Context: `<Button`
-- **Trash2** (line 262) - `trash2`
-  - Context: `<Trash2 className="h-3 w-3 mr-1" />`
-- **Button** (line 307) - `button`
-  - Context: `<Button size="sm" variant="ghost" onClick={clearError}>`
-
-#### index
-**File:** `src/components/chat/index.ts`
+#### ChatActionsMenu
+**File:** `src/components/chat/ChatActionsMenu.tsx`
 **Lines:** 40
-**Last Modified:** 2025-07-06T21:50:19.446Z
-
-### 📁 src/components/chat/hooks/
-
-#### index
-**File:** `src/components/chat/hooks/index.ts`
-**Lines:** 21
-**Last Modified:** 2025-07-07T16:26:49.177Z
-
-#### loadMessages
-**File:** `src/components/chat/hooks/useChatMessages.ts`
-**Lines:** 179
-**Last Modified:** 2025-07-06T21:40:10.950Z
+**Last Modified:** 2025-07-08T18:50:25.419Z
 
 **Key Elements:**
-- **BaseMessage** (line 26) - `basemessage`
-  - Context: `const [messages, setMessages] = useState<BaseMessage[]>([]);`
-- **BaseMessage** (line 73) - `basemessage`
-  - Context: `const sendMessage = useCallback(async (content: string): Promise<BaseMessage | n...`
-- **BaseMessage** (line 151) - `basemessage`
-  - Context: `const updateMessage = useCallback((messageId: string, updates: Partial<BaseMessa...`
-
-#### checkAdminStatus
-**File:** `src/components/chat/hooks/useChatPermissions.ts`
-**Lines:** 171
-**Last Modified:** 2025-07-06T21:41:45.501Z
-
-**Key Elements:**
-- **UserPermissions** (line 25) - `userpermissions`
-  - Context: `const [permissions, setPermissions] = useState<UserPermissions>(DEFAULT_USER_PER...`
-
-#### getReadStatusTable
-**File:** `src/components/chat/hooks/useChatReadStatus.ts`
-**Lines:** 206
-**Last Modified:** 2025-07-06T21:41:13.265Z
-
-**Key Elements:**
-- **ReadStatusConfig** (line 15) - `readstatusconfig`
-  - Context: `config?: Partial<ReadStatusConfig>;`
-- **ReadStatus** (line 28) - `readstatus`
-  - Context: `const [readStatus, setReadStatus] = useState<ReadStatus | null>(null);`
-- **NodeJS** (line 31) - `nodejs`
-  - Context: `const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-- **HTMLDivElement** (line 107) - `htmldivelement`
-  - Context: `const handleScroll = useCallback((viewportRef: React.RefObject<HTMLDivElement>) ...`
-
-#### cleanup
-**File:** `src/components/chat/hooks/useChatRealtime.ts`
-**Lines:** 103
-**Last Modified:** 2025-07-06T21:40:34.181Z
-
-#### scrollToBottom
-**File:** `src/components/chat/hooks/useChatScroll.ts`
-**Lines:** 157
-**Last Modified:** 2025-07-06T21:42:13.052Z
-
-**Key Elements:**
-- **HTMLDivElement** (line 14) - `htmldivelement`
-  - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **NodeJS** (line 15) - `nodejs`
-  - Context: `const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-
-#### filteredMessages
-**File:** `src/components/chat/hooks/useChatSearch.ts`
-**Lines:** 191
-**Last Modified:** 2025-07-06T21:42:47.571Z
-
-#### getConnectionQuality
-**File:** `src/components/chat/hooks/useConnectionState.ts`
-**Lines:** 355
-**Last Modified:** 2025-07-07T16:20:49.436Z
-
-**Key Elements:**
-- **ConnectionConfig** (line 13) - `connectionconfig`
-  - Context: `config?: Partial<ConnectionConfig>;`
-- **ConnectionState** (line 34) - `connectionstate`
-  - Context: `const [connectionState, setConnectionState] = useState<ConnectionState>({`
-- **NodeJS** (line 47) - `nodejs`
-  - Context: `const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-- **NodeJS** (line 48) - `nodejs`
-  - Context: `const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);`
-- **NodeJS** (line 49) - `nodejs`
-  - Context: `const latencyTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-- **NodeJS** (line 50) - `nodejs`
-  - Context: `const networkStatusIntervalRef = useRef<NodeJS.Timeout | null>(null);`
-
-#### lastMessageCheckRef
-**File:** `src/components/chat/hooks/useEnhancedChat.ts`
-**Lines:** 409
-**Last Modified:** 2025-07-07T16:26:24.435Z
-
-**Key Elements:**
-- **ConnectionConfig** (line 20) - `connectionconfig`
-  - Context: `config?: Partial<ConnectionConfig>;`
-- **Date** (line 74) - `date`
-  - Context: `const [lastSuccessfulConnection, setLastSuccessfulConnection] = useState<Date | ...`
-- **NodeJS** (line 78) - `nodejs`
-  - Context: `const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);`
-- **Date** (line 79) - `date`
-  - Context: `const lastMessageCheckRef = useRef<Date>(new Date());`
-
-#### getTableName
-**File:** `src/components/chat/hooks/useMessageQueue.ts`
-**Lines:** 365
-**Last Modified:** 2025-07-07T16:21:48.627Z
-
-**Key Elements:**
-- **ConnectionConfig** (line 15) - `connectionconfig`
-  - Context: `config?: Partial<ConnectionConfig>;`
-- **MessageQueue** (line 47) - `messagequeue`
-  - Context: `const [queue, setQueue] = useState<MessageQueue>({`
-- **NodeJS** (line 57) - `nodejs`
-  - Context: `const processTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-- **BaseMessage** (line 190) - `basemessage`
-  - Context: `const sendMessage = useCallback(async (item: MessageQueueItem): Promise<BaseMess...`
-
-### 📁 src/components/chat/services/
-
-#### MessageService
-**File:** `src/components/chat/services/MessageService.ts`
-**Lines:** 289
-**Last Modified:** 2025-07-06T21:46:20.124Z
-
-**Key Elements:**
-- **BaseMessage** (line 18) - `basemessage`
-  - Context: `): Promise<BaseMessage[]> {`
-- **BaseMessage** (line 62) - `basemessage`
-  - Context: `): Promise<BaseMessage> {`
-- **BaseMessage** (line 134) - `basemessage`
-  - Context: `): Promise<BaseMessage> {`
-- **BaseMessage** (line 176) - `basemessage`
-  - Context: `): Promise<BaseMessage[]> {`
-
-#### PermissionService
-**File:** `src/components/chat/services/PermissionService.ts`
-**Lines:** 275
-**Last Modified:** 2025-07-06T21:48:08.198Z
-
-**Key Elements:**
-- **UserPermissions** (line 41) - `userpermissions`
-  - Context: `): Promise<UserPermissions> {`
-
-#### now
-**File:** `src/components/chat/services/ReadStatusService.ts`
-**Lines:** 336
-**Last Modified:** 2025-07-06T21:47:34.260Z
-
-**Key Elements:**
-- **ReadStatus** (line 64) - `readstatus`
-  - Context: `): Promise<ReadStatus | null> {`
-- **Record** (line 171) - `record`
-  - Context: `): Promise<Record<string, number>> {`
-
-#### RealtimeService
-**File:** `src/components/chat/services/RealtimeService.ts`
-**Lines:** 252
-**Last Modified:** 2025-07-06T21:46:52.556Z
-
-#### index
-**File:** `src/components/chat/services/index.ts`
-**Lines:** 21
-**Last Modified:** 2025-07-06T21:48:21.049Z
-
-### 📁 src/components/chat/types/
-
-#### ChatTypes
-**File:** `src/components/chat/types/ChatTypes.ts`
-**Lines:** 153
-**Last Modified:** 2025-07-06T21:38:23.597Z
-
-**Key Elements:**
-- **ChatType** (line 74) - `chattype`
-  - Context: `export const CHAT_CONFIGS: Record<ChatType, Partial<ChatConfig>> = {`
-
-#### ConnectionTypes
-**File:** `src/components/chat/types/ConnectionTypes.ts`
-**Lines:** 121
-**Last Modified:** 2025-07-07T16:19:07.201Z
-
-**Key Elements:**
-- **ConnectionStatus** (line 107) - `connectionstatus`
-  - Context: `export const CONNECTION_STATUS_MESSAGES: Record<ConnectionStatus, string> = {`
-- **ConnectionStatus** (line 115) - `connectionstatus`
-  - Context: `export const CONNECTION_STATUS_COLORS: Record<ConnectionStatus, string> = {`
-
-#### MessageTypes
-**File:** `src/components/chat/types/MessageTypes.ts`
-**Lines:** 148
-**Last Modified:** 2025-07-06T21:38:48.556Z
-
-**Key Elements:**
-- **BaseMessage** (line 142) - `basemessage`
-  - Context: `send: (content: string, type?: MessageType, metadata?: MessageMetadata) => Promi...`
-- **BaseMessage** (line 147) - `basemessage`
-  - Context: `reply: (messageId: string, content: string) => Promise<BaseMessage>;`
-
-#### PermissionTypes
-**File:** `src/components/chat/types/PermissionTypes.ts`
-**Lines:** 142
-**Last Modified:** 2025-07-06T21:39:28.537Z
-
-**Key Elements:**
-- **UserPermissions** (line 84) - `userpermissions`
-  - Context: `) => Promise<UserPermissions>;`
-
-#### ReadStatusTypes
-**File:** `src/components/chat/types/ReadStatusTypes.ts`
-**Lines:** 41
-**Last Modified:** 2025-07-06T21:39:03.357Z
-
-**Key Elements:**
-- **ReadStatus** (line 20) - `readstatus`
-  - Context: `getReadStatus: (roomId: string, userId: string) => Promise<ReadStatus | null>;`
-- **NodeJS** (line 30) - `nodejs`
-  - Context: `scrollTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;`
-
-#### index
-**File:** `src/components/chat/types/index.ts`
-**Lines:** 54
-**Last Modified:** 2025-07-07T16:19:29.052Z
-
-### 📁 src/components/chat/ui/
-
-#### handleDelete
-**File:** `src/components/chat/ui/AdminControls.tsx`
-**Lines:** 111
-**Last Modified:** 2025-07-06T21:45:08.621Z
-
-**Key Elements:**
-- **Button** (line 63) - `button`
+- **ChatActionsMenuProps** (line 16) - `chatactionsmenuprops`
+  - Context: `export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({`
+- **DropdownMenu** (line 21) - `dropdownmenu`
+  - Context: `<DropdownMenu>`
+- **DropdownMenuTrigger** (line 22) - `dropdownmenutrigger`
+  - Context: `<DropdownMenuTrigger asChild>`
+- **Button** (line 23) - `button`
   - Context: `<Button`
-- **Edit** (line 70) - `edit`
-  - Context: `<Edit className="h-3 w-3" />`
-- **Button** (line 75) - `button`
-  - Context: `<Button`
-- **Pin** (line 82) - `pin`
-  - Context: `<Pin className="h-3 w-3" />`
-- **Button** (line 87) - `button`
-  - Context: `<Button`
-- **Flag** (line 94) - `flag`
-  - Context: `<Flag className="h-3 w-3" />`
-- **Button** (line 99) - `button`
-  - Context: `<Button`
-- **X** (line 106) - `x`
-  - Context: `<X className="h-3 w-3" />`
+- **Plus** (line 29) - `plus`
+  - Context: `<Plus className="h-4 w-4" />`
+- **DropdownMenuContent** (line 32) - `dropdownmenucontent`
+  - Context: `<DropdownMenuContent align="start" className="w-48">`
+- **DropdownMenuItem** (line 33) - `dropdownmenuitem`
+  - Context: `<DropdownMenuItem onClick={onCreateEvent}>`
+- **Calendar** (line 34) - `calendar`
+  - Context: `<Calendar className="mr-2 h-4 w-4" />`
 
-#### ChatContainer
-**File:** `src/components/chat/ui/ChatContainer.tsx`
-**Lines:** 23
-**Last Modified:** 2025-07-06T21:44:50.197Z
+#### CreateEventModal
+**File:** `src/components/chat/CreateEventModal.tsx`
+**Lines:** 183
+**Last Modified:** 2025-07-08T20:05:17.169Z
 
 **Key Elements:**
-- **Card** (line 16) - `card`
-  - Context: `<Card`
-
-#### ChatHeader
-**File:** `src/components/chat/ui/ChatHeader.tsx`
-**Lines:** 49
-**Last Modified:** 2025-07-06T21:44:28.693Z
-
-**Key Elements:**
-- **Button** (line 26) - `button`
-  - Context: `<Button`
-- **ArrowLeft** (line 32) - `arrowleft`
-  - Context: `<ArrowLeft className="h-5 w-5" />`
-
-#### getBannerContent
-**File:** `src/components/chat/ui/ConnectionMonitor.tsx`
-**Lines:** 301
-**Last Modified:** 2025-07-07T16:24:30.891Z
-
-**Key Elements:**
-- **ConnectionIndicator** (line 72) - `connectionindicator`
-  - Context: `<ConnectionIndicator connectionState={connectionState} />`
-- **ConnectionStatus** (line 81) - `connectionstatus`
-  - Context: `<ConnectionStatus`
-- **Card** (line 90) - `card`
-  - Context: `<Card>`
-- **CardContent** (line 91) - `cardcontent`
-  - Context: `<CardContent className="p-4">`
-- **RefreshCw** (line 94) - `refreshcw`
-  - Context: `<RefreshCw className="h-4 w-4 animate-spin text-orange-500" />`
-- **Progress** (line 101) - `progress`
-  - Context: `<Progress value={reconnectProgress} className="h-2" />`
-- **Button** (line 105) - `button`
-  - Context: `<Button`
-- **Alert** (line 121) - `alert`
-  - Context: `<Alert>`
-- **WifiOff** (line 122) - `wifioff`
-  - Context: `<WifiOff className="h-4 w-4" />`
-- **AlertDescription** (line 123) - `alertdescription`
-  - Context: `<AlertDescription>`
-- **Alert** (line 131) - `alert`
-  - Context: `<Alert variant="destructive">`
-- **AlertTriangle** (line 132) - `alerttriangle`
-  - Context: `<AlertTriangle className="h-4 w-4" />`
-- **AlertDescription** (line 133) - `alertdescription`
-  - Context: `<AlertDescription className="flex items-center justify-between">`
-- **Button** (line 138) - `button`
-  - Context: `<Button`
-- **Alert** (line 155) - `alert`
-  - Context: `<Alert>`
-- **Signal** (line 156) - `signal`
-  - Context: `<Signal className="h-4 w-4" />`
-- **AlertDescription** (line 157) - `alertdescription`
-  - Context: `<AlertDescription>`
-- **Alert** (line 166) - `alert`
-  - Context: `<Alert>`
-- **Clock** (line 167) - `clock`
-  - Context: `<Clock className="h-4 w-4" />`
-- **AlertDescription** (line 168) - `alertdescription`
-  - Context: `<AlertDescription>`
-- **Card** (line 183) - `card`
-  - Context: `<Card>`
-- **CardContent** (line 184) - `cardcontent`
-  - Context: `<CardContent className="p-4">`
-- **WifiOff** (line 229) - `wifioff`
-  - Context: `icon: <WifiOff className="h-4 w-4" />,`
-- **AlertTriangle** (line 238) - `alerttriangle`
-  - Context: `icon: <AlertTriangle className="h-4 w-4" />,`
-- **RefreshCw** (line 247) - `refreshcw`
-  - Context: `icon: <RefreshCw className="h-4 w-4 animate-spin" />,`
-- **RefreshCw** (line 256) - `refreshcw`
-  - Context: `icon: <RefreshCw className="h-4 w-4 animate-spin" />,`
-- **Clock** (line 265) - `clock`
-  - Context: `icon: <Clock className="h-4 w-4" />,`
-- **Alert** (line 279) - `alert`
-  - Context: `<Alert variant={content.variant} className={`border-l-4 ${className}`}>`
-- **AlertDescription** (line 283) - `alertdescription`
-  - Context: `<AlertDescription className="mb-0">`
-- **Button** (line 289) - `button`
-  - Context: `<Button`
-
-#### getStatusIcon
-**File:** `src/components/chat/ui/ConnectionStatus.tsx`
-**Lines:** 290
-**Last Modified:** 2025-07-07T16:23:38.058Z
-
-**Key Elements:**
-- **CheckCircle** (line 44) - `checkcircle`
-  - Context: `return <CheckCircle {...iconProps} className="h-4 w-4 text-green-500" />;`
-- **RefreshCw** (line 46) - `refreshcw`
-  - Context: `return <RefreshCw {...iconProps} className="h-4 w-4 text-yellow-500 animate-spin...`
-- **WifiOff** (line 48) - `wifioff`
-  - Context: `return <WifiOff {...iconProps} className="h-4 w-4 text-red-500" />;`
-- **RefreshCw** (line 50) - `refreshcw`
-  - Context: `return <RefreshCw {...iconProps} className="h-4 w-4 text-orange-500 animate-spin...`
-- **AlertTriangle** (line 52) - `alerttriangle`
-  - Context: `return <AlertTriangle {...iconProps} className="h-4 w-4 text-red-600" />;`
-- **Wifi** (line 54) - `wifi`
-  - Context: `return <Wifi {...iconProps} className="h-4 w-4 text-gray-500" />;`
-- **TooltipProvider** (line 101) - `tooltipprovider`
-  - Context: `<TooltipProvider>`
-- **Tooltip** (line 102) - `tooltip`
-  - Context: `<Tooltip>`
-- **TooltipTrigger** (line 103) - `tooltiptrigger`
-  - Context: `<TooltipTrigger asChild>`
-- **WifiOff** (line 106) - `wifioff`
-  - Context: `{!isOnline && <WifiOff className="h-3 w-3 text-red-500" />}`
-- **TooltipContent** (line 109) - `tooltipcontent`
-  - Context: `<TooltipContent>`
-- **Badge** (line 125) - `badge`
-  - Context: `<Badge variant={getBadgeVariant(status)} className="flex items-center gap-2">`
-- **Badge** (line 132) - `badge`
-  - Context: `<Badge variant="destructive" className="flex items-center gap-1">`
-- **WifiOff** (line 133) - `wifioff`
-  - Context: `<WifiOff className="h-3 w-3" />`
-- **Activity** (line 141) - `activity`
-  - Context: `<Activity className="h-4 w-4 text-gray-500" />`
-- **TooltipProvider** (line 158) - `tooltipprovider`
-  - Context: `<TooltipProvider>`
-- **Tooltip** (line 159) - `tooltip`
-  - Context: `<Tooltip>`
-- **TooltipTrigger** (line 160) - `tooltiptrigger`
-  - Context: `<TooltipTrigger asChild>`
-- **Clock** (line 162) - `clock`
-  - Context: `<Clock className="h-3 w-3" />`
-- **TooltipContent** (line 166) - `tooltipcontent`
-  - Context: `<TooltipContent>`
-- **Button** (line 181) - `button`
-  - Context: `<Button`
-- **RefreshCw** (line 187) - `refreshcw`
-  - Context: `<RefreshCw className="h-3 w-3 mr-1" />`
-- **Button** (line 193) - `button`
-  - Context: `<Button`
-- **TooltipProvider** (line 207) - `tooltipprovider`
-  - Context: `<TooltipProvider>`
-- **Tooltip** (line 208) - `tooltip`
-  - Context: `<Tooltip>`
-- **TooltipTrigger** (line 209) - `tooltiptrigger`
-  - Context: `<TooltipTrigger asChild>`
-- **AlertTriangle** (line 210) - `alerttriangle`
-  - Context: `<AlertTriangle className="h-4 w-4 text-red-500 cursor-help" />`
-- **TooltipContent** (line 212) - `tooltipcontent`
-  - Context: `<TooltipContent>`
-- **WifiOff** (line 241) - `wifioff`
-  - Context: `{!isOnline && <WifiOff className="h-3 w-3 text-red-500" />}`
-
-#### LoadingSpinner
-**File:** `src/components/chat/ui/LoadingSpinner.tsx`
-**Lines:** 21
-**Last Modified:** 2025-07-06T21:45:19.330Z
-
-**Key Elements:**
-- **Card** (line 14) - `card`
-  - Context: `<Card className={`h-full flex items-center justify-center ${className}`}>`
-
-#### handleDelete
-**File:** `src/components/chat/ui/MessageBubble.tsx`
-**Lines:** 103
-**Last Modified:** 2025-07-06T21:43:39.481Z
-
-**Key Elements:**
-- **Avatar** (line 56) - `avatar`
-  - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 57) - `avatarimage`
-  - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 58) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **Button** (line 78) - `button`
-  - Context: `<Button`
-- **X** (line 85) - `x`
-  - Context: `<X className="h-3 w-3" />`
-
-#### handleKeyPress
-**File:** `src/components/chat/ui/MessageInput.tsx`
-**Lines:** 66
-**Last Modified:** 2025-07-06T21:44:14.398Z
-
-**Key Elements:**
-- **HTMLInputElement** (line 27) - `htmlinputelement`
-  - Context: `const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {`
-- **Input** (line 45) - `input`
+- **CreateEventModalProps** (line 26) - `createeventmodalprops`
+  - Context: `export const CreateEventModal: React.FC<CreateEventModalProps> = ({`
+- **Dialog** (line 101) - `dialog`
+  - Context: `<Dialog open={open} onOpenChange={onClose}>`
+- **DialogContent** (line 102) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[425px]">`
+- **DialogHeader** (line 103) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 104) - `dialogtitle`
+  - Context: `<DialogTitle className="flex items-center gap-2">`
+- **Calendar** (line 105) - `calendar`
+  - Context: `<Calendar className="h-5 w-5" />`
+- **DialogDescription** (line 108) - `dialogdescription`
+  - Context: `<DialogDescription>`
+- **Label** (line 114) - `label`
+  - Context: `<Label htmlFor="title">Event Title</Label>`
+- **Input** (line 115) - `input`
   - Context: `<Input`
-- **Button** (line 55) - `button`
-  - Context: `<Button`
-- **Send** (line 60) - `send`
-  - Context: `<Send className="h-4 w-4" />`
-
-#### MessageList
-**File:** `src/components/chat/ui/MessageList.tsx`
-**Lines:** 70
-**Last Modified:** 2025-07-07T02:14:24.965Z
-
-**Key Elements:**
-- **HTMLDivElement** (line 17) - `htmldivelement`
-  - Context: `export const MessageList = forwardRef<HTMLDivElement, MessageListProps>(({`
-- **MessageBubble** (line 56) - `messagebubble`
-  - Context: `<MessageBubble`
-
-#### handleToggle
-**File:** `src/components/chat/ui/SearchBar.tsx`
-**Lines:** 49
-**Last Modified:** 2025-07-06T21:44:41.106Z
-
-**Key Elements:**
-- **Input** (line 33) - `input`
+- **Label** (line 124) - `label`
+  - Context: `<Label htmlFor="description">Description</Label>`
+- **Textarea** (line 125) - `textarea`
+  - Context: `<Textarea`
+- **Label** (line 134) - `label`
+  - Context: `<Label htmlFor="location" className="flex items-center gap-2">`
+- **MapPin** (line 135) - `mappin`
+  - Context: `<MapPin className="h-4 w-4" />`
+- **Input** (line 138) - `input`
   - Context: `<Input`
-- **Button** (line 40) - `button`
-  - Context: `<Button`
-- **X** (line 45) - `x`
-  - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Search** (line 45) - `search`
-  - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-
-#### index
-**File:** `src/components/chat/ui/index.ts`
-**Lines:** 20
-**Last Modified:** 2025-07-07T16:25:36.553Z
+- **Label** (line 147) - `label`
+  - Context: `<Label htmlFor="eventDate">Date & Time</Label>`
+- **Input** (line 148) - `input`
+  - Context: `<Input`
+- **Label** (line 157) - `label`
+  - Context: `<Label htmlFor="maxParticipants" className="flex items-center gap-2">`
+- **Users** (line 158) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Input** (line 161) - `input`
+  - Context: `<Input`
+- **DialogFooter** (line 170) - `dialogfooter`
+  - Context: `<DialogFooter>`
+- **Button** (line 171) - `button`
+  - Context: `<Button type="button" variant="outline" onClick={onClose}>`
+- **Button** (line 174) - `button`
+  - Context: `<Button type="submit" disabled={isCreating}>`
+- **Loader2** (line 175) - `loader2`
+  - Context: `{isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}`
 
 ### 📁 src/components/layout/
 
-#### Layout
-**File:** `src/components/layout/Layout.tsx`
-**Lines:** 26
-**Last Modified:** 2025-07-07T18:06:25.849Z
+#### checkScreenSize
+**File:** `src/components/layout/DesktopSidebar.tsx`
+**Lines:** 200
+**Last Modified:** 2025-07-08T21:15:49.812Z
 
 **Key Elements:**
-- **NavBar** (line 13) - `navbar`
+- **Record** (line 44) - `record`
+  - Context: `const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});`
+- **Button** (line 96) - `button`
+  - Context: `<Button`
+- **ChevronRight** (line 102) - `chevronright`
+  - Context: `<ChevronRight className="h-4 w-4" />`
+- **Link** (line 108) - `link`
+  - Context: `<Link`
+- **Icon** (line 117) - `icon`
+  - Context: `<Icon className="h-5 w-5" />`
+- **Badge** (line 119) - `badge`
+  - Context: `<Badge`
+- **Mountain** (line 139) - `mountain`
+  - Context: `<Mountain className="h-6 w-6 text-green-600" />`
+- **Button** (line 142) - `button`
+  - Context: `<Button`
+- **ChevronDown** (line 148) - `chevrondown`
+  - Context: `<ChevronDown className="h-4 w-4" />`
+- **Avatar** (line 154) - `avatar`
+  - Context: `<Avatar className="h-10 w-10">`
+- **AvatarImage** (line 155) - `avatarimage`
+  - Context: `<AvatarImage src={user?.user_metadata?.avatar_url} />`
+- **AvatarFallback** (line 156) - `avatarfallback`
+  - Context: `<AvatarFallback>`
+- **Link** (line 173) - `link`
+  - Context: `<Link`
+- **Icon** (line 183) - `icon`
+  - Context: `<Icon className="h-5 w-5" />`
+- **Badge** (line 187) - `badge`
+  - Context: `<Badge variant="destructive" className="h-5 text-xs">`
+
+#### checkScreenSize
+**File:** `src/components/layout/Layout.tsx`
+**Lines:** 69
+**Last Modified:** 2025-07-08T21:36:25.605Z
+
+**Key Elements:**
+- **NavBar** (line 38) - `navbar`
   - Context: `<NavBar />`
+- **MultiPanelLayout** (line 56) - `multipanellayout`
+  - Context: `<MultiPanelLayout`
+- **DesktopLayout** (line 67) - `desktoplayout`
+  - Context: `return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;`
+- **MobileLayout** (line 67) - `mobilelayout`
+  - Context: `return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;`
+
+#### getLayoutClass
+**File:** `src/components/layout/MultiPanelLayout.tsx`
+**Lines:** 185
+**Last Modified:** 2025-07-08T21:36:35.866Z
+
+**Key Elements:**
+- **DesktopSidebar** (line 55) - `desktopsidebar`
+  - Context: `<DesktopSidebar />`
+- **ContextPanel** (line 78) - `contextpanel`
+  - Context: `<ContextPanel title="Participants">`
+- **ContextPanel** (line 120) - `contextpanel`
+  - Context: `<ContextPanel title="Event Details">`
+- **ContextPanel** (line 172) - `contextpanel`
+  - Context: `<ContextPanel title="Recent Activity">`
 
 #### location
 **File:** `src/components/layout/NavBar.tsx`
-**Lines:** 141
-**Last Modified:** 2025-07-07T02:32:36.043Z
+**Lines:** 142
+**Last Modified:** 2025-07-08T20:34:04.579Z
 
 **Key Elements:**
 - **Link** (line 29) - `link`
@@ -830,43 +301,43 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
   - Context: `<Link`
 - **Icon** (line 54) - `icon`
   - Context: `<Icon className="h-4 w-4" />`
-- **Link** (line 60) - `link`
+- **Link** (line 61) - `link`
   - Context: `<Link to="/profile">`
-- **Avatar** (line 61) - `avatar`
+- **Avatar** (line 62) - `avatar`
   - Context: `<Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-green-300 tran...`
-- **AvatarImage** (line 62) - `avatarimage`
+- **AvatarImage** (line 63) - `avatarimage`
   - Context: `<AvatarImage src={user?.user_metadata?.avatar_url} />`
-- **AvatarFallback** (line 63) - `avatarfallback`
+- **AvatarFallback** (line 64) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 68) - `button`
+- **Button** (line 69) - `button`
   - Context: `<Button variant="ghost" size="sm" onClick={signOut}>`
-- **LogOut** (line 69) - `logout`
+- **LogOut** (line 70) - `logout`
   - Context: `<LogOut className="h-4 w-4" />`
-- **Sheet** (line 76) - `sheet`
+- **Sheet** (line 77) - `sheet`
   - Context: `<Sheet open={isOpen} onOpenChange={setIsOpen}>`
-- **SheetTrigger** (line 77) - `sheettrigger`
+- **SheetTrigger** (line 78) - `sheettrigger`
   - Context: `<SheetTrigger asChild>`
-- **Button** (line 78) - `button`
+- **Button** (line 79) - `button`
   - Context: `<Button variant="ghost" size="sm">`
-- **Menu** (line 79) - `menu`
+- **Menu** (line 80) - `menu`
   - Context: `<Menu className="h-6 w-6" />`
-- **SheetContent** (line 82) - `sheetcontent`
+- **SheetContent** (line 83) - `sheetcontent`
   - Context: `<SheetContent side="right" className="w-64">`
-- **Link** (line 84) - `link`
+- **Link** (line 85) - `link`
   - Context: `<Link`
-- **Avatar** (line 89) - `avatar`
+- **Avatar** (line 90) - `avatar`
   - Context: `<Avatar className="h-10 w-10">`
-- **AvatarImage** (line 90) - `avatarimage`
+- **AvatarImage** (line 91) - `avatarimage`
   - Context: `<AvatarImage src={user?.user_metadata?.avatar_url} />`
-- **AvatarFallback** (line 91) - `avatarfallback`
+- **AvatarFallback** (line 92) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Link** (line 105) - `link`
+- **Link** (line 106) - `link`
   - Context: `<Link`
-- **Icon** (line 115) - `icon`
+- **Icon** (line 116) - `icon`
   - Context: `<Icon className="h-5 w-5" />`
-- **Button** (line 121) - `button`
+- **Button** (line 122) - `button`
   - Context: `<Button`
-- **LogOut** (line 129) - `logout`
+- **LogOut** (line 130) - `logout`
   - Context: `<LogOut className="h-5 w-5 mr-3" />`
 
 ### 📁 src/components/ui/
@@ -874,7 +345,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### accordion
 **File:** `src/components/ui/accordion.tsx`
 **Lines:** 57
-**Last Modified:** 2025-07-03T21:42:28.163Z
+**Last Modified:** 2025-07-08T18:09:39.491Z
 
 **Key Elements:**
 - **AccordionPrimitive** (line 13) - `accordionprimitive`
@@ -891,7 +362,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### alert-dialog
 **File:** `src/components/ui/alert-dialog.tsx`
 **Lines:** 140
-**Last Modified:** 2025-07-03T21:42:28.169Z
+**Last Modified:** 2025-07-08T18:09:39.501Z
 
 **Key Elements:**
 - **AlertDialogPrimitive** (line 17) - `alertdialogprimitive`
@@ -918,7 +389,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### alert
 **File:** `src/components/ui/alert.tsx`
 **Lines:** 60
-**Last Modified:** 2025-07-03T21:42:28.173Z
+**Last Modified:** 2025-07-08T18:09:39.509Z
 
 **Key Elements:**
 - **HTMLDivElement** (line 24) - `htmldivelement`
@@ -931,12 +402,12 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### aspect-ratio
 **File:** `src/components/ui/aspect-ratio.tsx`
 **Lines:** 6
-**Last Modified:** 2025-07-03T21:42:28.177Z
+**Last Modified:** 2025-07-08T18:09:39.515Z
 
 #### avatar
 **File:** `src/components/ui/avatar.tsx`
 **Lines:** 49
-**Last Modified:** 2025-07-03T21:42:28.183Z
+**Last Modified:** 2025-07-08T18:09:39.523Z
 
 **Key Elements:**
 - **AvatarPrimitive** (line 10) - `avatarprimitive`
@@ -949,7 +420,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### badge
 **File:** `src/components/ui/badge.tsx`
 **Lines:** 37
-**Last Modified:** 2025-07-03T21:42:28.187Z
+**Last Modified:** 2025-07-08T18:09:39.531Z
 
 **Key Elements:**
 - **HTMLDivElement** (line 27) - `htmldivelement`
@@ -958,7 +429,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### breadcrumb
 **File:** `src/components/ui/breadcrumb.tsx`
 **Lines:** 116
-**Last Modified:** 2025-07-03T21:42:28.191Z
+**Last Modified:** 2025-07-08T18:09:39.539Z
 
 **Key Elements:**
 - **Comp** (line 51) - `comp`
@@ -971,7 +442,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### button
 **File:** `src/components/ui/button.tsx`
 **Lines:** 57
-**Last Modified:** 2025-07-03T21:42:28.196Z
+**Last Modified:** 2025-07-08T18:09:39.546Z
 
 **Key Elements:**
 - **HTMLButtonElement** (line 37) - `htmlbuttonelement`
@@ -984,7 +455,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### calendar
 **File:** `src/components/ui/calendar.tsx`
 **Lines:** 65
-**Last Modified:** 2025-07-03T21:42:28.200Z
+**Last Modified:** 2025-07-08T18:09:39.555Z
 
 **Key Elements:**
 - **DayPicker** (line 17) - `daypicker`
@@ -997,7 +468,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### card
 **File:** `src/components/ui/card.tsx`
 **Lines:** 80
-**Last Modified:** 2025-07-03T21:42:28.204Z
+**Last Modified:** 2025-07-08T18:09:39.562Z
 
 **Key Elements:**
 - **HTMLDivElement** (line 7) - `htmldivelement`
@@ -1016,7 +487,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### onSelect
 **File:** `src/components/ui/carousel.tsx`
 **Lines:** 261
-**Last Modified:** 2025-07-03T21:42:28.208Z
+**Last Modified:** 2025-07-08T18:09:39.573Z
 
 **Key Elements:**
 - **CarouselContextProps** (line 31) - `carouselcontextprops`
@@ -1045,7 +516,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### uniqueId
 **File:** `src/components/ui/chart.tsx`
 **Lines:** 364
-**Last Modified:** 2025-07-03T21:42:28.213Z
+**Last Modified:** 2025-07-08T18:09:39.584Z
 
 **Key Elements:**
 - **ChartContextProps** (line 23) - `chartcontextprops`
@@ -1064,7 +535,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### checkbox
 **File:** `src/components/ui/checkbox.tsx`
 **Lines:** 29
-**Last Modified:** 2025-07-03T21:42:28.217Z
+**Last Modified:** 2025-07-08T18:09:39.592Z
 
 **Key Elements:**
 - **CheckboxPrimitive** (line 11) - `checkboxprimitive`
@@ -1077,12 +548,12 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### collapsible
 **File:** `src/components/ui/collapsible.tsx`
 **Lines:** 10
-**Last Modified:** 2025-07-03T21:42:28.221Z
+**Last Modified:** 2025-07-08T18:09:39.598Z
 
 #### CommandDialog
 **File:** `src/components/ui/command.tsx`
 **Lines:** 154
-**Last Modified:** 2025-07-03T21:42:28.228Z
+**Last Modified:** 2025-07-08T18:09:39.607Z
 
 **Key Elements:**
 - **CommandPrimitive** (line 13) - `commandprimitive`
@@ -1113,7 +584,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### context-menu
 **File:** `src/components/ui/context-menu.tsx`
 **Lines:** 199
-**Last Modified:** 2025-07-03T21:42:28.232Z
+**Last Modified:** 2025-07-08T18:09:39.617Z
 
 **Key Elements:**
 - **ContextMenuPrimitive** (line 25) - `contextmenuprimitive`
@@ -1150,7 +621,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### dialog
 **File:** `src/components/ui/dialog.tsx`
 **Lines:** 121
-**Last Modified:** 2025-07-03T21:42:28.236Z
+**Last Modified:** 2025-07-08T18:09:39.628Z
 
 **Key Elements:**
 - **DialogPrimitive** (line 19) - `dialogprimitive`
@@ -1177,7 +648,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### drawer
 **File:** `src/components/ui/drawer.tsx`
 **Lines:** 117
-**Last Modified:** 2025-07-03T21:42:28.240Z
+**Last Modified:** 2025-07-08T18:09:39.636Z
 
 **Key Elements:**
 - **DrawerPrimitive** (line 10) - `drawerprimitive`
@@ -1202,7 +673,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### dropdown-menu
 **File:** `src/components/ui/dropdown-menu.tsx`
 **Lines:** 199
-**Last Modified:** 2025-07-03T21:42:28.244Z
+**Last Modified:** 2025-07-08T18:09:39.646Z
 
 **Key Elements:**
 - **DropdownMenuPrimitive** (line 25) - `dropdownmenuprimitive`
@@ -1236,10 +707,29 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **HTMLSpanElement** (line 172) - `htmlspanelement`
   - Context: `}: React.HTMLAttributes<HTMLSpanElement>) => {`
 
+#### handleEmojiClick
+**File:** `src/components/ui/emoji-picker.tsx`
+**Lines:** 50
+**Last Modified:** 2025-07-08T18:44:59.527Z
+
+**Key Elements:**
+- **Popover** (line 21) - `popover`
+  - Context: `<Popover open={isOpen} onOpenChange={setIsOpen}>`
+- **PopoverTrigger** (line 22) - `popovertrigger`
+  - Context: `<PopoverTrigger asChild>`
+- **Button** (line 23) - `button`
+  - Context: `<Button`
+- **Smile** (line 29) - `smile`
+  - Context: `<Smile className="h-4 w-4" />`
+- **PopoverContent** (line 32) - `popovercontent`
+  - Context: `<PopoverContent`
+- **EmojiPicker** (line 37) - `emojipicker`
+  - Context: `<EmojiPicker`
+
 #### useFormField
 **File:** `src/components/ui/form.tsx`
 **Lines:** 177
-**Last Modified:** 2025-07-03T21:42:28.249Z
+**Last Modified:** 2025-07-08T18:09:39.654Z
 
 **Key Elements:**
 - **TFieldValues** (line 20) - `tfieldvalues`
@@ -1278,7 +768,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### hover-card
 **File:** `src/components/ui/hover-card.tsx`
 **Lines:** 28
-**Last Modified:** 2025-07-03T21:42:28.253Z
+**Last Modified:** 2025-07-08T18:09:39.661Z
 
 **Key Elements:**
 - **HoverCardPrimitive** (line 14) - `hovercardprimitive`
@@ -1287,7 +777,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### input-otp
 **File:** `src/components/ui/input-otp.tsx`
 **Lines:** 70
-**Last Modified:** 2025-07-03T21:42:28.257Z
+**Last Modified:** 2025-07-08T18:09:39.668Z
 
 **Key Elements:**
 - **OTPInput** (line 11) - `otpinput`
@@ -1298,7 +788,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### Input
 **File:** `src/components/ui/input.tsx`
 **Lines:** 23
-**Last Modified:** 2025-07-03T21:42:28.261Z
+**Last Modified:** 2025-07-08T18:09:39.675Z
 
 **Key Elements:**
 - **HTMLInputElement** (line 5) - `htmlinputelement`
@@ -1307,7 +797,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### label
 **File:** `src/components/ui/label.tsx`
 **Lines:** 25
-**Last Modified:** 2025-07-03T21:42:28.266Z
+**Last Modified:** 2025-07-08T18:09:39.682Z
 
 **Key Elements:**
 - **LabelPrimitive** (line 16) - `labelprimitive`
@@ -1316,7 +806,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### menubar
 **File:** `src/components/ui/menubar.tsx`
 **Lines:** 235
-**Last Modified:** 2025-07-03T21:42:28.272Z
+**Last Modified:** 2025-07-08T18:09:39.696Z
 
 **Key Elements:**
 - **MenubarPrimitive** (line 21) - `menubarprimitive`
@@ -1357,7 +847,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### navigation-menu
 **File:** `src/components/ui/navigation-menu.tsx`
 **Lines:** 129
-**Last Modified:** 2025-07-03T21:42:28.276Z
+**Last Modified:** 2025-07-08T18:09:39.706Z
 
 **Key Elements:**
 - **NavigationMenuPrimitive** (line 12) - `navigationmenuprimitive`
@@ -1380,7 +870,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### Pagination
 **File:** `src/components/ui/pagination.tsx`
 **Lines:** 118
-**Last Modified:** 2025-07-03T21:42:28.280Z
+**Last Modified:** 2025-07-08T18:09:39.715Z
 
 **Key Elements:**
 - **ButtonProps** (line 39) - `buttonprops`
@@ -1399,7 +889,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### popover
 **File:** `src/components/ui/popover.tsx`
 **Lines:** 30
-**Last Modified:** 2025-07-03T21:42:28.284Z
+**Last Modified:** 2025-07-08T18:09:39.722Z
 
 **Key Elements:**
 - **PopoverPrimitive** (line 14) - `popoverprimitive`
@@ -1410,7 +900,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### progress
 **File:** `src/components/ui/progress.tsx`
 **Lines:** 27
-**Last Modified:** 2025-07-03T21:42:28.289Z
+**Last Modified:** 2025-07-08T18:09:39.730Z
 
 **Key Elements:**
 - **ProgressPrimitive** (line 10) - `progressprimitive`
@@ -1421,7 +911,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### radio-group
 **File:** `src/components/ui/radio-group.tsx`
 **Lines:** 43
-**Last Modified:** 2025-07-03T21:42:28.293Z
+**Last Modified:** 2025-07-08T18:09:39.737Z
 
 **Key Elements:**
 - **RadioGroupPrimitive** (line 12) - `radiogroupprimitive`
@@ -1436,7 +926,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### resizable
 **File:** `src/components/ui/resizable.tsx`
 **Lines:** 44
-**Last Modified:** 2025-07-03T21:42:28.297Z
+**Last Modified:** 2025-07-08T18:09:39.745Z
 
 **Key Elements:**
 - **ResizablePrimitive** (line 10) - `resizableprimitive`
@@ -1449,7 +939,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### scroll-area
 **File:** `src/components/ui/scroll-area.tsx`
 **Lines:** 47
-**Last Modified:** 2025-07-03T21:42:28.301Z
+**Last Modified:** 2025-07-08T18:09:39.753Z
 
 **Key Elements:**
 - **ScrollAreaPrimitive** (line 10) - `scrollareaprimitive`
@@ -1468,7 +958,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### select
 **File:** `src/components/ui/select.tsx`
 **Lines:** 159
-**Last Modified:** 2025-07-03T21:42:28.306Z
+**Last Modified:** 2025-07-08T18:09:39.762Z
 
 **Key Elements:**
 - **SelectPrimitive** (line 17) - `selectprimitive`
@@ -1511,7 +1001,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### separator
 **File:** `src/components/ui/separator.tsx`
 **Lines:** 30
-**Last Modified:** 2025-07-03T21:42:28.310Z
+**Last Modified:** 2025-07-08T18:09:39.769Z
 
 **Key Elements:**
 - **SeparatorPrimitive** (line 14) - `separatorprimitive`
@@ -1520,7 +1010,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### sheet
 **File:** `src/components/ui/sheet.tsx`
 **Lines:** 132
-**Last Modified:** 2025-07-03T21:42:28.314Z
+**Last Modified:** 2025-07-08T18:09:39.779Z
 
 **Key Elements:**
 - **SheetPrimitive** (line 20) - `sheetprimitive`
@@ -1547,7 +1037,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### isMobile
 **File:** `src/components/ui/sidebar.tsx`
 **Lines:** 762
-**Last Modified:** 2025-07-03T21:42:28.319Z
+**Last Modified:** 2025-07-08T18:09:39.798Z
 
 **Key Elements:**
 - **SidebarContext** (line 37) - `sidebarcontext`
@@ -1594,7 +1084,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### skeleton
 **File:** `src/components/ui/skeleton.tsx`
 **Lines:** 16
-**Last Modified:** 2025-07-03T21:42:28.324Z
+**Last Modified:** 2025-07-08T18:09:39.805Z
 
 **Key Elements:**
 - **HTMLDivElement** (line 6) - `htmldivelement`
@@ -1603,7 +1093,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### slider
 **File:** `src/components/ui/slider.tsx`
 **Lines:** 27
-**Last Modified:** 2025-07-03T21:42:28.331Z
+**Last Modified:** 2025-07-08T18:09:39.813Z
 
 **Key Elements:**
 - **SliderPrimitive** (line 10) - `sliderprimitive`
@@ -1618,7 +1108,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### Toaster
 **File:** `src/components/ui/sonner.tsx`
 **Lines:** 30
-**Last Modified:** 2025-07-03T21:42:28.335Z
+**Last Modified:** 2025-07-08T18:09:39.821Z
 
 **Key Elements:**
 - **Sonner** (line 10) - `sonner`
@@ -1627,7 +1117,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### switch
 **File:** `src/components/ui/switch.tsx`
 **Lines:** 28
-**Last Modified:** 2025-07-03T21:42:28.339Z
+**Last Modified:** 2025-07-08T18:09:39.828Z
 
 **Key Elements:**
 - **SwitchPrimitives** (line 10) - `switchprimitives`
@@ -1638,7 +1128,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### table
 **File:** `src/components/ui/table.tsx`
 **Lines:** 118
-**Last Modified:** 2025-07-03T21:42:28.343Z
+**Last Modified:** 2025-07-08T18:09:39.836Z
 
 **Key Elements:**
 - **HTMLTableElement** (line 7) - `htmltableelement`
@@ -1661,7 +1151,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### tabs
 **File:** `src/components/ui/tabs.tsx`
 **Lines:** 54
-**Last Modified:** 2025-07-03T21:42:28.348Z
+**Last Modified:** 2025-07-08T18:09:39.843Z
 
 **Key Elements:**
 - **TabsPrimitive** (line 12) - `tabsprimitive`
@@ -1674,7 +1164,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### textarea
 **File:** `src/components/ui/textarea.tsx`
 **Lines:** 25
-**Last Modified:** 2025-07-03T21:42:28.352Z
+**Last Modified:** 2025-07-08T18:09:39.851Z
 
 **Key Elements:**
 - **HTMLTextAreaElement** (line 6) - `htmltextareaelement`
@@ -1685,7 +1175,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### toast
 **File:** `src/components/ui/toast.tsx`
 **Lines:** 128
-**Last Modified:** 2025-07-07T02:06:34.211Z
+**Last Modified:** 2025-07-08T18:09:39.860Z
 
 **Key Elements:**
 - **ToastPrimitives** (line 14) - `toastprimitives`
@@ -1706,7 +1196,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### toaster
 **File:** `src/components/ui/toaster.tsx`
 **Lines:** 34
-**Last Modified:** 2025-07-06T20:22:43.542Z
+**Last Modified:** 2025-07-08T18:09:39.867Z
 
 **Key Elements:**
 - **ToastProvider** (line 15) - `toastprovider`
@@ -1725,7 +1215,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### toggle-group
 **File:** `src/components/ui/toggle-group.tsx`
 **Lines:** 60
-**Last Modified:** 2025-07-03T21:42:28.364Z
+**Last Modified:** 2025-07-08T18:09:39.875Z
 
 **Key Elements:**
 - **ToggleGroupPrimitive** (line 20) - `togglegroupprimitive`
@@ -1738,7 +1228,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### toggle
 **File:** `src/components/ui/toggle.tsx`
 **Lines:** 44
-**Last Modified:** 2025-07-03T21:42:28.368Z
+**Last Modified:** 2025-07-08T18:09:39.882Z
 
 **Key Elements:**
 - **TogglePrimitive** (line 34) - `toggleprimitive`
@@ -1747,23 +1237,31 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### tooltip
 **File:** `src/components/ui/tooltip.tsx`
 **Lines:** 29
-**Last Modified:** 2025-07-03T21:42:28.373Z
+**Last Modified:** 2025-07-08T18:09:39.889Z
 
 **Key Elements:**
 - **TooltipPrimitive** (line 16) - `tooltipprimitive`
   - Context: `<TooltipPrimitive.Content`
 
-#### use-toast
+#### toastTimeouts
 **File:** `src/components/ui/use-toast.ts`
-**Lines:** 4
-**Last Modified:** 2025-07-03T21:42:28.377Z
+**Lines:** 189
+**Last Modified:** 2025-07-08T18:22:31.684Z
+
+**Key Elements:**
+- **ToasterToast** (line 41) - `toastertoast`
+  - Context: `toast: Partial<ToasterToast>`
+- **ToasterToast** (line 138) - `toastertoast`
+  - Context: `type Toast = Omit<ToasterToast, "id">`
+- **State** (line 170) - `state`
+  - Context: `const [state, setState] = React.useState<State>(memoryState)`
 
 ### 📁 src/pages/
 
 #### checkAdminStatus
 **File:** `src/pages/Administrator.tsx`
 **Lines:** 328
-**Last Modified:** 2025-07-06T03:19:45.965Z
+**Last Modified:** 2025-07-08T18:09:39.949Z
 
 **Key Elements:**
 - **User** (line 27) - `user`
@@ -1848,7 +1346,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### handleSignIn
 **File:** `src/pages/Auth.tsx`
 **Lines:** 176
-**Last Modified:** 2025-07-03T21:42:28.433Z
+**Last Modified:** 2025-07-08T18:09:39.958Z
 
 **Key Elements:**
 - **Navigate** (line 22) - `navigate`
@@ -1900,47 +1398,51 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Button** (line 165) - `button`
   - Context: `<Button type="submit" className="w-full" disabled={loading}>`
 
-#### viewport
+#### scrollToBottom
 **File:** `src/pages/ClubTalk.tsx`
-**Lines:** 402
-**Last Modified:** 2025-07-07T18:03:24.439Z
+**Lines:** 457
+**Last Modified:** 2025-07-08T18:51:42.644Z
 
 **Key Elements:**
-- **ClubMessage** (line 24) - `clubmessage`
+- **ClubMessage** (line 26) - `clubmessage`
   - Context: `const [messages, setMessages] = useState<ClubMessage[]>([]);`
-- **HTMLDivElement** (line 30) - `htmldivelement`
+- **HTMLDivElement** (line 34) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 247) - `card`
+- **Card** (line 267) - `card`
   - Context: `<Card className="p-8 text-center">`
-- **Card** (line 258) - `card`
-  - Context: `<Card className="h-full flex items-center justify-center">`
-- **Input** (line 275) - `input`
+- **Input** (line 323) - `input`
   - Context: `<Input`
-- **Button** (line 282) - `button`
+- **Button** (line 330) - `button`
   - Context: `<Button`
-- **Search** (line 287) - `search`
+- **Search** (line 335) - `search`
   - Context: `<Search className="h-4 w-4" />`
-- **Avatar** (line 319) - `avatar`
+- **Avatar** (line 374) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 320) - `avatarimage`
+- **AvatarImage** (line 375) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 321) - `avatarfallback`
+- **AvatarFallback** (line 376) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 335) - `button`
-  - Context: `<Button`
-- **X** (line 342) - `x`
-  - Context: `<X className="h-3 w-3" />`
-- **Input** (line 377) - `input`
-  - Context: `<Input`
 - **Button** (line 390) - `button`
   - Context: `<Button`
-- **Send** (line 396) - `send`
+- **X** (line 397) - `x`
+  - Context: `<X className="h-3 w-3" />`
+- **ChatActionsMenu** (line 422) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu onCreateEvent={handleCreateEvent} />`
+- **Input** (line 424) - `input`
+  - Context: `<Input`
+- **EmojiPickerComponent** (line 437) - `emojipickercomponent`
+  - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
+- **Button** (line 440) - `button`
+  - Context: `<Button`
+- **Send** (line 445) - `send`
   - Context: `<Send className="h-4 w-4" />`
+- **CreateEventModal** (line 450) - `createeventmodal`
+  - Context: `<CreateEventModal`
 
 #### navigate
 **File:** `src/pages/Community.tsx`
 **Lines:** 303
-**Last Modified:** 2025-07-07T02:00:57.537Z
+**Last Modified:** 2025-07-08T20:43:23.142Z
 
 **Key Elements:**
 - **TopicChat** (line 48) - `topicchat`
@@ -1974,188 +1476,279 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Button** (line 288) - `button`
   - Context: `<Button`
 
+#### checkAdminStatus
+**File:** `src/pages/Dashboard.tsx`
+**Lines:** 386
+**Last Modified:** 2025-07-08T21:22:22.630Z
+
+**Key Elements:**
+- **DashboardStats** (line 48) - `dashboardstats`
+  - Context: `const [stats, setStats] = useState<DashboardStats>({`
+- **UpcomingEvent** (line 54) - `upcomingevent`
+  - Context: `const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);`
+- **RecentMessage** (line 55) - `recentmessage`
+  - Context: `const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);`
+- **Button** (line 189) - `button`
+  - Context: `<Button asChild>`
+- **Link** (line 190) - `link`
+  - Context: `<Link to="/events">`
+- **Plus** (line 191) - `plus`
+  - Context: `<Plus className="h-4 w-4 mr-2" />`
+- **Shield** (line 201) - `shield`
+  - Context: `<Shield className="h-6 w-6 text-red-600" />`
+- **Card** (line 205) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 206) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 207) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Total Events</CardTitle>`
+- **Calendar** (line 208) - `calendar`
+  - Context: `<Calendar className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 210) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 218) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 219) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 220) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Active Groups</CardTitle>`
+- **Users** (line 221) - `users`
+  - Context: `<Users className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 223) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 231) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 232) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 233) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Messages</CardTitle>`
+- **MessageSquare** (line 234) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 236) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 244) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 245) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 246) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Community Members</CardTitle>`
+- **TrendingUp** (line 247) - `trendingup`
+  - Context: `<TrendingUp className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 249) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 261) - `card`
+  - Context: `<Card>`
+- **CardHeader** (line 262) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between">`
+- **CardTitle** (line 264) - `cardtitle`
+  - Context: `<CardTitle>Upcoming Events</CardTitle>`
+- **CardDescription** (line 265) - `carddescription`
+  - Context: `<CardDescription>`
+- **Button** (line 269) - `button`
+  - Context: `<Button variant="outline" asChild>`
+- **Link** (line 270) - `link`
+  - Context: `<Link to="/events">`
+- **ArrowRight** (line 272) - `arrowright`
+  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
+- **CardContent** (line 276) - `cardcontent`
+  - Context: `<CardContent>`
+- **Calendar** (line 286) - `calendar`
+  - Context: `<Calendar className="h-8 w-8 text-green-600" />`
+- **Clock** (line 292) - `clock`
+  - Context: `<Clock className="h-3 w-3 mr-1" />`
+- **MapPin** (line 296) - `mappin`
+  - Context: `<MapPin className="h-3 w-3 mr-1" />`
+- **Users** (line 300) - `users`
+  - Context: `<Users className="h-3 w-3 mr-1" />`
+- **Button** (line 307) - `button`
+  - Context: `<Button variant="outline" size="sm" asChild>`
+- **Link** (line 308) - `link`
+  - Context: `<Link to={`/events/${event.id}`}>View</Link>`
+- **Calendar** (line 314) - `calendar`
+  - Context: `<Calendar className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
+- **Button** (line 316) - `button`
+  - Context: `<Button variant="outline" size="sm" className="mt-2" asChild>`
+- **Link** (line 317) - `link`
+  - Context: `<Link to="/events">Create the first one!</Link>`
+- **Card** (line 326) - `card`
+  - Context: `<Card>`
+- **CardHeader** (line 327) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between">`
+- **CardTitle** (line 329) - `cardtitle`
+  - Context: `<CardTitle>Recent Community Activity</CardTitle>`
+- **CardDescription** (line 330) - `carddescription`
+  - Context: `<CardDescription>`
+- **Button** (line 334) - `button`
+  - Context: `<Button variant="outline" asChild>`
+- **Link** (line 335) - `link`
+  - Context: `<Link to="/club-talk">`
+- **ArrowRight** (line 337) - `arrowright`
+  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
+- **CardContent** (line 341) - `cardcontent`
+  - Context: `<CardContent>`
+- **Avatar** (line 349) - `avatar`
+  - Context: `<Avatar className="h-8 w-8">`
+- **AvatarFallback** (line 350) - `avatarfallback`
+  - Context: `<AvatarFallback>`
+- **Badge** (line 359) - `badge`
+  - Context: `<Badge variant="secondary" className="text-xs">`
+- **MessageSquare** (line 374) - `messagesquare`
+  - Context: `<MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
+- **Button** (line 376) - `button`
+  - Context: `<Button variant="outline" size="sm" className="mt-2" asChild>`
+- **Link** (line 377) - `link`
+  - Context: `<Link to="/club-talk">Start a conversation!</Link>`
+
 #### navigate
 **File:** `src/pages/EventChat.tsx`
-**Lines:** 510
-**Last Modified:** 2025-07-07T16:14:28.100Z
+**Lines:** 561
+**Last Modified:** 2025-07-08T18:54:22.720Z
 
 **Key Elements:**
-- **Event** (line 41) - `event`
+- **Event** (line 45) - `event`
   - Context: `const [event, setEvent] = useState<Event | null>(null);`
-- **EventMessage** (line 42) - `eventmessage`
+- **EventMessage** (line 46) - `eventmessage`
   - Context: `const [messages, setMessages] = useState<EventMessage[]>([]);`
-- **HTMLDivElement** (line 47) - `htmldivelement`
+- **HTMLDivElement** (line 53) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **NodeJS** (line 48) - `nodejs`
-  - Context: `const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);`
-- **Card** (line 349) - `card`
+- **Card** (line 330) - `card`
   - Context: `<Card className="p-8">`
-- **Card** (line 359) - `card`
+- **Card** (line 389) - `card`
   - Context: `<Card className="p-8 text-center">`
-- **Button** (line 362) - `button`
+- **Button** (line 392) - `button`
   - Context: `<Button onClick={() => navigate('/events')}>Back to Events</Button>`
-- **Button** (line 382) - `button`
+- **Button** (line 404) - `button`
   - Context: `<Button`
-- **ArrowLeft** (line 388) - `arrowleft`
+- **ArrowLeft** (line 412) - `arrowleft`
   - Context: `<ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />`
-- **CalendarDays** (line 394) - `calendardays`
+- **CalendarDays** (line 418) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-1" />`
-- **MapPin** (line 398) - `mappin`
+- **MapPin** (line 422) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-1" />`
-- **Users** (line 402) - `users`
+- **Users** (line 426) - `users`
   - Context: `<Users className="h-4 w-4 mr-1" />`
-- **Users** (line 409) - `users`
+- **Users** (line 433) - `users`
   - Context: `<Users className="h-3 w-3 mr-1" />`
-- **Avatar** (line 435) - `avatar`
+- **Avatar** (line 474) - `avatar`
   - Context: `<Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">`
-- **AvatarImage** (line 436) - `avatarimage`
+- **AvatarImage** (line 475) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 437) - `avatarfallback`
+- **AvatarFallback** (line 476) - `avatarfallback`
   - Context: `<AvatarFallback className="text-xs">`
-- **Button** (line 454) - `button`
+- **Button** (line 493) - `button`
   - Context: `<Button`
-- **X** (line 461) - `x`
+- **X** (line 500) - `x`
   - Context: `<X className="h-3 w-3" />`
-- **Input** (line 491) - `input`
+- **ChatActionsMenu** (line 530) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu onCreateEvent={handleCreateEvent} />`
+- **Input** (line 532) - `input`
   - Context: `<Input`
-- **Button** (line 498) - `button`
+- **EmojiPickerComponent** (line 540) - `emojipickercomponent`
+  - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
+- **Button** (line 543) - `button`
   - Context: `<Button`
-- **Send** (line 504) - `send`
+- **Send** (line 549) - `send`
   - Context: `<Send className="h-4 w-4" />`
+- **CreateEventModal** (line 554) - `createeventmodal`
+  - Context: `<CreateEventModal`
 
-#### loadEvents
+#### navigate
 **File:** `src/pages/Events.tsx`
-**Lines:** 652
-**Last Modified:** 2025-07-07T02:06:10.973Z
+**Lines:** 496
+**Last Modified:** 2025-07-08T20:57:20.869Z
 
 **Key Elements:**
-- **Event** (line 36) - `event`
+- **Event** (line 34) - `event`
   - Context: `const [events, setEvents] = useState<Event[]>([]);`
-- **Card** (line 358) - `card`
+- **Card** (line 268) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 359) - `cardcontent`
+- **CardContent** (line 269) - `cardcontent`
   - Context: `<CardContent>`
-- **CalendarDays** (line 360) - `calendardays`
+- **CalendarDays** (line 270) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 395) - `card`
+- **Card** (line 313) - `card`
   - Context: `<Card`
-- **CardHeader** (line 403) - `cardheader`
+- **CardHeader** (line 317) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 405) - `cardtitle`
-  - Context: `<CardTitle className="text-lg flex items-center gap-2">`
-- **Badge** (line 411) - `badge`
+- **CardTitle** (line 319) - `cardtitle`
+  - Context: `<CardTitle className="text-lg">`
+- **Badge** (line 322) - `badge`
   - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 415) - `carddescription`
+- **CardDescription** (line 326) - `carddescription`
   - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 417) - `cardcontent`
+- **CardContent** (line 328) - `cardcontent`
   - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 420) - `calendardays`
+- **CalendarDays** (line 331) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 424) - `mappin`
+- **MapPin** (line 335) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 428) - `users`
+- **Users** (line 339) - `users`
   - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 433) - `button`
+- **Button** (line 344) - `button`
   - Context: `<Button`
-- **Link** (line 439) - `link`
+- **Link** (line 350) - `link`
   - Context: `<Link`
-- **MessageSquare** (line 443) - `messagesquare`
+- **MessageSquare** (line 354) - `messagesquare`
   - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 447) - `button`
+- **Button** (line 358) - `button`
   - Context: `<Button`
-- **Dialog** (line 464) - `dialog`
-  - Context: `<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>`
-- **DialogTrigger** (line 465) - `dialogtrigger`
-  - Context: `<DialogTrigger asChild>`
-- **Button** (line 466) - `button`
-  - Context: `<Button className="bg-green-600 hover:bg-green-700">`
-- **Plus** (line 467) - `plus`
-  - Context: `<Plus className="h-4 w-4 mr-2" />`
-- **DialogContent** (line 471) - `dialogcontent`
-  - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 472) - `dialogheader`
-  - Context: `<DialogHeader>`
-- **DialogTitle** (line 473) - `dialogtitle`
-  - Context: `<DialogTitle>Create New Event</DialogTitle>`
-- **Label** (line 477) - `label`
-  - Context: `<Label htmlFor="title">Event Title</Label>`
-- **Input** (line 478) - `input`
-  - Context: `<Input`
-- **Label** (line 486) - `label`
-  - Context: `<Label htmlFor="description">Description</Label>`
-- **Textarea** (line 487) - `textarea`
-  - Context: `<Textarea`
-- **Label** (line 495) - `label`
-  - Context: `<Label htmlFor="location">Location</Label>`
-- **Input** (line 496) - `input`
-  - Context: `<Input`
-- **Label** (line 504) - `label`
-  - Context: `<Label htmlFor="event_date">Date & Time</Label>`
-- **Input** (line 505) - `input`
-  - Context: `<Input`
-- **Label** (line 514) - `label`
-  - Context: `<Label htmlFor="max_participants">Max Participants (optional)</Label>`
-- **Input** (line 515) - `input`
-  - Context: `<Input`
-- **Button** (line 523) - `button`
-  - Context: `<Button type="submit" className="w-full">Create Event</Button>`
-- **Card** (line 530) - `card`
+- **Card** (line 378) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 531) - `cardcontent`
+- **CardContent** (line 379) - `cardcontent`
   - Context: `<CardContent>`
-- **CalendarDays** (line 532) - `calendardays`
+- **CalendarDays** (line 380) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 540) - `card`
+- **Card** (line 388) - `card`
   - Context: `<Card`
-- **CardHeader** (line 548) - `cardheader`
+- **CardHeader** (line 392) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 550) - `cardtitle`
+- **CardTitle** (line 394) - `cardtitle`
   - Context: `<CardTitle className="text-lg flex items-center gap-2">`
-- **Badge** (line 557) - `badge`
+- **Badge** (line 401) - `badge`
   - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 562) - `carddescription`
+- **CardDescription** (line 406) - `carddescription`
   - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 564) - `cardcontent`
+- **CardContent** (line 408) - `cardcontent`
   - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 567) - `calendardays`
+- **CalendarDays** (line 411) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 571) - `mappin`
+- **MapPin** (line 415) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 575) - `users`
+- **Users** (line 419) - `users`
   - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 581) - `button`
+- **Button** (line 425) - `button`
   - Context: `<Button`
-- **Link** (line 587) - `link`
+- **Link** (line 431) - `link`
   - Context: `<Link`
-- **MessageSquare** (line 591) - `messagesquare`
+- **MessageSquare** (line 435) - `messagesquare`
   - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 595) - `button`
+- **Button** (line 439) - `button`
   - Context: `<Button`
-- **Button** (line 604) - `button`
+- **Button** (line 448) - `button`
   - Context: `<Button`
-- **Loader2** (line 616) - `loader2`
+- **Loader2** (line 460) - `loader2`
   - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
-- **Dialog** (line 631) - `dialog`
+- **Dialog** (line 475) - `dialog`
   - Context: `<Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>`
-- **DialogContent** (line 632) - `dialogcontent`
+- **DialogContent** (line 476) - `dialogcontent`
   - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 633) - `dialogheader`
+- **DialogHeader** (line 477) - `dialogheader`
   - Context: `<DialogHeader>`
-- **DialogTitle** (line 634) - `dialogtitle`
+- **DialogTitle** (line 478) - `dialogtitle`
   - Context: `<DialogTitle>Leave Event</DialogTitle>`
-- **DialogDescription** (line 635) - `dialogdescription`
+- **DialogDescription** (line 479) - `dialogdescription`
   - Context: `<DialogDescription>`
-- **DialogFooter** (line 639) - `dialogfooter`
+- **DialogFooter** (line 483) - `dialogfooter`
   - Context: `<DialogFooter>`
-- **Button** (line 640) - `button`
+- **Button** (line 484) - `button`
   - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 643) - `button`
+- **Button** (line 487) - `button`
   - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
 #### location
 **File:** `src/pages/GroupChat.tsx`
 **Lines:** 18
-**Last Modified:** 2025-07-06T02:37:21.180Z
+**Last Modified:** 2025-07-08T18:09:40.020Z
 
 **Key Elements:**
 - **GroupChatComponent** (line 17) - `groupchatcomponent`
@@ -2163,182 +1756,187 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/pages/Groups.tsx`
-**Lines:** 387
-**Last Modified:** 2025-07-07T02:00:20.956Z
+**Lines:** 494
+**Last Modified:** 2025-07-08T21:46:41.055Z
 
 **Key Elements:**
 - **Group** (line 26) - `group`
   - Context: `const [groups, setGroups] = useState<Group[]>([]);`
-- **Card** (line 280) - `card`
+- **ContextPanel** (line 267) - `contextpanel`
+  - Context: `<ContextPanel title="Group Stats">`
+- **ActivityFeed** (line 284) - `activityfeed`
+  - Context: `<ActivityFeed activities={recentActivities} />`
+- **Search** (line 299) - `search`
+  - Context: `<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 te...`
+- **Input** (line 300) - `input`
+  - Context: `<Input`
+- **Card** (line 322) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 281) - `cardcontent`
-  - Context: `<CardContent>`
-- **Users** (line 282) - `users`
-  - Context: `<Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 290) - `card`
-  - Context: `<Card`
-- **CardHeader** (line 298) - `cardheader`
-  - Context: `<CardHeader>`
-- **Avatar** (line 301) - `avatar`
-  - Context: `<Avatar className="h-12 w-12">`
-- **AvatarImage** (line 302) - `avatarimage`
-  - Context: `<AvatarImage src={group.avatar_url || undefined} />`
-- **AvatarFallback** (line 303) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **CardTitle** (line 308) - `cardtitle`
-  - Context: `<CardTitle className="text-lg flex items-center gap-2">`
-- **Badge** (line 315) - `badge`
-  - Context: `<Badge variant="secondary" className="mt-1">`
 - **CardContent** (line 323) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **CardDescription** (line 324) - `carddescription`
-  - Context: `<CardDescription>{group.description}</CardDescription>`
-- **Users** (line 328) - `users`
+  - Context: `<CardContent>`
+- **Users** (line 324) - `users`
+  - Context: `<Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
+- **Card** (line 334) - `card`
+  - Context: `<Card key={group.id} className="desktop-card-hover">`
+- **CardContent** (line 335) - `cardcontent`
+  - Context: `<CardContent className="p-6">`
+- **Avatar** (line 339) - `avatar`
+  - Context: `<Avatar className="h-16 w-16">`
+- **AvatarImage** (line 340) - `avatarimage`
+  - Context: `<AvatarImage src={group.avatar_url || undefined} />`
+- **AvatarFallback** (line 341) - `avatarfallback`
+  - Context: `<AvatarFallback className="text-lg">`
+- **Badge** (line 350) - `badge`
+  - Context: `<Badge variant="secondary">Member</Badge>`
+- **Users** (line 359) - `users`
   - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 336) - `button`
+- **Button** (line 369) - `button`
   - Context: `<Button`
-- **MessageSquare** (line 340) - `messagesquare`
+- **MessageSquare** (line 373) - `messagesquare`
   - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 343) - `button`
-  - Context: `<Button`
-- **Button** (line 351) - `button`
-  - Context: `<Button`
-- **ArrowRight** (line 356) - `arrowright`
-  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
-- **Dialog** (line 367) - `dialog`
-  - Context: `<Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>`
-- **DialogContent** (line 368) - `dialogcontent`
-  - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 369) - `dialogheader`
-  - Context: `<DialogHeader>`
-- **DialogTitle** (line 370) - `dialogtitle`
-  - Context: `<DialogTitle>Leave Group</DialogTitle>`
-- **DialogDescription** (line 371) - `dialogdescription`
-  - Context: `<DialogDescription>`
-- **DialogFooter** (line 375) - `dialogfooter`
-  - Context: `<DialogFooter>`
 - **Button** (line 376) - `button`
+  - Context: `<Button`
+- **Button** (line 385) - `button`
+  - Context: `<Button`
+- **ArrowRight** (line 390) - `arrowright`
+  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
+- **Card** (line 403) - `card`
+  - Context: `<Card`
+- **CardHeader** (line 407) - `cardheader`
+  - Context: `<CardHeader>`
+- **Avatar** (line 410) - `avatar`
+  - Context: `<Avatar className="h-12 w-12">`
+- **AvatarImage** (line 411) - `avatarimage`
+  - Context: `<AvatarImage src={group.avatar_url || undefined} />`
+- **AvatarFallback** (line 412) - `avatarfallback`
+  - Context: `<AvatarFallback>`
+- **CardTitle** (line 417) - `cardtitle`
+  - Context: `<CardTitle className="text-lg">`
+- **Badge** (line 421) - `badge`
+  - Context: `<Badge variant="secondary" className="mt-1">`
+- **CardContent** (line 429) - `cardcontent`
+  - Context: `<CardContent className="space-y-4">`
+- **CardDescription** (line 430) - `carddescription`
+  - Context: `<CardDescription>{group.description}</CardDescription>`
+- **Users** (line 434) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Button** (line 442) - `button`
+  - Context: `<Button`
+- **MessageSquare** (line 446) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
+- **Button** (line 449) - `button`
+  - Context: `<Button`
+- **Button** (line 457) - `button`
+  - Context: `<Button`
+- **ArrowRight** (line 462) - `arrowright`
+  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
+- **Dialog** (line 474) - `dialog`
+  - Context: `<Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>`
+- **DialogContent** (line 475) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[425px]">`
+- **DialogHeader** (line 476) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 477) - `dialogtitle`
+  - Context: `<DialogTitle>Leave Group</DialogTitle>`
+- **DialogDescription** (line 478) - `dialogdescription`
+  - Context: `<DialogDescription>`
+- **DialogFooter** (line 482) - `dialogfooter`
+  - Context: `<DialogFooter>`
+- **Button** (line 483) - `button`
   - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 379) - `button`
+- **Button** (line 486) - `button`
   - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
-#### Home
+#### checkScreenSize
 **File:** `src/pages/Home.tsx`
-**Lines:** 145
-**Last Modified:** 2025-07-07T02:34:19.787Z
+**Lines:** 142
+**Last Modified:** 2025-07-08T21:25:30.172Z
 
 **Key Elements:**
-- **Mountain** (line 17) - `mountain`
+- **Mountain** (line 30) - `mountain`
   - Context: `<Mountain className="h-16 w-16 text-green-600 mr-4" />`
-- **Button** (line 26) - `button`
+- **Button** (line 39) - `button`
   - Context: `<Button asChild size="lg" className="bg-green-600 hover:bg-green-700">`
-- **Link** (line 27) - `link`
+- **Link** (line 40) - `link`
   - Context: `<Link to="/auth">Join the Community</Link>`
-- **Card** (line 32) - `card`
+- **Card** (line 45) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 33) - `cardheader`
+- **CardHeader** (line 46) - `cardheader`
   - Context: `<CardHeader>`
-- **Users** (line 34) - `users`
+- **Users** (line 47) - `users`
   - Context: `<Users className="h-8 w-8 text-green-600 mb-2" />`
-- **CardTitle** (line 35) - `cardtitle`
+- **CardTitle** (line 48) - `cardtitle`
   - Context: `<CardTitle>Group Chats</CardTitle>`
-- **CardDescription** (line 36) - `carddescription`
+- **CardDescription** (line 49) - `carddescription`
   - Context: `<CardDescription>`
-- **Card** (line 41) - `card`
+- **Card** (line 54) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 42) - `cardheader`
+- **CardHeader** (line 55) - `cardheader`
   - Context: `<CardHeader>`
-- **Calendar** (line 43) - `calendar`
+- **Calendar** (line 56) - `calendar`
   - Context: `<Calendar className="h-8 w-8 text-orange-600 mb-2" />`
-- **CardTitle** (line 44) - `cardtitle`
+- **CardTitle** (line 57) - `cardtitle`
   - Context: `<CardTitle>Climbing Events</CardTitle>`
-- **CardDescription** (line 45) - `carddescription`
+- **CardDescription** (line 58) - `carddescription`
   - Context: `<CardDescription>`
-- **Card** (line 50) - `card`
+- **Card** (line 63) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 51) - `cardheader`
+- **CardHeader** (line 64) - `cardheader`
   - Context: `<CardHeader>`
-- **Users** (line 52) - `users`
+- **Users** (line 65) - `users`
   - Context: `<Users className="h-8 w-8 text-blue-600 mb-2" />`
-- **CardTitle** (line 53) - `cardtitle`
+- **CardTitle** (line 66) - `cardtitle`
   - Context: `<CardTitle>Find Partners</CardTitle>`
-- **CardDescription** (line 54) - `carddescription`
+- **CardDescription** (line 67) - `carddescription`
   - Context: `<CardDescription>`
-- **Button** (line 68) - `button`
+- **Button** (line 81) - `button`
   - Context: `<Button asChild size="lg" className="bg-orange-600 hover:bg-orange-700">`
-- **Link** (line 69) - `link`
+- **Link** (line 82) - `link`
   - Context: `<Link to="/auth">Get Started Today</Link>`
-- **Card** (line 89) - `card`
-  - Context: `<Card className="hover:shadow-lg transition-shadow">`
-- **CardHeader** (line 90) - `cardheader`
+- **Dashboard** (line 92) - `dashboard`
+  - Context: `return <Dashboard />;`
+- **Mountain** (line 101) - `mountain`
+  - Context: `<Mountain className="h-16 w-16 text-green-600 mr-4" />`
+- **Card** (line 109) - `card`
+  - Context: `<Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() =...`
+- **CardHeader** (line 110) - `cardheader`
   - Context: `<CardHeader>`
-- **Users** (line 91) - `users`
-  - Context: `<Users className="h-8 w-8 text-purple-600 mb-2" />`
-- **CardTitle** (line 92) - `cardtitle`
-  - Context: `<CardTitle>Your Community</CardTitle>`
-- **CardDescription** (line 93) - `carddescription`
+- **Users** (line 111) - `users`
+  - Context: `<Users className="h-8 w-8 text-green-600 mb-2" />`
+- **CardTitle** (line 112) - `cardtitle`
+  - Context: `<CardTitle>Group Chats</CardTitle>`
+- **CardDescription** (line 113) - `carddescription`
   - Context: `<CardDescription>`
-- **CardContent** (line 97) - `cardcontent`
-  - Context: `<CardContent>`
-- **Button** (line 99) - `button`
-  - Context: `<Button asChild size="sm">`
-- **Link** (line 100) - `link`
-  - Context: `<Link to="/club-talk">Club Talk</Link>`
-- **Button** (line 102) - `button`
-  - Context: `<Button asChild size="sm">`
-- **Link** (line 103) - `link`
-  - Context: `<Link to="/groups">Gym Talk</Link>`
-- **Button** (line 105) - `button`
-  - Context: `<Button asChild size="sm">`
-- **Link** (line 106) - `link`
-  - Context: `<Link to="/community">Crag Talk</Link>`
-- **Card** (line 112) - `card`
-  - Context: `<Card className="hover:shadow-lg transition-shadow">`
-- **CardHeader** (line 113) - `cardheader`
+- **Card** (line 118) - `card`
+  - Context: `<Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() =...`
+- **CardHeader** (line 119) - `cardheader`
   - Context: `<CardHeader>`
-- **Calendar** (line 114) - `calendar`
+- **Calendar** (line 120) - `calendar`
   - Context: `<Calendar className="h-8 w-8 text-orange-600 mb-2" />`
-- **CardTitle** (line 115) - `cardtitle`
-  - Context: `<CardTitle>Upcoming Events</CardTitle>`
-- **CardDescription** (line 116) - `carddescription`
+- **CardTitle** (line 121) - `cardtitle`
+  - Context: `<CardTitle>Climbing Events</CardTitle>`
+- **CardDescription** (line 122) - `carddescription`
   - Context: `<CardDescription>`
-- **CardContent** (line 120) - `cardcontent`
-  - Context: `<CardContent>`
-- **Button** (line 121) - `button`
-  - Context: `<Button asChild variant="outline" className="w-full">`
-- **Link** (line 122) - `link`
-  - Context: `<Link to="/events">View Events</Link>`
 - **Card** (line 127) - `card`
-  - Context: `<Card className="hover:shadow-lg transition-shadow">`
+  - Context: `<Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() =...`
 - **CardHeader** (line 128) - `cardheader`
   - Context: `<CardHeader>`
 - **Users** (line 129) - `users`
   - Context: `<Users className="h-8 w-8 text-blue-600 mb-2" />`
 - **CardTitle** (line 130) - `cardtitle`
-  - Context: `<CardTitle>Your Profile</CardTitle>`
+  - Context: `<CardTitle>Community Chat</CardTitle>`
 - **CardDescription** (line 131) - `carddescription`
   - Context: `<CardDescription>`
-- **CardContent** (line 135) - `cardcontent`
-  - Context: `<CardContent>`
-- **Button** (line 136) - `button`
-  - Context: `<Button asChild variant="outline" className="w-full">`
-- **Link** (line 137) - `link`
-  - Context: `<Link to="/profile">Edit Profile</Link>`
-
-#### Index
-**File:** `src/pages/Index.tsx`
-**Lines:** 15
-**Last Modified:** 2025-07-03T21:42:28.448Z
 
 #### NotFound
 **File:** `src/pages/NotFound.tsx`
 **Lines:** 28
-**Last Modified:** 2025-07-03T21:42:28.453Z
+**Last Modified:** 2025-07-08T18:09:40.047Z
 
 #### loadProfile
 **File:** `src/pages/Profile.tsx`
 **Lines:** 886
-**Last Modified:** 2025-07-07T02:45:47.561Z
+**Last Modified:** 2025-07-08T18:09:40.071Z
 
 **Key Elements:**
 - **Profile** (line 46) - `profile`
@@ -2519,9 +2117,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 ## 🎯 QUICK REFERENCE
 
 ### Main Components
-- **ChatHeader**: `src/components/chat/ui/ChatHeader.tsx`
-- **Index**: `src/pages/Index.tsx`
-- **Layout**: `src/components/layout/Layout.tsx`
+- **getLayoutClass**: `src/components/layout/MultiPanelLayout.tsx`
 
 ## 🔄 UPDATE INSTRUCTIONS
 **Before every UI editing session:**

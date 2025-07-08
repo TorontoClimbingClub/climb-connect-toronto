@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { CalendarDays, MapPin, Users, Plus, MessageSquare, LogOut, Loader2 } from 'lucide-react';
+import { CalendarDays, MapPin, Users, MessageSquare, LogOut, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface Event {
@@ -34,16 +34,8 @@ export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningEventId, setJoiningEventId] = useState<string | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [leaveEventId, setLeaveEventId] = useState<string | null>(null);
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    location: '',
-    event_date: '',
-    max_participants: '',
-  });
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -113,47 +105,6 @@ export default function Events() {
     }
   };
 
-  const createEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('events')
-        .insert([
-          {
-            title: formData.title,
-            description: formData.description,
-            location: formData.location,
-            event_date: formData.event_date,
-            max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
-            created_by: user.id,
-          },
-        ]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Event created successfully!",
-      });
-
-      setFormData({
-        title: '',
-        description: '',
-        location: '',
-        event_date: '',
-        max_participants: '',
-      });
-      setIsCreateOpen(false);
-      loadEvents();
-    } catch (error) {
-      console.error('Error creating event:', error);
-      toast({
-        title: "Failed to create event",
-        variant: "destructive",
-      });
-    }
-  };
 
   const navigateToEventChat = (eventId: string) => {
     // Navigate to event chat (read status will be updated when user actually reads messages)
@@ -344,16 +295,24 @@ export default function Events() {
   const myEvents = events.filter(event => event.is_participant);
   const availableEvents = events.filter(event => !event.is_participant);
 
+
   return (
     <div className="space-y-6 relative">
-      {myEvents.length > 0 && (
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
+          <p className="text-gray-600 mt-1">Discover and join climbing events in Toronto</p>
+        </div>
+
+        {/* My Events Section */}
+        {myEvents.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">You're Attending</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="desktop-grid-3">
             {myEvents.map((event) => (
               <Card 
                 key={event.id} 
-                className="hover:shadow-lg transition-shadow"
+                className="desktop-card-hover"
               >
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -411,71 +370,8 @@ export default function Events() {
         </div>
       )}
       
-      <div className="flex justify-between items-center">
+      <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Events you might be interested in</h1>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-green-600 hover:bg-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Event
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Create New Event</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={createEvent} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Event Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="event_date">Date & Time</Label>
-                <Input
-                  id="event_date"
-                  type="datetime-local"
-                  value={formData.event_date}
-                  onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="max_participants">Max Participants (optional)</Label>
-                <Input
-                  id="max_participants"
-                  type="number"
-                  min="1"
-                  value={formData.max_participants}
-                  onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-                />
-              </div>
-              <Button type="submit" className="w-full">Create Event</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {availableEvents.length === 0 ? (
@@ -487,15 +383,11 @@ export default function Events() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="desktop-grid-3">
           {availableEvents.map((event) => (
             <Card 
               key={event.id} 
-              className={`hover:shadow-lg transition-shadow ${
-                event.has_unread 
-                  ? 'ring-2 ring-orange-400 shadow-orange-200 shadow-lg' 
-                  : ''
-              }`}
+              className="desktop-card-hover"
             >
               <CardHeader>
                 <div className="flex justify-between items-start">

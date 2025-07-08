@@ -1,12 +1,25 @@
 
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { Calendar, Users, Mountain } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Dashboard from './Dashboard';
 
 export default function Home() {
   const { user } = useAuth();
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint - tablet and up
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   if (!user) {
     return (
@@ -74,70 +87,54 @@ export default function Home() {
     );
   }
 
+  // For authenticated users on desktop, show the Dashboard
+  if (isDesktop) {
+    return <Dashboard />;
+  }
+
+  // For authenticated users on mobile, show the original mobile home view
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-green-800 mb-4">
-          Welcome back to the club!
-        </h1>
-        <p className="text-xl text-gray-600">
-          Ready for your next climbing adventure?
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50">
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center">
+            <Mountain className="h-16 w-16 text-green-600 mr-4" />
+            <h1 className="text-5xl font-bold text-green-800">
+              Toronto Climbing Club
+            </h1>
+          </div>
+        </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <Users className="h-8 w-8 text-purple-600 mb-2" />
-            <CardTitle>Your Community</CardTitle>
-            <CardDescription>
-              Find Partners, Explore Crags, Join the Conversation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-2">
-              <Button asChild size="sm">
-                <Link to="/club-talk">Club Talk</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link to="/groups">Gym Talk</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link to="/community">Crag Talk</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/groups'}>
+            <CardHeader>
+              <Users className="h-8 w-8 text-green-600 mb-2" />
+              <CardTitle>Group Chats</CardTitle>
+              <CardDescription>
+                Join gym-specific chats and connect with climbers from your favorite locations
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/events'}>
+            <CardHeader>
+              <Calendar className="h-8 w-8 text-orange-600 mb-2" />
+              <CardTitle>Climbing Events</CardTitle>
+              <CardDescription>
+                Join organized climbing sessions and competitions
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/club-talk'}>
+            <CardHeader>
+              <Users className="h-8 w-8 text-blue-600 mb-2" />
+              <CardTitle>Community Chat</CardTitle>
+              <CardDescription>
+                Connect with the wider climbing community
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <Calendar className="h-8 w-8 text-orange-600 mb-2" />
-            <CardTitle>Upcoming Events</CardTitle>
-            <CardDescription>
-              Discover and join climbing events in Toronto
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/events">View Events</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <Users className="h-8 w-8 text-blue-600 mb-2" />
-            <CardTitle>Your Profile</CardTitle>
-            <CardDescription>
-              Update your profile and view your climbing stats
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/profile">Edit Profile</Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

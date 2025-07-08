@@ -32,63 +32,63 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout useDesktopLayout={true}>
                   <Home />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/events" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout useDesktopLayout={true} layoutType="two-panel">
                   <Events />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/events/:eventId/chat" element={
               <ProtectedRoute>
-                <Layout fullscreen>
+                <Layout useDesktopLayout={true} fullscreen>
                   <EventChat />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/profile" element={
               <ProtectedRoute>
-                <Layout fullscreen>
+                <Layout useDesktopLayout={true} fullscreen>
                   <Profile />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/groups" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout useDesktopLayout={true} layoutType="two-panel">
                   <Groups />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/groups/:groupId/chat" element={
               <ProtectedRoute>
-                <Layout fullscreen>
+                <Layout useDesktopLayout={true} fullscreen>
                   <GroupChat />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/chat" element={
               <ProtectedRoute>
-                <Layout fullscreen>
+                <Layout useDesktopLayout={true} layoutType="two-panel">
                   <Community />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/club-talk" element={
               <ProtectedRoute>
-                <Layout fullscreen>
+                <Layout useDesktopLayout={true} fullscreen>
                   <ClubTalk />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/admin" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout useDesktopLayout={true}>
                   <Administrator />
                 </Layout>
               </ProtectedRoute>

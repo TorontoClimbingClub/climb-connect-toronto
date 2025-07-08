@@ -13,10 +13,10 @@ export function NavBar() {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Club Talk', href: '/club-talk', icon: Hash },
-    { name: 'Gym Talk', href: '/groups', icon: Users },
-    { name: 'Crag Talk', href: '/chat', icon: MessageCircle },
-    { name: 'Events', href: '/events', icon: Calendar },
+    { name: 'Club Talk', shortName: 'Club', href: '/club-talk', icon: Hash },
+    { name: 'Gym Talk', shortName: 'Gym', href: '/groups', icon: Users },
+    { name: 'Crag Talk', shortName: 'Crag', href: '/chat', icon: MessageCircle },
+    { name: 'Events', shortName: 'Events', href: '/events', icon: Calendar },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -45,14 +45,15 @@ export function NavBar() {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     isActive(item.href)
                       ? 'bg-green-100 text-green-800'
                       : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{item.name}</span>
+                  <span className="hidden lg:inline">{item.name}</span>
+                  <span className="lg:hidden">{item.shortName}</span>
                 </Link>
               );
             })}
