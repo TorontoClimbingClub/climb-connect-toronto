@@ -9,6 +9,9 @@ import { Send, ArrowLeft, CalendarDays, MapPin, Users, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
+import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
+import { CreateEventModal } from '@/components/chat/CreateEventModal';
+import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
 
 interface EventMessage {
   id: string;
@@ -46,6 +49,7 @@ export default function EventChat() {
   const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   // Function to scroll to bottom
@@ -220,6 +224,14 @@ export default function EventChat() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+  };
+
+  const handleCreateEvent = () => {
+    setShowCreateEventModal(true);
   };
 
 
@@ -515,13 +527,19 @@ export default function EventChat() {
           }}
           className="flex space-x-2"
         >
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1"
-            autoComplete="off"
-          />
+          <ChatActionsMenu onCreateEvent={handleCreateEvent} />
+          <div className="flex-1 relative">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              className="pr-12"
+              autoComplete="off"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
+            </div>
+          </div>
           <Button 
             type="submit" 
             size="icon" 
@@ -532,6 +550,12 @@ export default function EventChat() {
           </Button>
         </form>
       </div>
+      
+      <CreateEventModal 
+        open={showCreateEventModal} 
+        onClose={() => setShowCreateEventModal(false)}
+        groupName={event?.title}
+      />
     </div>
   );
 }

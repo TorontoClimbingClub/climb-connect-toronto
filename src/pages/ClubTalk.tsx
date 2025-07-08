@@ -7,6 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, Search, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
+import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
+import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
+import { CreateEventModal } from '@/components/chat/CreateEventModal';
 
 interface ClubMessage {
   id: string;
@@ -27,6 +30,7 @@ export default function ClubTalk() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -177,6 +181,14 @@ export default function ClubTalk() {
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+  };
+
+  const handleCreateEvent = () => {
+    setShowCreateEventModal(true);
   };
 
   const formatTimestamp = (timestamp: string): string => {
@@ -407,18 +419,24 @@ export default function ClubTalk() {
       {/* Message Input */}
       <div className="p-4 border-t bg-white flex-shrink-0 sticky bottom-0">
         <div className="flex gap-2 max-w-4xl mx-auto">
-          <Input
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            className="flex-1"
-          />
+          <ChatActionsMenu onCreateEvent={handleCreateEvent} />
+          <div className="flex-1 relative">
+            <Input
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="pr-12"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
+            </div>
+          </div>
           <Button 
             onClick={handleSendMessage}
             disabled={!newMessage.trim()}
@@ -428,6 +446,12 @@ export default function ClubTalk() {
           </Button>
         </div>
       </div>
+      
+      <CreateEventModal 
+        open={showCreateEventModal} 
+        onClose={() => setShowCreateEventModal(false)}
+        groupName="Club Talk"
+      />
     </div>
   );
 }

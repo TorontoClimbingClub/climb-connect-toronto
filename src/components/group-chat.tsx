@@ -8,6 +8,9 @@ import { Send, Search, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
+import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
+import { CreateEventModal } from '@/components/chat/CreateEventModal';
 
 interface GroupMessage {
   id: string;
@@ -34,6 +37,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -168,6 +172,14 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+  };
+
+  const handleCreateEvent = () => {
+    setShowCreateEventModal(true);
   };
 
 
@@ -434,19 +446,25 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
       {/* Message Input - Fixed to bottom */}
       <div className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0">
-        <div className="flex gap-2">
-          <Input
-            placeholder={`Message ${groupName}...`}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            className="flex-1"
-          />
+        <div className="flex gap-2 items-end">
+          <ChatActionsMenu onCreateEvent={handleCreateEvent} />
+          <div className="flex-1 relative">
+            <Input
+              placeholder={`Message ${groupName}...`}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="pr-12"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
+            </div>
+          </div>
           <Button 
             onClick={handleSendMessage}
             disabled={!newMessage.trim()}
@@ -457,6 +475,12 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         </div>
       </div>
 
+      <CreateEventModal 
+        open={showCreateEventModal} 
+        onClose={() => setShowCreateEventModal(false)}
+        groupId={groupId}
+        groupName={groupName}
+      />
     </div>
   );
 }
