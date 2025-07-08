@@ -51,7 +51,7 @@ export function MultiPanelLayout({
   return (
     <div className={`${getLayoutClass()} ${className}`}>
       {/* Desktop Sidebar - Hidden on mobile (below 768px), shown on tablet+ */}
-      <div className="hidden md:block">
+      <div className="sidebar-panel hidden md:block">
         <DesktopSidebar />
       </div>
 
@@ -64,7 +64,7 @@ export function MultiPanelLayout({
 
       {/* Context Panel - Only shown if provided and on tablet+ screens */}
       {contextPanel && (
-        <div className="hidden md:block">
+        <div className="context-panel hidden md:block">
           {contextPanel}
         </div>
       )}

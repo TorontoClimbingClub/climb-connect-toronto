@@ -264,7 +264,7 @@ All colors MUST be HSL.
     display: grid;
     grid-template-columns: 280px 1fr;
     grid-template-rows: 1fr;
-    height: calc(100vh - 64px); /* Account for navbar */
+    height: 100vh;
     overflow: hidden;
   }
 
@@ -272,7 +272,7 @@ All colors MUST be HSL.
     display: grid;
     grid-template-columns: 280px 1fr 320px;
     grid-template-rows: 1fr;
-    height: calc(100vh - 64px);
+    height: 100vh;
     overflow: hidden;
   }
 
@@ -280,7 +280,7 @@ All colors MUST be HSL.
     display: grid;
     grid-template-columns: 280px 1fr 320px 280px;
     grid-template-rows: 1fr;
-    height: calc(100vh - 64px);
+    height: 100vh;
     overflow: hidden;
   }
 
@@ -361,12 +361,13 @@ All colors MUST be HSL.
   }
 
   /* Responsive utilities */
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     .desktop-layout,
     .desktop-layout-three-panel,
     .desktop-layout-four-panel {
-      display: block;
-      height: auto;
+      display: block !important;
+      height: auto !important;
+      grid-template-columns: none !important;
     }
 
     .desktop-grid-2,
@@ -378,14 +379,31 @@ All colors MUST be HSL.
 
     .sidebar-panel,
     .context-panel {
-      display: none;
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .desktop-layout {
+      display: grid !important;
+      grid-template-columns: 280px 1fr !important;
+    }
+
+    .desktop-layout-three-panel {
+      display: grid !important;
+      grid-template-columns: 280px 1fr 320px !important;
+    }
+
+    .desktop-layout-four-panel {
+      display: grid !important;
+      grid-template-columns: 280px 1fr 320px 280px !important;
     }
   }
 
   @media (min-width: 768px) and (max-width: 1024px) {
     .desktop-layout-three-panel,
     .desktop-layout-four-panel {
-      grid-template-columns: 240px 1fr;
+      grid-template-columns: 240px 1fr !important;
     }
 
     .desktop-grid-3,
@@ -396,7 +414,7 @@ All colors MUST be HSL.
 
   @media (min-width: 1024px) and (max-width: 1440px) {
     .desktop-layout-four-panel {
-      grid-template-columns: 280px 1fr 320px;
+      grid-template-columns: 280px 1fr 320px !important;
     }
 
     .desktop-grid-4 {
