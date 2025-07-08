@@ -14,36 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      chat_read_status: {
-        Row: {
-          chat_identifier: string
-          chat_type: string
-          created_at: string | null
-          id: string
-          last_read_at: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          chat_identifier: string
-          chat_type: string
-          created_at?: string | null
-          id?: string
-          last_read_at?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          chat_identifier?: string
-          chat_type?: string
-          created_at?: string | null
-          id?: string
-          last_read_at?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       club_messages: {
         Row: {
           content: string
@@ -116,19 +86,16 @@ export type Database = {
         Row: {
           event_id: string
           joined_at: string | null
-          last_read_at: string | null
           user_id: string
         }
         Insert: {
           event_id: string
           joined_at?: string | null
-          last_read_at?: string | null
           user_id: string
         }
         Update: {
           event_id?: string
           joined_at?: string | null
-          last_read_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -357,14 +324,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      update_chat_read_status: {
-        Args: {
-          p_user_id: string
-          p_chat_type: string
-          p_chat_identifier: string
-        }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
