@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ChatActionsMenu } from '@/components/chat-actions-menu';
 import { CreateEventModal } from '@/components/create-event-modal';
+import { generateClientMessageId } from '@/utils/soft-delete';
 
 interface GroupMessage {
   id: string;
@@ -46,7 +47,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [joiningEventIds, setJoiningEventIds] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -234,8 +234,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       console.log('Group message sent successfully:', data);
       setNewMessage('');
       
-      // Mark messages as read when user sends a message
-      updateReadStatus();
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
@@ -277,72 +275,8 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     }
   };
 
-  // Function to update read status in database
-  const updateReadStatus = useCallback(async () => {
-    if (!user || !groupId) return;
-    
-    try {
-      const now = new Date().toISOString();
-      
-      // Update database with error checking
-      const { error } = await supabase
-        .from('group_members')
-        .update({ last_read_at: now })
-        .eq('group_id', groupId)
-        .eq('user_id', user.id);
-      
-      if (error) {
-        console.error('Database update error:', error);
-        // Still update localStorage as fallback
-      }
-      
-      // Always update localStorage for backward compatibility
-      const lastVisitKey = `group_last_visit_${groupId}`;
-      localStorage.setItem(lastVisitKey, now);
-    } catch (error) {
-      console.error('Error updating read status:', error);
-      // Ensure localStorage is updated even if database fails
-      try {
-        const lastVisitKey = `group_last_visit_${groupId}`;
-        localStorage.setItem(lastVisitKey, new Date().toISOString());
-      } catch (storageError) {
-        console.error('localStorage fallback failed:', storageError);
-      }
-    }
-  }, [user, groupId]);
 
-  // Debounced scroll handler to prevent excessive database calls
-  const handleScroll = useCallback(() => {
-    if (!viewportRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
-    
-    if (isAtBottom) {
-      // Clear any existing timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      
-      // Debounce the update to avoid excessive calls
-      scrollTimeoutRef.current = setTimeout(() => {
-        updateReadStatus();
-        scrollTimeoutRef.current = null;
-      }, 500); // Wait 500ms before marking as read
-    }
-  }, [updateReadStatus]);
 
-  // Mark as read when component unmounts (user leaves chat)
-  useEffect(() => {
-    return () => {
-      // Clear any pending scroll timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      // Mark as read when leaving
-      updateReadStatus();
-    };
-  }, [updateReadStatus]);
 
   // Check admin status when user changes
   useEffect(() => {
@@ -439,11 +373,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={async () => {
-              // Update read status immediately when navigating back
-              await updateReadStatus();
-              navigate('/groups');
-            }}
+            onClick={() => navigate('/groups')}
             className="p-1"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -480,7 +410,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={viewportRef} onScroll={handleScroll}>
+      <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={viewportRef}>
         <div className="space-y-4">
           {filteredMessages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">

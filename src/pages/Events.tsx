@@ -25,8 +25,6 @@ interface Event {
   created_at: string;
   participant_count: number;
   is_participant: boolean;
-  has_unread?: boolean;
-  latest_message_time?: string;
   profiles: {
     display_name: string;
   };
@@ -80,54 +78,15 @@ export default function Events() {
 
           const { data: participation } = await supabase
             .from('event_participants')
-            .select('user_id, last_read_at')
+            .select('user_id')
             .eq('event_id', event.id)
             .eq('user_id', user?.id)
             .single();
-
-          let hasUnread = false;
-          let latestMessageTime = null;
-
-          if (participation) {
-            // Get the actual latest message for this event
-            const { data: latestMessage } = await supabase
-              .from('event_messages')
-              .select('created_at')
-              .eq('event_id', event.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .single();
-
-            if (latestMessage) {
-              latestMessageTime = latestMessage.created_at;
-              const lastReadAt = participation.last_read_at;
-              const latestMsgTime = new Date(latestMessage.created_at);
-              
-              if (!lastReadAt) {
-                // Never read any messages in this event
-                hasUnread = true;
-              } else {
-                const lastReadTime = new Date(lastReadAt);
-                hasUnread = latestMsgTime > lastReadTime;
-              }
-
-              // Fallback to localStorage ONLY if no database timestamp exists
-              if (!lastReadAt) {
-                const lastVisitKey = `event_last_visit_${event.id}`;
-                const lastVisit = localStorage.getItem(lastVisitKey);
-                if (!lastVisit || latestMsgTime > new Date(lastVisit)) {
-                  hasUnread = true;
-                }
-              }
-            }
-          }
 
           return {
             ...event,
             participant_count: count || 0,
             is_participant: !!participation,
-            has_unread: hasUnread,
-            latest_message_time: latestMessageTime,
           };
         })
       );
@@ -393,19 +352,12 @@ export default function Events() {
             {myEvents.map((event) => (
               <Card 
                 key={event.id} 
-                className={`hover:shadow-lg transition-shadow ${
-                  event.has_unread 
-                    ? 'ring-2 ring-orange-400 shadow-orange-200 shadow-lg' 
-                    : ''
-                }`}
+                className="hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-lg">
                       {event.title}
-                      {event.has_unread && (
-                        <span className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>
-                      )}
                     </CardTitle>
                     <Badge variant="secondary" className="bg-green-100 text-green-800">
                       Joined

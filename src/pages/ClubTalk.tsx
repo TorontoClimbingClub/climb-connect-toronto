@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, Search, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useUnreadTracking } from '@/hooks/useUnreadTracking';
 
 interface ClubMessage {
   id: string;
@@ -28,13 +27,8 @@ export default function ClubTalk() {
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { markAsRead } = useUnreadTracking({ 
-    chatType: 'club_talk', 
-    chatIdentifier: 'club_talk' 
-  });
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -169,8 +163,6 @@ export default function ClubTalk() {
       if (data) {
         setMessages(prev => [...prev, data]);
         scrollToBottom();
-        // Mark as read when user sends a message
-        markAsRead();
       }
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
@@ -233,38 +225,7 @@ export default function ClubTalk() {
     };
   }, [user, checkAdminStatus, loadMessages]);
 
-  // Handle scroll to mark messages as read when at bottom
-  const handleScroll = useCallback(() => {
-    if (!viewportRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
-    
-    if (isAtBottom) {
-      // Clear any existing timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      
-      // Debounce the update to avoid excessive calls
-      scrollTimeoutRef.current = setTimeout(() => {
-        markAsRead();
-        scrollTimeoutRef.current = null;
-      }, 1000); // Wait 1 second before marking as read
-    }
-  }, [markAsRead]);
 
-  // Mark as read when component unmounts (user leaves chat)
-  useEffect(() => {
-    return () => {
-      // Clear any pending scroll timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      // Mark as read when leaving
-      markAsRead();
-    };
-  }, [markAsRead]);
 
   // Auto scroll to bottom when messages change
   useEffect(() => {
@@ -330,7 +291,6 @@ export default function ClubTalk() {
       <div 
         className="flex-1 overflow-y-auto p-4 min-h-0"
         ref={viewportRef}
-        onScroll={handleScroll}
       >
         <div className="space-y-4">
           {filteredMessages.length === 0 ? (

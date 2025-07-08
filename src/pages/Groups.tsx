@@ -18,8 +18,6 @@ interface Group {
   created_at: string;
   member_count?: number;
   is_member?: boolean;
-  has_unread?: boolean;
-  latest_message_time?: string;
 }
 
 export default function Groups() {
@@ -82,39 +80,6 @@ export default function Groups() {
             .select('*', { count: 'exact', head: true })
             .eq('group_id', group.id);
 
-          // Get the actual latest message
-          const { data: latestMessage } = await supabase
-            .from('group_messages')
-            .select('created_at')
-            .eq('group_id', group.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          let hasUnread = false;
-          const memberInfo = group.group_members[0]; // Since we filtered by user_id, there's only one
-
-          if (latestMessage && memberInfo) {
-            const lastReadAt = memberInfo.last_read_at;
-            const latestMessageTime = new Date(latestMessage.created_at);
-            
-            if (!lastReadAt) {
-              // Never read any messages in this group
-              hasUnread = true;
-            } else {
-              const lastReadTime = new Date(lastReadAt);
-              hasUnread = latestMessageTime > lastReadTime;
-            }
-
-            // Fallback to localStorage ONLY if no database timestamp exists
-            if (!lastReadAt) {
-              const lastVisitKey = `group_last_visit_${group.id}`;
-              const lastVisit = localStorage.getItem(lastVisitKey);
-              if (!lastVisit || latestMessageTime > new Date(lastVisit)) {
-                hasUnread = true;
-              }
-            }
-          }
 
           return {
             id: group.id,
@@ -124,8 +89,6 @@ export default function Groups() {
             created_at: group.created_at,
             member_count: totalMembers || 0,
             is_member: true, // Since we filtered by membership
-            has_unread: hasUnread,
-            latest_message_time: latestMessage?.created_at || null
           };
         })
       );
@@ -285,11 +248,7 @@ export default function Groups() {
           {groups.map((group) => (
           <Card 
             key={group.id} 
-            className={`hover:shadow-lg transition-all duration-300 ${
-              group.has_unread 
-                ? 'ring-2 ring-orange-400 shadow-orange-200 shadow-lg' 
-                : ''
-            }`}
+            className="hover:shadow-lg transition-all duration-300"
           >
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -301,11 +260,8 @@ export default function Groups() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="text-lg">
                       {group.name}
-                      {group.has_unread && (
-                        <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                      )}
                     </CardTitle>
                     {group.is_member && (
                       <Badge variant="secondary" className="mt-1">

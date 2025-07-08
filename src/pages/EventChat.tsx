@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Send, ArrowLeft, CalendarDays, MapPin, Users, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useUnreadTracking } from '@/hooks/useUnreadTracking';
 import { format } from 'date-fns';
 
 interface EventMessage {
@@ -39,11 +38,6 @@ export default function EventChat() {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Use unified unread tracking system
-  const { markAsRead } = useUnreadTracking({
-    chatType: 'event_chat',
-    chatIdentifier: eventId || ''
-  });
   
   const [event, setEvent] = useState<Event | null>(null);
   const [messages, setMessages] = useState<EventMessage[]>([]);
@@ -52,7 +46,6 @@ export default function EventChat() {
   const [isParticipant, setIsParticipant] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -213,8 +206,6 @@ export default function EventChat() {
 
       setNewMessage('');
       
-      // Mark messages as read when user sends a message
-      markAsRead();
       
       if (data) {
         setMessages(prev => [...prev, data]);
@@ -231,38 +222,7 @@ export default function EventChat() {
   };
 
 
-  // Debounced scroll handler to prevent excessive database calls
-  const handleScroll = useCallback(() => {
-    if (!viewportRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
-    
-    if (isAtBottom) {
-      // Clear any existing timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      
-      // Debounce the update to avoid excessive calls
-      scrollTimeoutRef.current = setTimeout(() => {
-        markAsRead();
-        scrollTimeoutRef.current = null;
-      }, 500); // Wait 500ms before marking as read
-    }
-  }, [markAsRead]);
 
-  // Mark as read when component unmounts (user leaves chat)
-  useEffect(() => {
-    return () => {
-      // Clear any pending scroll timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      // Mark as read when leaving
-      markAsRead();
-    };
-  }, [markAsRead]);
 
   // Check admin status when user changes
   useEffect(() => {
@@ -413,7 +373,7 @@ export default function EventChat() {
       </div>
 
       {/* Messages */}
-      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0" onScroll={handleScroll}>
+      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
         <div className="space-y-3 sm:space-y-4">
           {messages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
