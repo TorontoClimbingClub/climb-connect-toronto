@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Users, Mountain, TreePine, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/components/ui/use-toast";
 
 interface TopicChat {
   id: string;

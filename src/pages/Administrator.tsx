@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/components/ui/use-toast";
 import { Users, MessageSquare, Calendar, Shield, UserCog, Trash2 } from 'lucide-react';
 
 interface User {
