@@ -43,6 +43,7 @@ export default function EventChat() {
   const [messages, setMessages] = useState<EventMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -172,7 +173,12 @@ export default function EventChat() {
       if (error) throw error;
 
       setMessages(data || []);
-      setTimeout(scrollToBottom, 100);
+      setMessagesLoaded(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      });
     } catch (error) {
       console.error('Error loading messages:', error);
     }
@@ -205,12 +211,7 @@ export default function EventChat() {
       if (error) throw error;
 
       setNewMessage('');
-      
-      
-      if (data) {
-        setMessages(prev => [...prev, data]);
-        scrollToBottom();
-      }
+      // Message will be added via real-time subscription
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -242,9 +243,11 @@ export default function EventChat() {
         loadEvent(),
         loadMessages()
       ]);
+      
+      // Only set loading to false after all data is loaded
+      setIsLoading(false);
     } catch (error) {
       console.error('Error initializing chat:', error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -289,6 +292,19 @@ export default function EventChat() {
           scrollToBottom();
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'event_messages',
+          filter: `event_id=eq.${eventId}`,
+        },
+        (payload) => {
+          console.log('Event message deleted:', payload.old);
+          setMessages(current => current.filter(msg => msg.id !== payload.old.id));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -308,8 +324,49 @@ export default function EventChat() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="h-full w-full flex flex-col chat-container bg-white">
+        {/* Header Skeleton */}
+        <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="space-y-2 flex-1">
+              <div className="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+              <div className="hidden sm:flex space-x-4">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="sm:hidden">
+                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Messages Skeleton */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
+          <div className="space-y-3 sm:space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-start space-x-2 sm:space-x-3">
+                <div className="h-7 w-7 sm:h-8 sm:w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                  <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                    i % 2 === 0 ? 'w-3/4' : 'w-1/2'
+                  }`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Input Skeleton */}
+        <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0">
+          <div className="flex space-x-2">
+            <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -335,9 +392,7 @@ export default function EventChat() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={async () => {
-                // Update read status immediately when navigating back
-                await markAsRead();
+              onClick={() => {
                 navigate('/events');
               }}
               className="h-8 w-8 sm:h-10 sm:w-10"
@@ -375,7 +430,22 @@ export default function EventChat() {
       {/* Messages */}
       <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
         <div className="space-y-3 sm:space-y-4">
-          {messages.length === 0 ? (
+          {!messagesLoaded ? (
+            // Loading state for messages
+            <div className="space-y-3 sm:space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                      i % 2 === 0 ? 'w-3/4' : 'w-1/2'
+                    }`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : messages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               No messages yet. Start the conversation!
             </div>

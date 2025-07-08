@@ -4,13 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, ArrowLeft, X, UserPlus } from 'lucide-react';
+import { Send, Search, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { ChatActionsMenu } from '@/components/chat-actions-menu';
-import { CreateEventModal } from '@/components/create-event-modal';
-import { generateClientMessageId } from '@/utils/soft-delete';
 
 interface GroupMessage {
   id: string;
@@ -18,14 +15,6 @@ interface GroupMessage {
   created_at: string;
   user_id: string;
   group_id: string;
-  message_type?: string;
-  event_id?: string;
-  event_metadata?: {
-    title: string;
-    date: string;
-    location: string;
-    max_participants: number;
-  };
   profiles: {
     display_name: string;
     avatar_url?: string;
@@ -41,11 +30,10 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [joiningEventIds, setJoiningEventIds] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -102,66 +90,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     }
   };
 
-  // Join event function
-  const joinEvent = async (eventId: string) => {
-    if (!user || joiningEventIds.has(eventId)) return;
-
-    // Add to joining state
-    setJoiningEventIds(prev => new Set([...prev, eventId]));
-
-    try {
-      // Check if already participating
-      const { data: existingParticipation, error: checkError } = await supabase
-        .from('event_participants')
-        .select('user_id')
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      if (existingParticipation) {
-        toast({
-          title: "Already joined!",
-          description: "You're already participating in this event.",
-        });
-        return;
-      }
-
-      // Insert participation
-      const { error: insertError } = await supabase
-        .from('event_participants')
-        .insert([
-          {
-            event_id: eventId,
-            user_id: user.id,
-          },
-        ]);
-
-      if (insertError) throw insertError;
-
-      toast({
-        title: "Joined event!",
-        description: "You've successfully joined the event.",
-      });
-    } catch (error) {
-      console.error('Error joining event:', error);
-      toast({
-        title: "Failed to join event",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      // Remove from joining state
-      setJoiningEventIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(eventId);
-        return newSet;
-      });
-    }
-  };
 
   // Load existing messages
   const loadMessages = useCallback(async () => {
@@ -175,9 +103,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           created_at,
           user_id,
           group_id,
-          message_type,
-          event_id,
-          event_metadata,
           profiles(display_name, avatar_url)
         `)
         .eq('group_id', groupId)
@@ -185,16 +110,23 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
       if (error) {
         console.error('Error loading group messages:', error);
+        setIsLoading(false);
         return;
       }
 
       console.log('Loaded group messages:', data);
       setMessages(data || []);
-      // Scroll to bottom after messages load
-      setTimeout(scrollToBottom, 100);
+      setMessagesLoaded(true);
+      setIsLoading(false);
+      
+      // Smooth scroll after data loads
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      });
     } catch (error) {
       console.error('Error in loadMessages:', error);
-    } finally {
       setIsLoading(false);
     }
   }, [groupId]);
@@ -213,7 +145,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             content: newMessage,
             user_id: user.id,
             group_id: groupId,
-            client_message_id: generateClientMessageId(), // Prevent duplicates
           },
         ])
         .select(`
@@ -239,41 +170,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     }
   };
 
-  // Function to post event creation message to chat
-  const postEventCreationMessage = async (eventTitle: string, eventDate: string, eventId: string, location: string, maxParticipants: number) => {
-    if (!user) return;
-
-    try {
-      const eventDateFormatted = new Date(eventDate).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-      });
-
-      // Create interactive event message instead of plain text
-      await supabase
-        .from('group_messages')
-        .insert([
-          {
-            content: `📅 Created event: "${eventTitle}"`, // Shorter text, details in metadata
-            user_id: user.id,
-            group_id: groupId,
-            message_type: 'event',
-            event_id: eventId,
-            event_metadata: {
-              title: eventTitle,
-              date: eventDateFormatted,
-              location: location,
-              max_participants: maxParticipants
-            }
-          },
-        ]);
-    } catch (error) {
-      console.error('Error posting event creation message:', error);
-    }
-  };
 
 
 
@@ -311,17 +207,33 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
               created_at,
               user_id,
               group_id,
-              message_type,
-              event_id,
-              event_metadata,
               profiles(display_name, avatar_url)
             `)
             .eq('id', payload.new.id)
             .single();
 
           if (messageWithProfile) {
-            setMessages(prev => [...prev, messageWithProfile]);
+            setMessages(prev => {
+              // Check if message already exists to prevent duplicates
+              if (prev.find(m => m.id === messageWithProfile.id)) {
+                return prev;
+              }
+              return [...prev, messageWithProfile];
+            });
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'group_messages',
+          filter: `group_id=eq.${groupId}`
+        },
+        (payload) => {
+          console.log('Group message deleted:', payload.old);
+          setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
         }
       )
       .subscribe();
@@ -359,9 +271,44 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
   if (isLoading) {
     return (
-      <Card className="h-full flex items-center justify-center">
-        <div className="text-gray-500">Loading group chat...</div>
-      </Card>
+      <div className="h-full w-full flex flex-col bg-white">
+        {/* Header Skeleton */}
+        <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-5 bg-gray-200 rounded animate-pulse"></div>
+            <div className="space-y-2">
+              <div className="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        
+        {/* Messages Skeleton */}
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex gap-3">
+                <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
+                  <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                    i % 2 === 0 ? 'w-3/4' : 'w-1/2'
+                  }`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Input Skeleton */}
+        <div className="p-4 border-t flex-shrink-0 bg-white">
+          <div className="flex gap-2">
+            <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -412,14 +359,28 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={viewportRef}>
         <div className="space-y-4">
-          {filteredMessages.length === 0 ? (
+          {!messagesLoaded ? (
+            // Loading state for messages
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-28 bg-gray-200 rounded animate-pulse"></div>
+                    <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                      i % 2 === 0 ? 'w-3/4' : 'w-1/2'
+                    }`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredMessages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               No messages yet. Start the conversation!
             </div>
           ) : (
             filteredMessages.map((message) => {
               const isOwnMessage = message.user_id === user?.id;
-              const isEventMessage = message.message_type === 'event' && message.event_metadata;
               
               return (
                 <div
@@ -433,7 +394,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                     </AvatarFallback>
                   </Avatar>
                   
-                  <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} ${isEventMessage ? 'max-w-[85%]' : 'max-w-[70%]'}`}>
+                  <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%]`}>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium">
                         {message.profiles?.display_name || 'Unknown User'}
@@ -454,59 +415,15 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                       )}
                     </div>
                     
-                    {isEventMessage && message.event_metadata ? (
-                      // Compact event message with minimal join button
-                      <div className={`border border-blue-200 rounded-lg px-3 py-2 bg-blue-50 w-full ${
-                        isOwnMessage ? 'bg-blue-100 border-blue-300' : ''
-                      }`}>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1 mb-1">
-                              <span className="font-medium text-blue-900 text-sm truncate">
-                                📅 {message.event_metadata.title}
-                              </span>
-                            </div>
-                            <div className="text-xs text-blue-700 space-x-3">
-                              <span>📍 {message.event_metadata.location}</span>
-                              <span>🕒 {message.event_metadata.date}</span>
-                              <span>👥 {message.event_metadata.max_participants}</span>
-                            </div>
-                          </div>
-                          
-                          {message.event_id && !isOwnMessage && (
-                            <Button
-                              size="sm"
-                              onClick={() => joinEvent(message.event_id!)}
-                              disabled={joiningEventIds.has(message.event_id)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs flex-shrink-0"
-                            >
-                              {joiningEventIds.has(message.event_id) ? (
-                                <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent" />
-                              ) : (
-                                <UserPlus className="h-3 w-3" />
-                              )}
-                            </Button>
-                          )}
-                          
-                          {isOwnMessage && (
-                            <div className="text-xs text-blue-600 font-medium flex-shrink-0">
-                              Your event
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      // Regular text message
-                      <div
-                        className={`rounded-lg px-3 py-2 max-w-full break-words ${
-                          isOwnMessage
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}
-                      >
-                        {message.content}
-                      </div>
-                    )}
+                    <div
+                      className={`rounded-lg px-3 py-2 max-w-full break-words ${
+                        isOwnMessage
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                      }`}
+                    >
+                      {message.content}
+                    </div>
                   </div>
                 </div>
               );
@@ -518,23 +435,18 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       {/* Message Input - Fixed to bottom */}
       <div className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0">
         <div className="flex gap-2">
-          <div className="relative flex-1">
-            <ChatActionsMenu 
-              onCreateEvent={() => setIsEventModalOpen(true)}
-            />
-            <Input
-              placeholder={`Message ${groupName}...`}
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              className="pl-10"
-            />
-          </div>
+          <Input
+            placeholder={`Message ${groupName}...`}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            className="flex-1"
+          />
           <Button 
             onClick={handleSendMessage}
             disabled={!newMessage.trim()}
@@ -545,15 +457,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         </div>
       </div>
 
-      {/* Event Creation Modal */}
-      <CreateEventModal
-        isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
-        groupName={groupName}
-        onEventCreated={(eventTitle, eventDate, eventId, location, maxParticipants) => {
-          postEventCreationMessage(eventTitle, eventDate, eventId, location, maxParticipants);
-        }}
-      />
     </div>
   );
 }

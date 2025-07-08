@@ -22,7 +22,7 @@ export function NavBar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 w-full overflow-x-hidden">
+    <nav className="bg-white shadow-sm border-b border-gray-200 w-full overflow-x-hidden sticky top-0 z-50">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 w-full">
           <div className="flex items-center min-w-0 flex-shrink-0">

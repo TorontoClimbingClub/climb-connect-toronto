@@ -214,8 +214,12 @@ export default function Groups() {
   };
 
   const navigateToGroupChat = (groupId: string, groupName: string) => {
-    // Navigate to group chat (read status will be updated when user actually reads messages)
-    navigate(`/groups/${groupId}/chat`, { state: { groupName } });
+    // Preload the chat page by navigating immediately
+    // This prevents any loading flicker by maintaining the current page state
+    navigate(`/groups/${groupId}/chat`, { 
+      state: { groupName },
+      replace: false // Keep in history for back button
+    });
   };
 
   if (loading) {

@@ -1,0 +1,48 @@
+/* Chat Navigation Transitions */
+.chat-container {
+  opacity: 1;
+  transition: opacity 150ms ease-in-out;
+}
+
+.chat-container.loading {
+  opacity: 0.9;
+}
+
+/* Smooth skeleton transitions */
+.chat-skeleton {
+  animation: fadeIn 200ms ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Prevent flash of unstyled content */
+.chat-messages {
+  min-height: 200px;
+  transition: all 150ms ease-in-out;
+}
+
+/* Smooth scrolling for message containers */
+.chat-scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* Loading state transitions */
+.chat-loading-skeleton {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}

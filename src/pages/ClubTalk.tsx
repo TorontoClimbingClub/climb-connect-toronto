@@ -23,6 +23,7 @@ export default function ClubTalk() {
   const [messages, setMessages] = useState<ClubMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -90,6 +91,9 @@ export default function ClubTalk() {
   // Load existing messages
   const loadMessages = useCallback(async () => {
     try {
+      // Start with optimistic UI to prevent layout shifts
+      setIsLoading(false);
+      
       const { data, error } = await supabase
         .from('club_messages')
         .select(`
@@ -113,10 +117,16 @@ export default function ClubTalk() {
       }
 
       setMessages(data || []);
+      setMessagesLoaded(true);
+      
+      // Smooth scroll after data loads
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      });
     } catch (error) {
       console.error('Error in loadMessages:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -252,10 +262,38 @@ export default function ClubTalk() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Card className="h-full flex items-center justify-center">
-          <div className="text-gray-500">Loading chat...</div>
-        </Card>
+      <div className="h-full w-full flex flex-col bg-white">
+        {/* Header Skeleton */}
+        <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white">
+          <div className="space-y-2">
+            <div className="h-5 w-24 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        
+        {/* Messages Skeleton */}
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-3">
+                <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-8 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Input Skeleton */}
+        <div className="p-4 border-t bg-white flex-shrink-0">
+          <div className="flex gap-2">
+            <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -293,7 +331,22 @@ export default function ClubTalk() {
         ref={viewportRef}
       >
         <div className="space-y-4">
-          {filteredMessages.length === 0 ? (
+          {!messagesLoaded ? (
+            // Loading state for messages
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                      i % 2 === 0 ? 'w-3/4' : 'w-1/2'
+                    }`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredMessages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               No messages yet. Start the conversation!
             </div>
@@ -352,7 +405,7 @@ export default function ClubTalk() {
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t bg-white flex-shrink-0">
+      <div className="p-4 border-t bg-white flex-shrink-0 sticky bottom-0">
         <div className="flex gap-2 max-w-4xl mx-auto">
           <Input
             placeholder="Type a message..."

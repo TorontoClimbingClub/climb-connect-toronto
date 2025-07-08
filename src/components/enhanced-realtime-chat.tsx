@@ -38,6 +38,7 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -165,6 +166,9 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
   const loadMessages = useCallback(async () => {
     console.log('Loading messages...');
     try {
+      // Optimistic UI update to prevent layout shifts
+      setIsLoading(false);
+      
       const { data, error } = await supabase
         .from('messages')
         .select(`
@@ -192,12 +196,16 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
 
       console.log('Loaded messages:', data);
       setMessages(data || []);
-      // Scroll to bottom after messages load
-      setTimeout(scrollToBottom, 100);
+      setMessagesLoaded(true);
+      
+      // Smooth scroll after data loads
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      });
     } catch (error) {
       console.error('Error in loadMessages:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, [scrollToBottom]);
 
@@ -242,7 +250,11 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
       console.log('Message sent successfully:', data);
       setNewMessage('');
       // Scroll to bottom after sending message
-      setTimeout(scrollToBottom, 100);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      });
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
@@ -328,9 +340,41 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
 
   if (isLoading) {
     return (
-      <Card className="h-full flex items-center justify-center">
-        <div className="text-gray-500">Loading chat...</div>
-      </Card>
+      <div className="chat-container-with-nav w-full bg-white">
+        {/* Header Skeleton */}
+        <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white safe-top">
+          <div className="space-y-2">
+            <div className="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        
+        {/* Messages Skeleton */}
+        <div className="chat-messages p-4">
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-3">
+                <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                  <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                    i % 3 === 0 ? 'w-4/5' : i % 3 === 1 ? 'w-2/3' : 'w-1/2'
+                  }`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Input Skeleton */}
+        <div className="p-4 border-t bg-white touch-input">
+          <div className="flex gap-2 max-w-4xl mx-auto">
+            <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -378,7 +422,27 @@ export function EnhancedRealtimeChat({ roomName, username, onMessage }: Enhanced
         }}
       >
         <div className="space-y-4">
-          {filteredMessages.map((message) => {
+          {!messagesLoaded ? (
+            // Loading state for messages
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className={`h-8 bg-gray-200 rounded animate-pulse ${
+                      i % 3 === 0 ? 'w-4/5' : i % 3 === 1 ? 'w-2/3' : 'w-1/2'
+                    }`}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredMessages.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              No messages yet. Start the conversation!
+            </div>
+          ) : (
+            filteredMessages.map((message) => {
             const isOwnMessage = message.user_id === user?.id;
             const isEventMessage = message.message_type === 'event';
             

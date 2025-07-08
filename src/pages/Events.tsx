@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { CalendarDays, MapPin, Users, Plus, MessageSquare, LogOut, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface Event {
   id: string;
@@ -46,6 +46,7 @@ export default function Events() {
   });
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const loadEvents = async () => {
     try {
