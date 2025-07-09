@@ -66,7 +66,7 @@ export default function Auth() {
       } else {
         toast({
           title: "Account created!",
-          description: "You can now access the app. Wait for admin approval to start chatting.",
+          description: "Please check your email to confirm your account before signing in.",
         });
       }
     } catch (error) {
