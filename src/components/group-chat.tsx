@@ -576,7 +576,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       <div 
         ref={chatInputRef}
         className={`p-4 border-t flex-shrink-0 bg-white z-50 ${
-          viewportState.isMobile ? 'chat-input-sticky' : 'sticky bottom-0'
+          viewportState.isMobile ? '' : 'sticky bottom-0'
         }`}
       >
         {isDeleteMode && selectedMessages.size > 0 && (
