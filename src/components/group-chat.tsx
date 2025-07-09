@@ -479,9 +479,15 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         formatTimestamp={formatTimestamp}
       />
 
-      <div className="relative">
+      <ChatInput
+        value={newMessage}
+        onChange={setNewMessage}
+        onSend={handleSendMessage}
+        placeholder={`Message ${groupName}...`}
+        disabled={isDeleteMode}
+      >
         {isDeleteMode && selectedMessages.size > 0 && (
-          <div className="p-3 border-t bg-red-50 flex items-center justify-between">
+          <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
             <span className="text-sm text-red-700">
               {selectedMessages.size} message{selectedMessages.size === 1 ? '' : 's'} selected
             </span>
@@ -496,28 +502,17 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             </Button>
           </div>
         )}
-        
-        <ChatInput
-          value={newMessage}
-          onChange={setNewMessage}
-          onSend={handleSendMessage}
-          placeholder={`Message ${groupName}...`}
-          disabled={isDeleteMode}
+        <ChatActionsMenu 
+          onCreateEvent={handleCreateEvent}
+          onFindPartners={handleFindPartners}
+          onLeave={handleLeaveClick}
+          leaveText="Leave Group"
+          isAdmin={isAdmin}
+          onDeleteMessages={toggleDeleteMode}
+          isDeleteMode={isDeleteMode}
+          isGymChat={true}
         />
-        
-        <div className="absolute bottom-4 left-4">
-          <ChatActionsMenu 
-            onCreateEvent={handleCreateEvent}
-            onFindPartners={handleFindPartners}
-            onLeave={handleLeaveClick}
-            leaveText="Leave Group"
-            isAdmin={isAdmin}
-            onDeleteMessages={toggleDeleteMode}
-            isDeleteMode={isDeleteMode}
-            isGymChat={true}
-          />
-        </div>
-      </div>
+      </ChatInput>
       
 
       <CreateEventModal 
