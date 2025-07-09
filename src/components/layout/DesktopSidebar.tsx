@@ -78,21 +78,19 @@ export function DesktopSidebar() {
       </div>
 
       {/* User Profile */}
-      <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 mb-6">
-        <Link to="/profile" className="hover:opacity-80 transition-opacity">
-          <Avatar className="h-12 w-12 cursor-pointer">
-            <AvatarImage src={userProfile?.avatar_url} />
-            <AvatarFallback>
-              {userProfile?.initials}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
+      <Link to="/profile" className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 mb-6 hover:bg-green-100 transition-colors cursor-pointer">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={userProfile?.avatar_url} />
+          <AvatarFallback>
+            {userProfile?.initials}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-900 truncate">
             {userProfile?.display_name}
           </p>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1">
