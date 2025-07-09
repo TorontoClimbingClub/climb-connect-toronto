@@ -98,23 +98,23 @@ export default function Groups() {
   return (
     <div className="space-y-6 bg-white md:bg-white h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8 overflow-y-auto md:overflow-visible">
       {/* Search and Filters */}
-      <div className="flex items-center space-x-4 justify-end">
-        <div className="flex items-center space-x-4">
-          <div className="relative">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:justify-end">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               id="group-search"
               placeholder="Search groups..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-64"
+              className="pl-10 w-full sm:w-64"
             />
           </div>
           
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as 'all' | 'joined' | 'available')}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-auto"
           >
             <option value="all">All Groups</option>
             <option value="joined">Joined</option>
