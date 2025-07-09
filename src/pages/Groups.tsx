@@ -1,203 +1,33 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Users, MessageSquare, ArrowRight, Search, Filter, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Users, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useGroups } from '@/hooks/useGroups';
+import { GroupCard } from '@/components/cards/GroupCard';
 import { useToast } from "@/components/ui/use-toast";
-import { ActivityFeed, ContextPanel } from '@/components/layout/MultiPanelLayout';
-
-interface Group {
-  id: string;
-  name: string;
-  description: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  member_count?: number;
-  is_member?: boolean;
-}
 
 export default function Groups() {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const {
+    myGroups,
+    availableGroups,
+    isLoading,
+    joinGroup,
+    leaveGroup,
+    isJoining,
+    isLeaving
+  } = useGroups();
+
   const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'joined' | 'available'>('all');
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    loadGroups();
-  }, [user]);
-
-  // Define community chat names to exclude from groups page
-  const communityChats = [
-    'Toronto Climbing Club Main Chat',
-    'Outdoors Chat', 
-    'Bouldering'
-  ];
-
-  const loadGroups = async () => {
-    try {
-      if (!user) {
-        // If no user, just fetch basic group data excluding community chats
-        const { data: groupsData, error: groupsError } = await supabase
-          .from('groups')
-          .select('*')
-          .not('name', 'in', `(${communityChats.map(name => `"${name}"`).join(',')})`)
-          .order('name');
-
-        if (groupsError) throw groupsError;
-        setGroups(groupsData || []);
-        return;
-      }
-
-      // Get groups where user is a member, excluding community chats
-      const { data: groupsWithInfo, error } = await supabase
-        .from('groups')
-        .select(`
-          *,
-          group_members!inner (
-            user_id,
-            last_read_at
-          )
-        `)
-        .eq('group_members.user_id', user.id)
-        .not('name', 'in', `(${communityChats.map(name => `"${name}"`).join(',')})`)
-        .order('name');
-
-      if (error) throw error;
-
-      // Process the data to determine unread status and member counts
-      const processedGroups = await Promise.all(
-        (groupsWithInfo || []).map(async (group) => {
-          // Get total member count for this group
-          const { count: totalMembers } = await supabase
-            .from('group_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('group_id', group.id);
-
-
-          return {
-            id: group.id,
-            name: group.name,
-            description: group.description,
-            avatar_url: group.avatar_url,
-            created_at: group.created_at,
-            member_count: totalMembers || 0,
-            is_member: true, // Since we filtered by membership
-          };
-        })
-      );
-
-      // Also fetch groups where user is not a member, excluding community chats
-      const { data: allGroups } = await supabase
-        .from('groups')
-        .select('*')
-        .not('name', 'in', `(${communityChats.map(name => `"${name}"`).join(',')})`)
-        .order('name');
-
-      const nonMemberGroups = await Promise.all(
-        (allGroups || [])
-          .filter(group => !processedGroups.some(pg => pg.id === group.id))
-          .map(async (group) => {
-            const { count: totalMembers } = await supabase
-              .from('group_members')
-              .select('*', { count: 'exact', head: true })
-              .eq('group_id', group.id);
-
-            return {
-              ...group,
-              member_count: totalMembers || 0,
-              is_member: false,
-              has_unread: false,
-              latest_message_time: null
-            };
-          })
-      );
-
-      setGroups([...processedGroups, ...nonMemberGroups]);
-    } catch (error: any) {
-      console.error('Error loading groups:', error);
-      toast({
-        title: 'Error loading groups',
-        description: error?.message || 'Please try again later.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleJoinGroup = async (groupId: string) => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please sign in to join groups.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('group_members')
-        .insert({ group_id: groupId, user_id: user.id });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Joined group successfully!',
-        description: 'You can now access the group chat.'
-      });
-
-      // Reload groups to update member status
-      loadGroups();
-    } catch (error) {
-      console.error('Error joining group:', error);
-      toast({
-        title: 'Error joining group',
-        description: 'Please try again later.',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const handleLeaveGroup = async (groupId: string) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('group_members')
-        .delete()
-        .eq('group_id', groupId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Left group',
-        description: 'You have left the group.'
-      });
-
-      // Reload groups to update member status
-      loadGroups();
-    } catch (error) {
-      console.error('Error leaving group:', error);
-      toast({
-        title: 'Error leaving group',
-        description: 'Please try again later.',
-        variant: 'destructive'
-      });
-    }
-  };
 
   const handleLeaveClick = (groupId: string) => {
     setLeaveGroupId(groupId);
@@ -206,7 +36,7 @@ export default function Groups() {
 
   const confirmLeave = () => {
     if (leaveGroupId) {
-      handleLeaveGroup(leaveGroupId);
+      leaveGroup(leaveGroupId);
       setIsLeaveDialogOpen(false);
       setLeaveGroupId(null);
     }
@@ -218,15 +48,25 @@ export default function Groups() {
   };
 
   const navigateToGroupChat = (groupId: string, groupName: string) => {
-    // Preload the chat page by navigating immediately
-    // This prevents any loading flicker by maintaining the current page state
     navigate(`/groups/${groupId}/chat`, { 
       state: { groupName },
-      replace: false // Keep in history for back button
+      replace: false
     });
   };
 
-  if (loading) {
+  const handleJoinGroup = (groupId: string) => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to join groups.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    joinGroup(groupId);
+  };
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-gray-500">Loading groups...</div>
@@ -234,8 +74,11 @@ export default function Groups() {
     );
   }
 
+  // Combine all groups for filtering
+  const allGroups = [...myGroups, ...availableGroups];
+  
   // Filter groups based on search and filter type
-  const filteredGroups = groups.filter(group => {
+  const filteredGroups = allGroups.filter(group => {
     const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
@@ -249,71 +92,38 @@ export default function Groups() {
     }
   });
 
-  const joinedGroups = filteredGroups.filter(group => group.is_member);
-  const availableGroups = filteredGroups.filter(group => !group.is_member);
-
-  // Context panel for desktop
-
-  const recentActivities = groups.slice(0, 5).map(group => ({
-    id: group.id,
-    type: 'group',
-    content: `Activity in ${group.name}`,
-    user: 'Community',
-    timestamp: group.created_at
-  }));
-
-  const contextPanel = (
-    <>
-      <ContextPanel title="Group Stats">
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">Total Groups</span>
-            <span className="text-sm font-medium">{groups.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">Joined</span>
-            <span className="text-sm font-medium">{joinedGroups.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">Available</span>
-            <span className="text-sm font-medium">{availableGroups.length}</span>
-          </div>
-        </div>
-      </ContextPanel>
-      
-      <ActivityFeed activities={recentActivities} />
-    </>
-  );
+  const filteredJoinedGroups = filteredGroups.filter(group => group.is_member);
+  const filteredAvailableGroups = filteredGroups.filter(group => !group.is_member);
 
   return (
     <div className="space-y-6 bg-white md:bg-white min-h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
-        {/* Search and Filters */}
-        <div className="flex items-center space-x-4 justify-end">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="group-search"
-                placeholder="Search groups..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
-            
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as 'all' | 'joined' | 'available')}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="all">All Groups</option>
-              <option value="joined">Joined</option>
-              <option value="available">Available</option>
-            </select>
+      {/* Search and Filters */}
+      <div className="flex items-center space-x-4 justify-end">
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              id="group-search"
+              placeholder="Search groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
           </div>
+          
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as 'all' | 'joined' | 'available')}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="all">All Groups</option>
+            <option value="joined">Joined</option>
+            <option value="available">Available</option>
+          </select>
         </div>
+      </div>
 
-      {groups.length === 0 ? (
+      {allGroups.length === 0 ? (
         <Card className="text-center p-8">
           <CardContent>
             <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -323,116 +133,92 @@ export default function Groups() {
         </Card>
       ) : (
         <>
-          {/* Desktop Layout: Each group as a row */}
-          <div className="hidden md:block space-y-4">
-          {filteredGroups.map((group) => (
-            <div
-              key={group.id}
-              className={`border rounded-lg cursor-pointer transition-colors ${
-                group.is_member 
-                  ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
-                  : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-              }`}
-              onClick={() => {
-                if (group.is_member) {
-                  navigateToGroupChat(group.id, group.name);
-                } else {
-                  handleJoinGroup(group.id);
-                }
-              }}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between">
-                  {/* Left section: Avatar, name, description, and stats */}
-                  <div className="flex items-center gap-4 flex-1">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={group.avatar_url || undefined} />
-                      <AvatarFallback className="text-lg">
-                        {group.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900">{group.name}</h3>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <Users className="h-4 w-4" />
-                        <span>{group.member_count || 0} members</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Right section: Status indicator */}
-                  <div className="flex items-center gap-3 ml-6">
-                    <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
-                      group.is_member 
-                        ? 'bg-orange-100 text-orange-800'
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {group.is_member ? 'Open Chat' : 'Join Group'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Mobile Layout: Keep original grid layout */}
-        <div className="md:hidden desktop-grid-3">
-          {filteredGroups.map((group) => (
-          <div
-            key={group.id}
-            className={`border rounded-lg cursor-pointer transition-colors ${
-              group.is_member 
-                ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
-                : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-            }`}
-            onClick={() => {
-              if (group.is_member) {
-                navigateToGroupChat(group.id, group.name);
-              } else {
-                handleJoinGroup(group.id);
-              }
-            }}
-          >
-            <div className="p-4">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={group.avatar_url || undefined} />
-                    <AvatarFallback>
-                      {group.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {group.name}
-                    </h3>
-                  </div>
-                </div>
-              </div>
+          {/* My Groups Section */}
+          {filteredJoinedGroups.length > 0 && (filterType === 'all' || filterType === 'joined') && (
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Groups</h2>
               
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Users className="h-4 w-4" />
-                  <span>{group.member_count || 0} members</span>
-                </div>
-                
-                <div className={`px-3 py-1 rounded-md text-sm font-medium pointer-events-none ${
-                  group.is_member 
-                    ? 'bg-orange-100 text-orange-800'
-                    : 'bg-green-100 text-green-800'
-                }`}>
-                  {group.is_member ? 'Open Chat' : 'Join Group'}
-                </div>
+              {/* Desktop Layout */}
+              <div className="hidden md:block space-y-4">
+                {filteredJoinedGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    onClick={() => navigateToGroupChat(group.id, group.name)}
+                  >
+                    <GroupCard
+                      group={group}
+                      showChatButton={true}
+                      onLeave={handleLeaveClick}
+                      isLeaving={isLeaving}
+                      compact={true}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Layout */}
+              <div className="md:hidden desktop-grid-3">
+                {filteredJoinedGroups.map((group) => (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    showChatButton={true}
+                    onLeave={handleLeaveClick}
+                    isLeaving={isLeaving}
+                  />
+                ))}
               </div>
             </div>
-          </div>
-          ))}
-        </div>
+          )}
+
+          {/* Available Groups Section */}
+          {filteredAvailableGroups.length > 0 && (filterType === 'all' || filterType === 'available') && (
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                {filterType === 'available' ? 'Available Groups' : 'Groups you might be interested in'}
+              </h2>
+              
+              {/* Desktop Layout */}
+              <div className="hidden md:block space-y-4">
+                {filteredAvailableGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    onClick={() => handleJoinGroup(group.id)}
+                  >
+                    <GroupCard
+                      group={group}
+                      onJoin={handleJoinGroup}
+                      isJoining={isJoining}
+                      compact={true}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Layout */}
+              <div className="md:hidden desktop-grid-3">
+                {filteredAvailableGroups.map((group) => (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    onJoin={handleJoinGroup}
+                    isJoining={isJoining}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No Results */}
+          {filteredGroups.length === 0 && (
+            <Card className="text-center p-8">
+              <CardContent>
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No groups found</h3>
+                <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
 
