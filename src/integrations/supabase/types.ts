@@ -14,6 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
+      belay_group_messages: {
+        Row: {
+          belay_group_id: string | null
+          content: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          belay_group_id?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          belay_group_id?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "belay_group_messages_belay_group_id_fkey"
+            columns: ["belay_group_id"]
+            isOneToOne: false
+            referencedRelation: "belay_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "belay_group_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      belay_group_participants: {
+        Row: {
+          belay_group_id: string
+          joined_at: string | null
+          user_id: string
+        }
+        Insert: {
+          belay_group_id: string
+          joined_at?: string | null
+          user_id: string
+        }
+        Update: {
+          belay_group_id?: string
+          joined_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "belay_group_participants_belay_group_id_fkey"
+            columns: ["belay_group_id"]
+            isOneToOne: false
+            referencedRelation: "belay_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "belay_group_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      belay_groups: {
+        Row: {
+          capacity: number
+          climbing_type: string
+          created_at: string | null
+          creator_id: string | null
+          description: string | null
+          gym_id: string | null
+          id: string
+          location: string
+          name: string
+          privacy: string
+          session_date: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          capacity?: number
+          climbing_type: string
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          gym_id?: string | null
+          id?: string
+          location: string
+          name: string
+          privacy?: string
+          session_date: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: number
+          climbing_type?: string
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          gym_id?: string | null
+          id?: string
+          location?: string
+          name?: string
+          privacy?: string
+          session_date?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "belay_groups_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "belay_groups_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_messages: {
         Row: {
           content: string
