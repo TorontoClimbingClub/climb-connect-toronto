@@ -507,14 +507,43 @@ All colors MUST be HSL.
 
   /* Chat interface specific optimizations */
   @media screen and (max-width: 768px) {
-    /* Hide scrollbars on mobile devices */
+    /* Hide scrollbars completely on mobile devices */
     .layout-content::-webkit-scrollbar {
-      display: none;
+      display: none !important;
+      width: 0 !important;
+      background: transparent !important;
     }
     
     .layout-content {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+
+    /* Hide scrollbars on page containers */
+    div[class*="space-y-6"]::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+    }
+    
+    div[class*="space-y-6"] {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+
+    /* Force hide scrollbars on all mobile containers */
+    *::-webkit-scrollbar {
+      display: none !important;
+    }
+    
+    * {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+    
+    /* Ensure mobile layout uses proper height calculations */
+    .layout-main-default {
+      height: calc(100vh - 4rem) !important;
+      max-height: calc(100vh - 4rem) !important;
     }
     
     /* Use mobile-safe viewport height for fullscreen layouts */
@@ -565,6 +594,8 @@ All colors MUST be HSL.
 
 .layout-main-default {
   @apply flex-1 overflow-hidden;
+  /* Account for navbar height on mobile */
+  height: calc(100vh - 4rem);
 }
 
 .layout-content {
