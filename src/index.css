@@ -507,6 +507,16 @@ All colors MUST be HSL.
 
   /* Chat interface specific optimizations */
   @media screen and (max-width: 768px) {
+    /* Hide scrollbars on mobile devices */
+    .layout-content::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .layout-content {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
     /* Use mobile-safe viewport height for fullscreen layouts */
     .fullscreen-layout {
       height: 100vh;
@@ -538,7 +548,7 @@ All colors MUST be HSL.
 }
 
 .layout-mobile {
-  @apply bg-gray-50 flex flex-col;
+  @apply bg-gray-50 flex flex-col h-screen;
 }
 
 .layout-desktop {
@@ -554,11 +564,11 @@ All colors MUST be HSL.
 }
 
 .layout-main-default {
-  @apply overflow-x-hidden overflow-y-auto;
+  @apply flex-1 overflow-hidden;
 }
 
 .layout-content {
-  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full overflow-y-auto;
 }
 
 .layout-panels {

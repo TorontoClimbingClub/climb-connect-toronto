@@ -215,7 +215,7 @@ export default function Community() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-y-auto md:overflow-visible">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Crag Talk</h1>
         <p className="text-gray-600">

@@ -96,7 +96,7 @@ export default function Groups() {
   const filteredAvailableGroups = filteredGroups.filter(group => !group.is_member);
 
   return (
-    <div className="space-y-6 bg-white md:bg-white min-h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
+    <div className="space-y-6 bg-white md:bg-white h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8 overflow-y-auto md:overflow-visible">
       {/* Search and Filters */}
       <div className="flex items-center space-x-4 justify-end">
         <div className="flex items-center space-x-4">

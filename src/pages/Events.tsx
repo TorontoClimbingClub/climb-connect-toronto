@@ -56,7 +56,7 @@ export default function Events() {
   }
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative h-full overflow-y-auto md:overflow-visible">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>

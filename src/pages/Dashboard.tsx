@@ -45,7 +45,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-y-auto md:overflow-visible">
       {/* Admin Statistics */}
       {isAdmin && (
         <>
