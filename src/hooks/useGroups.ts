@@ -32,9 +32,21 @@ export function useGroups() {
     queryFn: async () => {
       const data = await ApiService.getGroups();
       
+      // Filter to only include gym-related groups (exclude general community topic chats)
+      const gymGroups = (data || []).filter(group => {
+        const groupName = group.name.toLowerCase();
+        // Exclude general community chats that should be in Crag Talk
+        const excludedNames = [
+          'toronto climbing club main chat',
+          'outdoors chat', 
+          'bouldering'
+        ];
+        return !excludedNames.some(excluded => groupName.includes(excluded.toLowerCase()));
+      });
+      
       // Get member counts and check if current user is a member
       const groupsWithStats = await Promise.all(
-        (data || []).map(async (group) => {
+        gymGroups.map(async (group) => {
           const { count } = await supabase
             .from('group_members')
             .select('*', { count: 'exact', head: true })

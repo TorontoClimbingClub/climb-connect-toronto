@@ -61,10 +61,10 @@ export default function Community() {
         return;
       }
 
-      // Check if these groups exist and get membership info
+      // Check if these specific community topic groups exist and get membership info
       const updatedChats = await Promise.all(
         topicChats.map(async (chat) => {
-          // Try to find the group by name
+          // Try to find the group by name - these are the community topic chats
           const { data: groupData } = await supabase
             .from('groups')
             .select(`
