@@ -27,7 +27,7 @@ export default function Auth() {
     
     try {
       // Convert displayName to dummy email format for login
-      const dummyEmail = `${displayName.toLowerCase().replace(/\s+/g, '')}@climber.local`;
+      const dummyEmail = `${displayName.toLowerCase().replace(/\s+/g, '')}@climber.app`;
       const { error } = await signIn(dummyEmail, password);
       if (error) {
         toast({
@@ -58,7 +58,7 @@ export default function Auth() {
     
     try {
       // Use displayName as email with a dummy domain for simplified auth
-      const dummyEmail = `${displayName.toLowerCase().replace(/\s+/g, '')}@climber.local`;
+      const dummyEmail = `${displayName.toLowerCase().replace(/\s+/g, '')}@climber.app`;
       const { error } = await signUp(dummyEmail, password, displayName);
       if (error) {
         toast({
