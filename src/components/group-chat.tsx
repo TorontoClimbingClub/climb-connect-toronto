@@ -485,6 +485,18 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         onSend={handleSendMessage}
         placeholder={`Message ${groupName}...`}
         disabled={isDeleteMode}
+        leftButton={
+          <ChatActionsMenu 
+            onCreateEvent={handleCreateEvent}
+            onFindPartners={handleFindPartners}
+            onLeave={handleLeaveClick}
+            leaveText="Leave Group"
+            isAdmin={isAdmin}
+            onDeleteMessages={toggleDeleteMode}
+            isDeleteMode={isDeleteMode}
+            isGymChat={true}
+          />
+        }
       >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
@@ -502,16 +514,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             </Button>
           </div>
         )}
-        <ChatActionsMenu 
-          onCreateEvent={handleCreateEvent}
-          onFindPartners={handleFindPartners}
-          onLeave={handleLeaveClick}
-          leaveText="Leave Group"
-          isAdmin={isAdmin}
-          onDeleteMessages={toggleDeleteMode}
-          isDeleteMode={isDeleteMode}
-          isGymChat={true}
-        />
       </ChatInput>
       
 

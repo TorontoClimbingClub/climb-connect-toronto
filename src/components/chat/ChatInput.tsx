@@ -12,7 +12,8 @@ interface ChatInputProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
-  children?: React.ReactNode; // For additional buttons/controls
+  children?: React.ReactNode; // For additional content above input
+  leftButton?: React.ReactNode; // For inline button on the left
 }
 
 export function ChatInput({ 
@@ -22,7 +23,8 @@ export function ChatInput({
   placeholder = "Type a message...",
   disabled = false,
   className = '',
-  children 
+  children,
+  leftButton 
 }: ChatInputProps) {
   const chatInputRef = useRef<HTMLDivElement>(null);
   const viewportState = useMobileViewport();
@@ -61,6 +63,7 @@ export function ChatInput({
     >
       {children}
       <div className="flex gap-2 items-end">
+        {leftButton && <div className="flex-shrink-0">{leftButton}</div>}
         <div className="flex-1 relative">
           <Input
             placeholder={placeholder}
