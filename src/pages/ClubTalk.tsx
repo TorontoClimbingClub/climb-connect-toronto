@@ -332,6 +332,7 @@ export default function ClubTalk() {
         {isDeleteMode && (
           <input
             type="checkbox"
+            id={`club-message-select-${message.id}`}
             checked={selectedMessages.has(message.id)}
             onChange={() => toggleMessageSelection(message.id)}
             className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"

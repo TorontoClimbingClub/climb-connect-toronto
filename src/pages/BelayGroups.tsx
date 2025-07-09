@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Users, MapPin, Clock, Search, UserCheck, Globe, Lock, Loader2 } from 'lucide-react';
+import { Users, MapPin, Clock, Search, UserCheck, Globe, Lock, Loader2, Trash2 } from 'lucide-react';
 import { BelayGroup, ClimbingType, BelayGroupPrivacy, CLIMBING_TYPE_LABELS, CLIMBING_TYPE_ICONS } from '@/types/belayGroup';
 import { formatSessionDate, getTimeUntilSession, canJoinBelayGroup } from '@/utils/belayGroupUtils';
 
@@ -26,6 +26,7 @@ export default function BelayGroups() {
   const [climbingTypeFilter, setClimbingTypeFilter] = useState<'all' | ClimbingType>('all');
   const [privacyFilter, setPrivacyFilter] = useState<'all' | 'public' | 'private' | 'joined'>('all');
   const [joiningGroupId, setJoiningGroupId] = useState<string | null>(null);
+  const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -196,6 +197,82 @@ export default function BelayGroups() {
     }
   };
 
+  const handleDeleteGroup = async (groupId: string) => {
+    if (!user) return;
+    
+    // Find the group to check if user is creator and only participant
+    const group = belayGroups.find(g => g.id === groupId);
+    if (!group) return;
+    
+    // Check if user is the creator
+    if (group.creator_id !== user.id) {
+      toast({
+        title: 'Permission denied',
+        description: 'Only the group creator can delete the group.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Check if there's only one participant (the creator)
+    if (group.participant_count && group.participant_count > 1) {
+      toast({
+        title: 'Cannot delete group',
+        description: 'You can only delete a group when you are the only participant.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to delete "${group.name}"? This action cannot be undone.`);
+    if (!confirmed) return;
+    
+    setDeletingGroupId(groupId);
+    try {
+      // Delete participants first (should just be the creator)
+      const { error: participantsError } = await supabase
+        .from('belay_group_participants')
+        .delete()
+        .eq('belay_group_id', groupId);
+      
+      if (participantsError) throw participantsError;
+      
+      // Delete any belay group messages
+      const { error: messagesError } = await supabase
+        .from('belay_group_messages')
+        .delete()
+        .eq('belay_group_id', groupId);
+      
+      if (messagesError) throw messagesError;
+      
+      // Delete the group itself
+      const { error: groupError } = await supabase
+        .from('belay_groups')
+        .delete()
+        .eq('id', groupId);
+      
+      if (groupError) throw groupError;
+      
+      // Remove from local state
+      setBelayGroups(prev => prev.filter(g => g.id !== groupId));
+      
+      toast({
+        title: 'Group deleted',
+        description: `"${group.name}" has been successfully deleted.`,
+      });
+    } catch (error) {
+      console.error('Error deleting belay group:', error);
+      toast({
+        title: 'Error deleting group',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingGroupId(null);
+    }
+  };
+
   const handleOpenChat = (groupId: string) => {
     navigate(`/belay-groups/${groupId}/chat`);
   };
@@ -212,13 +289,7 @@ export default function BelayGroups() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center md:text-left py-8 md:py-0">
-        <h1 className="text-3xl font-bold mb-2">Belay Groups</h1>
-        <p className="text-muted-foreground">Find climbing partners and join belay groups</p>
-      </div>
-
+    <div className="space-y-6 pt-[10px]">
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
@@ -234,7 +305,7 @@ export default function BelayGroups() {
             </div>
             <div className="flex gap-2">
               <Select value={climbingTypeFilter} onValueChange={(value) => setClimbingTypeFilter(value as 'all' | ClimbingType)}>
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger id="climbing-type-filter" className="w-[160px]">
                   <SelectValue placeholder="Climbing Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -247,7 +318,7 @@ export default function BelayGroups() {
                 </SelectContent>
               </Select>
               <Select value={privacyFilter} onValueChange={(value) => setPrivacyFilter(value as typeof privacyFilter)}>
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger id="privacy-filter" className="w-[120px]">
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent>
@@ -276,84 +347,195 @@ export default function BelayGroups() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {filteredGroups.map((group) => {
             const canJoin = canJoinBelayGroup(group.status, group.participant_count, group.capacity, group.session_date);
             const timeUntil = getTimeUntilSession(group.session_date);
             
             return (
               <Card key={group.id} className={`transition-all hover:shadow-lg ${group.is_participant ? 'border-green-200 bg-green-50' : ''}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{CLIMBING_TYPE_ICONS[group.climbing_type]}</span>
-                      <div>
-                        <CardTitle className="text-base">{group.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          by {group.creator?.display_name} • {group.gym?.name}
-                        </p>
+                {/* Mobile card layout */}
+                <div className="md:hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{CLIMBING_TYPE_ICONS[group.climbing_type]}</span>
+                        <div>
+                          <CardTitle className="text-base">{group.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            by {group.creator?.display_name} • {group.gym?.name}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {group.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
+                        {group.is_participant && <UserCheck className="h-3 w-3 text-green-600" />}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {group.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                      {group.is_participant && <UserCheck className="h-3 w-3 text-green-600" />}
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        <span>{group.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>{formatSessionDate(group.session_date, 'short')}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {timeUntil}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Users className="h-3 w-3" />
+                        <span>{group.participant_count}/{group.capacity} climbers</span>
+                        <Badge variant={group.status === 'full' ? 'destructive' : 'default'} className="text-xs">
+                          {group.status === 'full' ? 'Full' : 'Available'}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span>{group.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatSessionDate(group.session_date, 'short')}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {timeUntil}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{group.participant_count}/{group.capacity} climbers</span>
-                      <Badge variant={group.status === 'full' ? 'destructive' : 'default'} className="text-xs">
-                        {group.status === 'full' ? 'Full' : 'Available'}
-                      </Badge>
-                    </div>
-                  </div>
 
-                  {group.description && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {group.description}
-                    </p>
-                  )}
-
-                  <div className="pt-2">
-                    {group.is_participant ? (
-                      <Button 
-                        onClick={() => handleOpenChat(group.id)}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        <UserCheck className="h-4 w-4 mr-2" />
-                        Open Chat
-                      </Button>
-                    ) : canJoin ? (
-                      <Button 
-                        onClick={() => handleJoinGroup(group.id)}
-                        disabled={joiningGroupId === group.id}
-                        className="w-full"
-                      >
-                        {joiningGroupId === group.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        <Users className="h-4 w-4 mr-2" />
-                        Join Group
-                      </Button>
-                    ) : (
-                      <Button disabled className="w-full">
-                        {group.status === 'full' ? 'Group Full' : 'Session Ended'}
-                      </Button>
+                    {group.description && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {group.description}
+                      </p>
                     )}
-                  </div>
-                </CardContent>
+
+                    <div className="pt-2">
+                      {group.is_participant ? (
+                        <div className="space-y-2">
+                          <Button 
+                            onClick={() => handleOpenChat(group.id)}
+                            className="w-full bg-green-600 hover:bg-green-700"
+                          >
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Open Chat
+                          </Button>
+                          {group.creator_id === user?.id && group.participant_count === 1 && (
+                            <Button 
+                              onClick={() => handleDeleteGroup(group.id)}
+                              disabled={deletingGroupId === group.id}
+                              variant="destructive"
+                              size="sm"
+                              className="w-full"
+                            >
+                              {deletingGroupId === group.id ? (
+                                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3 w-3 mr-2" />
+                              )}
+                              Delete Group
+                            </Button>
+                          )}
+                        </div>
+                      ) : canJoin ? (
+                        <Button 
+                          onClick={() => handleJoinGroup(group.id)}
+                          disabled={joiningGroupId === group.id}
+                          className="w-full"
+                        >
+                          {joiningGroupId === group.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          <Users className="h-4 w-4 mr-2" />
+                          Join Group
+                        </Button>
+                      ) : (
+                        <Button disabled className="w-full">
+                          {group.status === 'full' ? 'Group Full' : 'Session Ended'}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </div>
+
+                {/* Desktop row layout */}
+                <div className="hidden md:block">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      {/* Left section - Group info */}
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="text-2xl">{CLIMBING_TYPE_ICONS[group.climbing_type]}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-lg font-semibold">{group.name}</h3>
+                            {group.privacy === 'private' && <Lock className="h-4 w-4 text-muted-foreground" />}
+                            {group.is_participant && <UserCheck className="h-4 w-4 text-green-600" />}
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            by {group.creator?.display_name} • {group.gym?.name}
+                          </p>
+                          {group.description && (
+                            <p className="text-sm text-muted-foreground mb-2 max-w-2xl">
+                              {group.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              <span>{group.location}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>{formatSessionDate(group.session_date, 'short')}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              <span>{group.participant_count}/{group.capacity} climbers</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right section - Status and action */}
+                      <div className="flex items-center gap-3 ml-4">
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge variant="outline">{timeUntil}</Badge>
+                          <Badge variant={group.status === 'full' ? 'destructive' : 'default'}>
+                            {group.status === 'full' ? 'Full' : 'Available'}
+                          </Badge>
+                        </div>
+                        {group.is_participant ? (
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              onClick={() => handleOpenChat(group.id)}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <UserCheck className="h-4 w-4 mr-2" />
+                              Open Chat
+                            </Button>
+                            {group.creator_id === user?.id && group.participant_count === 1 && (
+                              <Button 
+                                onClick={() => handleDeleteGroup(group.id)}
+                                disabled={deletingGroupId === group.id}
+                                variant="destructive"
+                                size="sm"
+                              >
+                                {deletingGroupId === group.id ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                )}
+                                Delete
+                              </Button>
+                            )}
+                          </div>
+                        ) : canJoin ? (
+                          <Button 
+                            onClick={() => handleJoinGroup(group.id)}
+                            disabled={joiningGroupId === group.id}
+                          >
+                            {joiningGroupId === group.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            <Users className="h-4 w-4 mr-2" />
+                            Join Group
+                          </Button>
+                        ) : (
+                          <Button disabled>
+                            {group.status === 'full' ? 'Group Full' : 'Session Ended'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </div>
               </Card>
             );
           })}

@@ -14,8 +14,10 @@ export default function Events() {
     isLoading,
     joinEvent,
     leaveEvent,
+    deleteEvent,
     isJoining,
-    isLeaving
+    isLeaving,
+    isDeleting
   } = useEvents();
 
   const navigateToEventChat = (eventId: string) => {
@@ -56,7 +58,7 @@ export default function Events() {
   }
 
   return (
-    <div className="space-y-6 relative h-full overflow-y-auto md:overflow-visible">
+    <div className="space-y-6 relative">
       {/* Header */}
       <div className="text-center md:text-left py-8 md:py-0">
         <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
@@ -79,7 +81,9 @@ export default function Events() {
                   event={event}
                   showChatButton={true}
                   onLeave={leaveEvent}
+                  onDelete={deleteEvent}
                   isLeaving={isLeaving}
+                  isDeleting={isDeleting}
                   compact={true}
                 />
               </div>
@@ -97,7 +101,9 @@ export default function Events() {
                   event={event}
                   showChatButton={true}
                   onLeave={leaveEvent}
+                  onDelete={deleteEvent}
                   isLeaving={isLeaving}
+                  isDeleting={isDeleting}
                 />
               </div>
             ))}
@@ -135,7 +141,9 @@ export default function Events() {
                 <EventCard
                   event={event}
                   onJoin={joinEvent}
+                  onDelete={deleteEvent}
                   isJoining={isJoining}
+                  isDeleting={isDeleting}
                   compact={true}
                 />
               </div>
@@ -158,7 +166,9 @@ export default function Events() {
                 <EventCard
                   event={event}
                   onJoin={joinEvent}
+                  onDelete={deleteEvent}
                   isJoining={isJoining}
+                  isDeleting={isDeleting}
                 />
               </div>
             ))}

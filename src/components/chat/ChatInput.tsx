@@ -1,5 +1,4 @@
-import React, { useRef, useEffect } from 'react';
-import { useMobileViewport, applyChatInputPosition } from '@/utils/mobileViewport';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
@@ -26,15 +25,6 @@ export function ChatInput({
   children,
   leftButton 
 }: ChatInputProps) {
-  const chatInputRef = useRef<HTMLDivElement>(null);
-  const viewportState = useMobileViewport();
-
-  // Apply mobile chat input positioning
-  useEffect(() => {
-    if (chatInputRef.current && viewportState.isMobile) {
-      applyChatInputPosition(chatInputRef.current, viewportState);
-    }
-  }, [viewportState]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -56,10 +46,10 @@ export function ChatInput({
 
   return (
     <div 
-      ref={chatInputRef}
-      className={`p-4 border-t bg-white flex-shrink-0 z-50 ${
-        viewportState.isMobile ? '' : 'sticky bottom-0'
-      } ${className}`}
+      className={`p-4 border-t bg-white flex-shrink-0 z-50 ${className}`}
+      style={{
+        paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))'
+      }}
     >
       {children}
       <div className="flex gap-2 items-end">

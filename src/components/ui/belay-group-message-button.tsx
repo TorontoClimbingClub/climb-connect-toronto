@@ -37,7 +37,9 @@ export const BelayGroupMessageButton: React.FC<BelayGroupMessageButtonProps> = (
   const parsedMessage = parseBelayGroupMessage(message);
 
   useEffect(() => {
-    if (!parsedMessage || !user) return;
+    if (!parsedMessage || !user) {
+      return;
+    }
 
     const fetchBelayGroup = async () => {
       try {
@@ -167,87 +169,78 @@ export const BelayGroupMessageButton: React.FC<BelayGroupMessageButtonProps> = (
   const isExpired = new Date(belayGroup.session_date) < new Date();
 
   return (
-    <Card className={`w-full max-w-md mx-auto transition-all hover:shadow-md ${
+    <Card className={`w-full max-w-2xl transition-all hover:shadow-md ${
       isOwnMessage ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'
     } ${!canJoin && !isParticipant ? 'opacity-75' : ''}`}>
-      <CardContent className="p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
+      <CardContent className="p-4">
+        {/* First Row - Header with title, creator, and action button */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3 flex-1">
             <span className="text-lg">{CLIMBING_TYPE_ICONS[belayGroup.climbing_type]}</span>
-            <div>
-              <h4 className="font-semibold text-sm">{belayGroup.name}</h4>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-sm">{belayGroup.name}</h4>
+                {belayGroup.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
+                {belayGroup.status === 'full' && (
+                  <Badge variant="destructive" className="text-xs">
+                    Full
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">by {belayGroup.creator?.display_name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            {belayGroup.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-            <Badge variant={belayGroup.status === 'full' ? 'destructive' : 'default'} className="text-xs">
-              {belayGroup.status === 'full' ? 'Full' : `${participantCount}/${belayGroup.capacity}`}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span>{belayGroup.location}</span>
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span>{formatSessionDate(belayGroup.session_date, 'short')}</span>
-            {!isExpired && (
-              <Badge variant="outline" className="text-xs">
-                {timeUntil}
-              </Badge>
-            )}
-          </div>
-          {belayGroup.description && (
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {belayGroup.description}
-            </p>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          {isParticipant ? (
-            <>
+          
+          {/* Action Button */}
+          <div className="ml-4">
+            {isParticipant ? (
               <Button 
                 size="sm" 
                 onClick={handleNavigateToChat}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700"
               >
                 <UserCheck className="h-3 w-3 mr-1" />
-                Open Chat
+                Accept Invitation
               </Button>
-              <Button size="sm" variant="outline" onClick={handleNavigateToGroups}>
-                View All
-              </Button>
-            </>
-          ) : canJoin ? (
-            <>
+            ) : canJoin ? (
               <Button 
                 size="sm" 
                 onClick={handleJoinGroup}
                 disabled={isJoining}
-                className="flex-1"
               >
                 {isJoining && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                 <Users className="h-3 w-3 mr-1" />
                 Join Group
               </Button>
+            ) : (
               <Button size="sm" variant="outline" onClick={handleNavigateToGroups}>
-                View All
-              </Button>
-            </>
-          ) : (
-            <div className="flex-1">
-              <Button size="sm" variant="outline" onClick={handleNavigateToGroups} className="w-full">
                 View Belay Groups
               </Button>
-              <p className="text-xs text-muted-foreground mt-1 text-center">
+            )}
+          </div>
+        </div>
+
+        {/* Second Row - Details and description */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              <span>{belayGroup.location}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>{formatSessionDate(belayGroup.session_date, 'short')}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{participantCount}/{belayGroup.capacity} climbers</span>
+            </div>
+          </div>
+          
+          {/* Description or error message */}
+          <div className="ml-4 flex-1 text-right">
+            {!canJoin && !isParticipant ? (
+              <p className="text-xs text-muted-foreground">
                 {belayGroup.status === 'full' 
                   ? 'Group is full' 
                   : isExpired 
@@ -255,8 +248,12 @@ export const BelayGroupMessageButton: React.FC<BelayGroupMessageButtonProps> = (
                     : 'No longer available'
                 }
               </p>
-            </div>
-          )}
+            ) : belayGroup.description ? (
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                {belayGroup.description}
+              </p>
+            ) : null}
+          </div>
         </div>
       </CardContent>
     </Card>

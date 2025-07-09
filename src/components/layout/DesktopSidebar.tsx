@@ -11,8 +11,7 @@ import {
   Hash, 
   Users, 
   MessageCircle, 
-  Calendar, 
-  Home,
+  Calendar,
   UserCheck
 } from 'lucide-react';
 
@@ -35,7 +34,6 @@ export function DesktopSidebar() {
   useKeyboardShortcuts();
 
   const navigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Events', href: '/events', icon: Calendar, badge: unreadCounts.events },
     { name: 'Belay Groups', href: '/belay-groups', icon: UserCheck, badge: unreadCounts.belayGroups },
     { name: 'Club Talk', href: '/club-talk', icon: Hash, badge: unreadCounts.clubTalk },
@@ -73,11 +71,15 @@ export function DesktopSidebar() {
 
   return (
     <div className="sidebar-panel p-4 flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center space-x-2 mb-6">
-        <Mountain className="h-6 w-6 text-green-600" />
-        <span className="font-bold text-green-800">TCC</span>
-      </div>
+      {/* Header - Logo as Dashboard Button */}
+      <Link 
+        to="/" 
+        className="flex items-center space-x-2 mb-6 p-2 -m-2 rounded-lg hover:bg-green-50 transition-colors"
+        title="Dashboard"
+      >
+        <Mountain className="h-6 w-6 text-green-600 flex-shrink-0" />
+        <span className="font-bold text-green-800">Toronto Climbing Club</span>
+      </Link>
 
       {/* User Profile */}
       <Link to="/profile" className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 mb-6 hover:bg-green-100 transition-colors cursor-pointer">

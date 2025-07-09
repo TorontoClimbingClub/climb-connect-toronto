@@ -91,6 +91,22 @@ export function useEvents() {
     },
   });
 
+  const deleteEventMutation = useMutation({
+    mutationFn: ({ eventId, userId }: { eventId: string; userId: string }) =>
+      ApiService.deleteEvent(eventId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast({ title: "Event deleted successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Failed to delete event", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
   const joinEvent = (eventId: string) => {
     if (!user) return;
     joinEventMutation.mutate({ eventId, userId: user.id });
@@ -99,6 +115,11 @@ export function useEvents() {
   const leaveEvent = (eventId: string) => {
     if (!user) return;
     leaveEventMutation.mutate({ eventId, userId: user.id });
+  };
+
+  const deleteEvent = (eventId: string) => {
+    if (!user) return;
+    deleteEventMutation.mutate({ eventId, userId: user.id });
   };
 
   const myEvents = events.filter(event => event.is_participant);
@@ -112,7 +133,9 @@ export function useEvents() {
     error,
     joinEvent,
     leaveEvent,
+    deleteEvent,
     isJoining: joinEventMutation.isPending,
     isLeaving: leaveEventMutation.isPending,
+    isDeleting: deleteEventMutation.isPending,
   };
 }

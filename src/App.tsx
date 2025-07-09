@@ -83,7 +83,9 @@ const App = () => (
             } />
             <Route path="/belay-groups/:id/chat" element={
               <ProtectedRoute>
-                <BelayChat />
+                <Layout useDesktopLayout={true} fullscreen>
+                  <BelayChat />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/chat" element={

@@ -87,9 +87,9 @@ export default function Groups() {
   const filteredAvailableGroups = filteredGroups.filter(group => !group.is_member);
 
   return (
-    <div className="space-y-6 bg-white md:bg-white h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8 overflow-y-auto md:overflow-visible">
+    <div className="space-y-6 bg-white md:bg-white -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
       {/* Search */}
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-8 pb-[22px]">
         <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input

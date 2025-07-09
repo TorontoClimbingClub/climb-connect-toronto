@@ -10,6 +10,7 @@ import { Users, MapPin, Clock, UserMinus, Loader2 } from 'lucide-react';
 import { BelayGroup, BelayGroupMessage, CLIMBING_TYPE_ICONS } from '@/types/belayGroup';
 import { formatSessionDate, getTimeUntilSession } from '@/utils/belayGroupUtils';
 import { ChatContainer } from '@/components/chat/ChatContainer';
+import { BelayDetailsDropdown } from '@/components/chat/ChatDetailsDropdown';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ChatMessages } from '@/components/chat/ChatMessages';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -272,24 +273,82 @@ export default function BelayChat() {
         </div>
       </ChatHeader>
 
-      {/* Session Info */}
-      <div className="bg-blue-50 border-b px-4 py-2">
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            <span>{belayGroup.location}</span>
+      {/* Belay Session Details Dropdown */}
+      <BelayDetailsDropdown
+        summary={
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{participantCount} climbers</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>{formatSessionDate(belayGroup.session_date, 'short')}</span>
+              {!isExpired && (
+                <Badge variant="outline" className="text-xs ml-1">
+                  {timeUntil}
+                </Badge>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>{formatSessionDate(belayGroup.session_date, 'short')}</span>
-            {!isExpired && (
-              <Badge variant="outline" className="text-xs ml-1">
-                {timeUntil}
-              </Badge>
-            )}
+        }
+      >
+        {/* Session Description */}
+        {belayGroup.description && (
+          <div className="animate-fade-in">
+            <h4 className="font-medium text-gray-900 text-sm mb-1">Description</h4>
+            <p className="text-gray-700 text-sm leading-relaxed">{belayGroup.description}</p>
+          </div>
+        )}
+        
+        {/* Session Details Grid */}
+        <div className="space-y-2 animate-fade-in">
+          <h4 className="font-medium text-gray-900 text-sm">Session Details</h4>
+          
+          {/* Date and Time */}
+          <div className="flex items-start space-x-2">
+            <Clock className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-gray-700">
+              <div className="font-medium">{formatSessionDate(belayGroup.session_date, 'long')}</div>
+              <div className="text-gray-600">
+                {!isExpired ? `${timeUntil}` : 'Session has ended'}
+              </div>
+            </div>
+          </div>
+          
+          {/* Location */}
+          <div className="flex items-start space-x-2">
+            <MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-gray-700 leading-relaxed">{belayGroup.location}</div>
+          </div>
+          
+          {/* Gym Information */}
+          {belayGroup.gym && (
+            <div className="flex items-start space-x-2">
+              <div className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0 flex items-center justify-center">
+                🏔️
+              </div>
+              <div className="text-sm text-gray-700 leading-relaxed">{belayGroup.gym.name}</div>
+            </div>
+          )}
+          
+          {/* Participants */}
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4 text-purple-600 flex-shrink-0" />
+            <div className="text-sm text-gray-700">
+              <span className="font-medium">{participantCount}</span> climbers joined
+            </div>
+          </div>
+          
+          {/* Climbing Type */}
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">{CLIMBING_TYPE_ICONS[belayGroup.climbing_type]}</span>
+            <div className="text-sm text-gray-700">
+              <span className="font-medium capitalize">{belayGroup.climbing_type}</span> climbing
+            </div>
           </div>
         </div>
-      </div>
+      </BelayDetailsDropdown>
 
       <ChatMessages
         messages={messages}

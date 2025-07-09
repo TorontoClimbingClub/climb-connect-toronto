@@ -172,7 +172,7 @@ export const CreateBelayGroupModal: React.FC<CreateBelayGroupModalProps> = ({
               🎯 Climbing Style
             </Label>
             <Select value={climbingType} onValueChange={(value) => setClimbingType(value as ClimbingType)}>
-              <SelectTrigger>
+              <SelectTrigger id="climbingType">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -245,7 +245,7 @@ export const CreateBelayGroupModal: React.FC<CreateBelayGroupModalProps> = ({
               Total Group Size
             </Label>
             <Select value={capacity} onValueChange={setCapacity}>
-              <SelectTrigger>
+              <SelectTrigger id="capacity">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -273,7 +273,7 @@ export const CreateBelayGroupModal: React.FC<CreateBelayGroupModalProps> = ({
                 </p>
               </div>
             </div>
-            <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
+            <Switch id="privacy" checked={isPrivate} onCheckedChange={setIsPrivate} />
           </div>
 
           <DialogFooter>

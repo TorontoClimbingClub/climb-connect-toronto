@@ -56,6 +56,57 @@ export class ApiService {
     if (error) throw error;
   }
 
+  static async deleteEvent(eventId: string, userId: string) {
+    // First, verify the user is the creator
+    const { data: event, error: fetchError } = await supabase
+      .from('events')
+      .select('created_by')
+      .eq('id', eventId)
+      .single();
+
+    if (fetchError) throw fetchError;
+    
+    if (event.created_by !== userId) {
+      throw new Error('Only the event creator can delete the event');
+    }
+
+    // Check if there's only one participant (should be the creator)
+    const { count, error: countError } = await supabase
+      .from('event_participants')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId);
+
+    if (countError) throw countError;
+
+    if (count && count > 1) {
+      throw new Error('Cannot delete event with multiple participants');
+    }
+
+    // Delete participants first
+    const { error: participantsError } = await supabase
+      .from('event_participants')
+      .delete()
+      .eq('event_id', eventId);
+
+    if (participantsError) throw participantsError;
+
+    // Delete event messages
+    const { error: messagesError } = await supabase
+      .from('event_messages')
+      .delete()
+      .eq('event_id', eventId);
+
+    if (messagesError) throw messagesError;
+
+    // Delete the event itself
+    const { error: eventError } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', eventId);
+
+    if (eventError) throw eventError;
+  }
+
   // Groups
   static async getGroups() {
     const { data, error } = await supabase

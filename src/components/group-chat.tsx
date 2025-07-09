@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Search, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -391,54 +392,95 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     );
   }
 
-  const customRenderMessage = (message: GroupMessage, isOwnMessage: boolean) => (
-    <div
-      key={message.id}
-      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${
-        isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
-      } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
-      onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
-    >
-      <div className="flex items-center gap-2">
-        {/* Show checkbox in delete mode */}
-        {isDeleteMode && (
-          <input
-            type="checkbox"
-            checked={selectedMessages.has(message.id)}
-            onChange={() => toggleMessageSelection(message.id)}
-            className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-            onClick={(e) => e.stopPropagation()}
-          />
+  const customRenderMessage = (message: GroupMessage, isOwnMessage: boolean) => {
+    const messageIndex = filteredMessages.findIndex(m => m.id === message.id);
+    const prevMessage = messageIndex > 0 ? filteredMessages[messageIndex - 1] : null;
+    const isThreaded = prevMessage && prevMessage.user_id === message.user_id;
+    
+    return (
+      <div
+        key={message.id}
+        className={`flex items-start ${
+          isOwnMessage ? 'justify-end' : 'justify-start'
+        } ${isThreaded ? 'mt-0.5' : 'mt-4'} ${
+          isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
+        } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
+        onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
+      >
+        {/* Avatar - only show for other users' messages */}
+        {!isOwnMessage && (
+          <div className="flex flex-col items-center mr-3">
+            {!isThreaded ? (
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarImage src={message.profiles?.avatar_url} />
+                <AvatarFallback className="text-xs">
+                  {message.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="h-8 w-8" />
+            )}
+          </div>
         )}
         
-        {isEventCreationMessage(message.content) ? (
-          <EventMessageButton 
-            content={message.content}
-            isOwnMessage={isOwnMessage}
-          />
-        ) : isBelayGroupMessage(message.content) ? (
-          <BelayGroupMessageButton 
-            message={message.content}
-            isOwnMessage={isOwnMessage}
-          />
-        ) : shouldDisplayWithoutBubble(message.content) ? (
-          <div className="text-2xl sm:text-3xl">
-            {message.content}
+        <div className={`flex flex-col max-w-[75%] ${
+          isOwnMessage ? 'items-end' : 'items-start'
+        }`}>
+          {/* Show name and timestamp only for first message in sequence */}
+          {!isThreaded && (
+            <div className="flex items-center space-x-2 mb-1">
+              <span className="text-xs sm:text-sm font-medium truncate">
+                {message.profiles?.display_name || 'Unknown User'}
+              </span>
+              <span className="text-xs text-gray-500 flex-shrink-0">
+                {formatTimestamp(message.created_at)}
+              </span>
+            </div>
+          )}
+          
+          <div className="flex items-center space-x-2">
+            {/* Show checkbox in delete mode */}
+            {isDeleteMode && (
+              <input
+                type="checkbox"
+                id={`message-select-${message.id}`}
+                checked={selectedMessages.has(message.id)}
+                onChange={() => toggleMessageSelection(message.id)}
+                className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            
+            {isEventCreationMessage(message.content) ? (
+              <EventMessageButton 
+                content={message.content}
+                isOwnMessage={isOwnMessage}
+              />
+            ) : isBelayGroupMessage(message.content) ? (
+              <BelayGroupMessageButton 
+                message={message.content}
+                isOwnMessage={isOwnMessage}
+              />
+            ) : shouldDisplayWithoutBubble(message.content) ? (
+              <div className="text-2xl sm:text-3xl">
+                {message.content}
+              </div>
+            ) : (
+              <div
+                className={`px-3 py-2 rounded-2xl break-words ${
+                  isOwnMessage
+                    ? 'bg-blue-500 text-white rounded-br-md'
+                    : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                }`}
+              >
+                {message.content}
+              </div>
+            )}
           </div>
-        ) : (
-          <div
-            className={`px-3 py-2 rounded-2xl break-words ${
-              isOwnMessage
-                ? 'bg-blue-500 text-white rounded-br-md'
-                : 'bg-gray-100 text-gray-900 rounded-bl-md'
-            }`}
-          >
-            {message.content}
-          </div>
-        )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <ChatContainer>

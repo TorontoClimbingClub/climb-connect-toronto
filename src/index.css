@@ -51,8 +51,11 @@ All colors MUST be HSL.
     /* Mobile viewport variables for chat positioning */
     --vh: 1vh;
     --mobile-vh: 1vh;
-    --safe-area-inset-top: 0px;
-    --safe-area-inset-bottom: 0px;
+    --dvh: 1dvh;
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
     --keyboard-height: 0px;
     --chat-input-height: 80px;
     --navbar-height: 64px;
@@ -121,13 +124,14 @@ All colors MUST be HSL.
     height: 100%;
     overflow-x: hidden; /* Prevent horizontal scrolling */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    scroll-behavior: smooth; /* Smooth scrolling behavior */
+    scroll-behavior: auto; /* Let browser handle scrolling naturally */
   }
 
   body {
     min-height: 100%;
     overflow-x: hidden; /* Prevent horizontal scrolling */
     overscroll-behavior-x: none; /* Prevent overscroll bounce horizontally */
+    overscroll-behavior-y: auto; /* Allow natural vertical scrolling */
     position: relative;
     touch-action: manipulation; /* Optimize touch interactions */
   }
@@ -142,53 +146,66 @@ All colors MUST be HSL.
 @layer utilities {
   /* Dynamic viewport height utilities */
   .h-mobile-screen {
+    height: 100dvh;
     height: calc(var(--mobile-vh, 1vh) * 100);
   }
 
   .min-h-mobile-screen {
+    min-height: 100dvh;
     min-height: calc(var(--mobile-vh, 1vh) * 100);
   }
 
   .max-h-mobile-screen {
+    max-height: 100dvh;
     max-height: calc(var(--mobile-vh, 1vh) * 100);
   }
 
   /* Chat-specific layouts */
   .chat-container {
+    height: 100dvh;
     height: calc(var(--mobile-vh, 1vh) * 100);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
   }
 
   /* Chat container within layout (accounts for navbar) */
   .chat-container-with-nav {
+    height: calc(100dvh - var(--navbar-height, 64px));
     height: calc(var(--mobile-vh, 1vh) * 100 - var(--navbar-height, 64px));
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
   }
 
   .chat-messages {
     flex: 1;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: env(safe-area-inset-bottom);
   }
 
   .chat-input-fixed {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: var(--safe-area-inset-bottom);
+    left: var(--safe-area-inset-left);
+    right: var(--safe-area-inset-right);
     z-index: 1000;
     background: hsl(var(--background));
     border-top: 1px solid hsl(var(--border));
     padding: 1rem;
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(1rem + var(--safe-area-inset-bottom));
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     transform: translateY(var(--keyboard-height, 0px));
     transition: transform 0.3s ease-in-out;
@@ -238,8 +255,8 @@ All colors MUST be HSL.
   /* Mobile-optimized scrolling */
   .mobile-scroll {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    scroll-behavior: smooth;
+    overscroll-behavior: auto;
+    scroll-behavior: auto;
   }
 
   /* Touch optimization */
@@ -468,18 +485,18 @@ All colors MUST be HSL.
       height: -webkit-fill-available;
     }
     
-    /* Simplified Mobile Browser UI Fix - Direct approach */
+    /* Simplified mobile chat input - uses useViewportHeight hook */
     .chat-input-mobile {
-      /* Base positioning for all devices */
-      position: sticky;
-      bottom: 0;
-      z-index: 1000;
-      background: white;
+      /* Simple mobile input styling */
+      position: relative;
+      z-index: 50;
       background: var(--background, white);
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-      /* Remove all bottom padding */
-      padding-bottom: 0 !important;
+      /* Use safe area insets for proper positioning */
+      padding-bottom: var(--safe-area-inset-bottom) !important;
       margin-bottom: 0 !important;
+      padding-left: var(--safe-area-inset-left);
+      padding-right: var(--safe-area-inset-right);
     }
     
     /* Remove all tablet and mobile specific padding overrides */
@@ -493,7 +510,7 @@ All colors MUST be HSL.
   /* Optimize scroll performance */
   main {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
   }
 
   /* Minimal auto-hiding scrollbar styles for chat areas */
@@ -570,20 +587,25 @@ All colors MUST be HSL.
     
     /* Ensure mobile layout uses proper height calculations */
     .layout-main-default {
+      height: calc(100dvh - 4rem) !important;
       height: calc(100vh - 4rem) !important;
+      max-height: calc(100dvh - 4rem) !important;
       max-height: calc(100vh - 4rem) !important;
     }
     
     /* Fullscreen mode should use complete viewport on mobile */
     .layout-main-fullscreen {
+      height: 100dvh !important;
       height: 100vh !important;
       height: -webkit-fill-available !important;
+      max-height: 100dvh !important;
       max-height: 100vh !important;
       max-height: -webkit-fill-available !important;
     }
     
     /* Use mobile-safe viewport height for fullscreen layouts */
     .fullscreen-layout {
+      height: 100dvh;
       height: 100vh;
       height: -webkit-fill-available;
       min-height: -webkit-fill-available;
@@ -591,14 +613,17 @@ All colors MUST be HSL.
     
     /* Ensure chat input stays above mobile keyboard */
     .chat-container {
+      height: 100dvh;
       height: 100vh;
       height: -webkit-fill-available;
     }
     
     /* Ensure fullscreen layout containers use complete viewport */
     .layout-fullscreen .chat-container {
+      height: 100dvh !important;
       height: 100vh !important;
       height: -webkit-fill-available !important;
+      max-height: 100dvh !important;
       max-height: 100vh !important;
       max-height: -webkit-fill-available !important;
     }
@@ -699,6 +724,7 @@ All colors MUST be HSL.
 .layout-fullscreen {
   @apply h-screen;
   /* Use device-specific viewport height for mobile browsers */
+  height: 100dvh;
   height: 100vh;
   height: -webkit-fill-available;
 }
@@ -722,6 +748,7 @@ All colors MUST be HSL.
 .layout-main-fullscreen {
   @apply flex-1 overflow-hidden;
   /* Use full viewport height for true fullscreen experience */
+  height: 100dvh;
   height: 100vh;
   height: -webkit-fill-available;
 }
@@ -729,11 +756,16 @@ All colors MUST be HSL.
 .layout-main-default {
   @apply flex-1 overflow-hidden;
   /* Account for navbar height on mobile */
+  height: calc(100dvh - 4rem);
   height: calc(100vh - 4rem);
 }
 
 .layout-content {
-  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-4 md:py-4 h-full overflow-y-auto;
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-4 md:py-4 h-full;
+  /* Smooth scrolling for page content */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: auto;
+  scroll-behavior: auto;
 }
 
 .layout-panels {

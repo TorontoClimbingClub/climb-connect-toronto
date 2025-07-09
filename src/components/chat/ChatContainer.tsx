@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { useMobileViewport } from '@/utils/mobileViewport';
+import React from 'react';
+import { useViewportHeight } from '@/hooks/useViewportHeight';
 
 interface ChatContainerProps {
   children: React.ReactNode;
@@ -7,12 +7,19 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ children, className = '' }: ChatContainerProps) {
-  const viewportState = useMobileViewport();
+  const viewportHeight = useViewportHeight();
   
   return (
-    <div className={`w-full flex flex-col bg-white ${
-      viewportState.isMobile ? 'chat-container h-screen' : 'h-full'
-    } ${className}`}>
+    <div 
+      className={`w-full flex flex-col bg-white ${className}`}
+      style={{
+        height: `${viewportHeight}px`,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0
+      }}
+    >
       {children}
     </div>
   );

@@ -32,7 +32,7 @@ export function Layout({
         </main>
       ) : (
         <main className="layout-main layout-main-default">
-          <div className="layout-content">
+          <div className="layout-content overflow-y-auto">
             {children}
           </div>
         </main>

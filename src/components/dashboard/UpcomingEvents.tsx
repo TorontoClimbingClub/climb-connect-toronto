@@ -67,7 +67,7 @@ export function UpcomingEvents({ events, isLoading, eventFilter, onFilterChange 
           <CardTitle>Upcoming Events</CardTitle>
         </div>
         <Select value={eventFilter} onValueChange={onFilterChange}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger id="event-filter" className="w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

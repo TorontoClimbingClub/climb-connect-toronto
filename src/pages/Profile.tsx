@@ -563,7 +563,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="w-full space-y-6 p-4 h-full overflow-y-auto md:overflow-visible">
+    <div className="w-full space-y-6 p-4 h-full ">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">

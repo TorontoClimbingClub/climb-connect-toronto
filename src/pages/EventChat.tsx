@@ -10,6 +10,8 @@ import { Send, ArrowLeft, CalendarDays, MapPin, Users, Trash2, ChevronDown, Chev
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
+import { ChatContainer } from '@/components/chat/ChatContainer';
+import { EventDetailsDropdown } from '@/components/chat/ChatDetailsDropdown';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
@@ -58,7 +60,6 @@ export default function EventChat() {
   const [joiningEvent, setJoiningEvent] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
-  const [isEventDetailsExpanded, setIsEventDetailsExpanded] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLDivElement>(null);
 
@@ -88,10 +89,6 @@ export default function EventChat() {
     setSelectedMessages(new Set());
   };
 
-  // Toggle event details expansion
-  const toggleEventDetails = () => {
-    setIsEventDetailsExpanded(!isEventDetailsExpanded);
-  };
 
   // Toggle message selection
   const toggleMessageSelection = (messageId: string) => {
@@ -529,7 +526,7 @@ export default function EventChat() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white overflow-hidden relative">
+    <ChatContainer>
       {/* Header */}
       <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0 relative z-20">
         <div className="flex items-center justify-between">
@@ -560,95 +557,73 @@ export default function EventChat() {
                   {event?.participant_count} participants
                 </div>
               </div>
-              {/* Mobile event info - expandable */}
-              <div className="sm:hidden text-xs text-gray-600 mt-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Users className="h-3 w-3 mr-1" />
-                    {event?.participant_count} • {event && format(new Date(event.event_date), 'MMM d')}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleEventDetails}
-                    className="h-6 w-6 p-0 hover:bg-gray-100 transition-transform duration-200"
-                  >
-                    {isEventDetailsExpanded ? (
-                      <ChevronUp className="h-3 w-3" />
-                    ) : (
-                      <ChevronDown className="h-3 w-3" />
-                    )}
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Expandable Event Details Overlay - Mobile Only */}
-      <div 
-        className={`sm:hidden absolute top-full left-0 right-0 z-30 bg-white border-b shadow-lg transition-all duration-300 ease-out ${
-          isEventDetailsExpanded 
-            ? 'opacity-100 translate-y-0 pointer-events-auto' 
-            : 'opacity-0 -translate-y-2 pointer-events-none'
-        }`}
-      >
-        {event && (
-          <div className="p-4 bg-gradient-to-b from-gray-50 to-white">
-            <div className="space-y-3">
-              {/* Event Description */}
-              {event.description && (
-                <div className="animate-fade-in">
-                  <h4 className="font-medium text-gray-900 text-sm mb-1">Description</h4>
-                  <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
-                </div>
-              )}
-              
-              {/* Event Details Grid */}
-              <div className="space-y-2 animate-fade-in">
-                <h4 className="font-medium text-gray-900 text-sm">Event Details</h4>
-                
-                {/* Date and Time */}
-                <div className="flex items-start space-x-2">
-                  <CalendarDays className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-gray-700">
-                    <div className="font-medium">{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}</div>
-                    <div className="text-gray-600">{format(new Date(event.event_date), 'h:mm a')}</div>
+      {/* Event Details Dropdown */}
+      {event && (
+        <EventDetailsDropdown
+          summary={
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                <span>{event.participant_count} • {format(new Date(event.event_date), 'MMM d')}</span>
+              </div>
+            </div>
+          }
+        >
+          {/* Event Description */}
+          {event.description && (
+            <div className="animate-fade-in">
+              <h4 className="font-medium text-gray-900 text-sm mb-1">Description</h4>
+              <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
+            </div>
+          )}
+          
+          {/* Event Details Grid */}
+          <div className="space-y-2 animate-fade-in">
+            <h4 className="font-medium text-gray-900 text-sm">Event Details</h4>
+            
+            {/* Date and Time */}
+            <div className="flex items-start space-x-2">
+              <CalendarDays className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-gray-700">
+                <div className="font-medium">{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}</div>
+                <div className="text-gray-600">{format(new Date(event.event_date), 'h:mm a')}</div>
+              </div>
+            </div>
+            
+            {/* Location */}
+            <div className="flex items-start space-x-2">
+              <MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-gray-700 leading-relaxed">{event.location}</div>
+            </div>
+            
+            {/* Participants */}
+            <div className="flex items-center space-x-2">
+              <Users className="h-4 w-4 text-purple-600 flex-shrink-0" />
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">{event.participant_count}</span>
+                {event.max_participants && (
+                  <span className="text-gray-600">/{event.max_participants}</span>
+                )} participants
+                {event.max_participants && (
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                    <div 
+                      className="bg-green-600 h-2 rounded-full transition-all duration-500 ease-out" 
+                      style={{ 
+                        width: `${Math.min((event.participant_count / event.max_participants) * 100, 100)}%` 
+                      }}
+                    ></div>
                   </div>
-                </div>
-                
-                {/* Location */}
-                <div className="flex items-start space-x-2">
-                  <MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-gray-700 leading-relaxed">{event.location}</div>
-                </div>
-                
-                {/* Participants */}
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-purple-600 flex-shrink-0" />
-                  <div className="text-sm text-gray-700">
-                    <span className="font-medium">{event.participant_count}</span>
-                    {event.max_participants && (
-                      <span className="text-gray-600">/{event.max_participants}</span>
-                    )} participants
-                    {event.max_participants && (
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full transition-all duration-500 ease-out" 
-                          style={{ 
-                            width: `${Math.min((event.participant_count / event.max_participants) * 100, 100)}%` 
-                          }}
-                        ></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </EventDetailsDropdown>
+      )}
 
       {/* Messages - now uses the viewport ref for proper scrolling */}
       <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 chat-scrollbar">
@@ -724,6 +699,7 @@ export default function EventChat() {
                       {isDeleteMode && (
                         <input
                           type="checkbox"
+                          id={`event-message-select-${message.id}`}
                           checked={selectedMessages.has(message.id)}
                           onChange={() => toggleMessageSelection(message.id)}
                           className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
@@ -847,6 +823,6 @@ export default function EventChat() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ChatContainer>
   );
 }
