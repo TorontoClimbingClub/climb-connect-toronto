@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,8 @@ export default function EventChat() {
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const [isEventDetailsExpanded, setIsEventDetailsExpanded] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLDivElement>(null);
+  const { isMobile, isChrome } = useSimpleMobileDetection();
 
   // Function to scroll to bottom
   const scrollToBottom = useCallback(() => {
@@ -359,6 +362,11 @@ export default function EventChat() {
       checkAdminStatus();
     }
   }, [user, checkAdminStatus]);
+
+  // Apply mobile chat input spacing
+  useEffect(() => {
+    addMobileChatInputSpacing();
+  }, [isMobile, isChrome]);
 
   // Initialize component data
   const initializeChat = async () => {
@@ -759,7 +767,21 @@ export default function EventChat() {
       </div>
 
       {/* Input */}
-      <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0">
+      <div 
+        ref={chatInputRef}
+        className="border-t p-3 sm:p-4 bg-white flex-shrink-0 chat-input-mobile"
+        data-mobile-enhanced={isMobile}
+        data-browser-chrome={isChrome}
+        style={isMobile ? {
+          position: 'sticky',
+          bottom: '0',
+          paddingBottom: '25px',
+          marginBottom: '0',
+          zIndex: 1000,
+          backgroundColor: 'white',
+          borderTop: '1px solid #e5e7eb'
+        } : {}}
+      >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
             <span className="text-sm text-red-700">
@@ -814,6 +836,11 @@ export default function EventChat() {
           </Button>
         </form>
       </div>
+      
+      {/* Mobile spacer to ensure input is visible above browser navigation */}
+      {isMobile && (
+        <div style={{ height: '25px', flexShrink: 0 }} />
+      )}
       
       <CreateEventModal 
         open={showCreateEventModal} 

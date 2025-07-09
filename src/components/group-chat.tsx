@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,9 +51,11 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isMobile, isChrome } = useSimpleMobileDetection();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -275,6 +278,11 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       checkAdminStatus();
     }
   }, [user, checkAdminStatus]);
+
+  // Apply mobile chat input spacing
+  useEffect(() => {
+    addMobileChatInputSpacing();
+  }, [isMobile, isChrome]);
 
   // Set up real-time subscription
   useEffect(() => {
@@ -563,7 +571,21 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       </div>
 
       {/* Message Input - Fixed to bottom */}
-      <div className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0">
+      <div 
+        ref={chatInputRef}
+        className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0 chat-input-mobile"
+        data-mobile-enhanced={isMobile}
+        data-browser-chrome={isChrome}
+        style={isMobile ? {
+          position: 'sticky',
+          bottom: '0',
+          paddingBottom: '25px',
+          marginBottom: '0',
+          zIndex: 1000,
+          backgroundColor: 'white',
+          borderTop: '1px solid #e5e7eb'
+        } : {}}
+      >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
             <span className="text-sm text-red-700">
@@ -618,6 +640,11 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           </Button>
         </div>
       </div>
+      
+      {/* Mobile spacer to ensure input is visible above browser navigation */}
+      {isMobile && (
+        <div style={{ height: '25px', flexShrink: 0 }} />
+      )}
 
       <CreateEventModal 
         open={showCreateEventModal} 

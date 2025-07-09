@@ -15,11 +15,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **This map may be outdated:** Source files have been modified since last MAP generation
 **Action Required:** Run `npm run ui:update-map` before proceeding
 
-**Last Updated:** 2025-07-09T02:48:45.234Z
+**Last Updated:** 2025-07-09T04:19:03.446Z
 **Project:** climb-connect-toronto
-**Components Scanned:** 76
-**Total Files:** 76
-**Latest File Modified:** Tue Jul 08 2025 22:41:45 GMT-0400 (Eastern Daylight Time)
+**Components Scanned:** 81
+**Total Files:** 81
+**Latest File Modified:** Wed Jul 09 2025 00:17:46 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -97,263 +97,318 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/components/group-chat.tsx`
-**Lines:** 628
-**Last Modified:** 2025-07-09T00:21:09.528Z
+**Lines:** 659
+**Last Modified:** 2025-07-09T03:50:22.602Z
 
 **Key Elements:**
-- **GroupMessage** (line 35) - `groupmessage`
+- **GroupMessage** (line 40) - `groupmessage`
   - Context: `const [messages, setMessages] = useState<GroupMessage[]>([]);`
-- **Set** (line 45) - `set`
+- **Set** (line 51) - `set`
   - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
-- **HTMLDivElement** (line 46) - `htmldivelement`
+- **HTMLDivElement** (line 52) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Button** (line 405) - `button`
+- **Button** (line 415) - `button`
   - Context: `<Button`
-- **ArrowLeft** (line 411) - `arrowleft`
+- **ArrowLeft** (line 421) - `arrowleft`
   - Context: `<ArrowLeft className="h-5 w-5" />`
-- **Input** (line 420) - `input`
+- **Input** (line 430) - `input`
   - Context: `<Input`
-- **Button** (line 427) - `button`
+- **Button** (line 437) - `button`
   - Context: `<Button`
-- **X** (line 439) - `x`
+- **X** (line 449) - `x`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Search** (line 439) - `search`
+- **Search** (line 449) - `search`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Avatar** (line 484) - `avatar`
+- **Avatar** (line 494) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 485) - `avatarimage`
+- **AvatarImage** (line 495) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 486) - `avatarfallback`
+- **AvatarFallback** (line 496) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 552) - `button`
+- **EventMessageButton** (line 532) - `eventmessagebutton`
+  - Context: `<EventMessageButton`
+- **BelayGroupMessageButton** (line 537) - `belaygroupmessagebutton`
+  - Context: `<BelayGroupMessageButton`
+- **Button** (line 572) - `button`
   - Context: `<Button`
-- **Trash2** (line 558) - `trash2`
+- **Trash2** (line 578) - `trash2`
   - Context: `<Trash2 className="h-4 w-4" />`
-- **ChatActionsMenu** (line 564) - `chatactionsmenu`
+- **ChatActionsMenu** (line 584) - `chatactionsmenu`
   - Context: `<ChatActionsMenu`
-- **Input** (line 573) - `input`
+- **Input** (line 595) - `input`
   - Context: `<Input`
-- **EmojiPickerComponent** (line 587) - `emojipickercomponent`
+- **EmojiPickerComponent** (line 609) - `emojipickercomponent`
   - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
-- **Button** (line 590) - `button`
+- **Button** (line 612) - `button`
   - Context: `<Button`
-- **Send** (line 595) - `send`
+- **Send** (line 617) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 600) - `createeventmodal`
+- **CreateEventModal** (line 622) - `createeventmodal`
   - Context: `<CreateEventModal`
-- **Dialog** (line 608) - `dialog`
+- **CreateBelayGroupModal** (line 631) - `createbelaygroupmodal`
+  - Context: `<CreateBelayGroupModal`
+- **Dialog** (line 639) - `dialog`
   - Context: `<Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>`
-- **DialogContent** (line 609) - `dialogcontent`
+- **DialogContent** (line 640) - `dialogcontent`
   - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 610) - `dialogheader`
+- **DialogHeader** (line 641) - `dialogheader`
   - Context: `<DialogHeader>`
-- **DialogTitle** (line 611) - `dialogtitle`
+- **DialogTitle** (line 642) - `dialogtitle`
   - Context: `<DialogTitle>Leave Group</DialogTitle>`
-- **DialogDescription** (line 612) - `dialogdescription`
+- **DialogDescription** (line 643) - `dialogdescription`
   - Context: `<DialogDescription>`
-- **DialogFooter** (line 616) - `dialogfooter`
+- **DialogFooter** (line 647) - `dialogfooter`
   - Context: `<DialogFooter>`
-- **Button** (line 617) - `button`
+- **Button** (line 648) - `button`
   - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 620) - `button`
+- **Button** (line 651) - `button`
   - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
 ### 📁 src/components/cards/
 
 #### EventCard
 **File:** `src/components/cards/EventCard.tsx`
-**Lines:** 172
-**Last Modified:** 2025-07-09T02:09:47.939Z
+**Lines:** 145
+**Last Modified:** 2025-07-09T03:56:04.574Z
 
 **Key Elements:**
-- **CalendarDays** (line 40) - `calendardays`
+- **CalendarDays** (line 44) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4" />`
-- **MapPin** (line 44) - `mappin`
+- **MapPin** (line 48) - `mappin`
   - Context: `<MapPin className="h-4 w-4 flex-shrink-0" />`
-- **Users** (line 48) - `users`
+- **Users** (line 52) - `users`
   - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 58) - `button`
-  - Context: `<Button variant="default" size="sm" asChild className="pointer-events-none">`
-- **Link** (line 59) - `link`
-  - Context: `<Link to={`/events/${event.id}/chat`}>`
-- **MessageSquare** (line 60) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
 - **Loader2** (line 74) - `loader2`
   - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin inline" />`
-- **Card** (line 91) - `card`
-  - Context: `<Card className="hover:shadow-md transition-shadow">`
-- **CardHeader** (line 92) - `cardheader`
+- **Card** (line 90) - `card`
+  - Context: `<Card className={`cursor-pointer transition-colors ${`
+- **CardHeader** (line 95) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 94) - `cardtitle`
+- **CardTitle** (line 97) - `cardtitle`
   - Context: `<CardTitle className="text-lg">{event.title}</CardTitle>`
-- **Badge** (line 96) - `badge`
-  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 101) - `carddescription`
+- **CardDescription** (line 99) - `carddescription`
   - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 103) - `cardcontent`
+- **CardContent** (line 101) - `cardcontent`
   - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 106) - `calendardays`
+- **CalendarDays** (line 104) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 110) - `mappin`
+- **MapPin** (line 108) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 114) - `users`
-  - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 122) - `button`
-  - Context: `<Button variant="default" size="sm" asChild className="flex-1">`
-- **Link** (line 123) - `link`
-  - Context: `<Link to={`/events/${event.id}/chat`}>`
-- **MessageSquare** (line 124) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 130) - `button`
-  - Context: `<Button`
-- **Loader2** (line 138) - `loader2`
-  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
-- **Button** (line 149) - `button`
-  - Context: `<Button`
-- **Loader2** (line 158) - `loader2`
-  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
+- **Users** (line 115) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Loader2** (line 132) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin inline" />`
 
 #### GroupCard
 **File:** `src/components/cards/GroupCard.tsx`
-**Lines:** 157
-**Last Modified:** 2025-07-09T02:09:47.944Z
+**Lines:** 127
+**Last Modified:** 2025-07-09T04:17:17.000Z
 
 **Key Elements:**
-- **Avatar** (line 35) - `avatar`
+- **Avatar** (line 39) - `avatar`
   - Context: `<Avatar className="h-10 w-10 flex-shrink-0">`
-- **AvatarImage** (line 36) - `avatarimage`
+- **AvatarImage** (line 40) - `avatarimage`
   - Context: `<AvatarImage src={group.avatar_url} alt={group.name} />`
-- **AvatarFallback** (line 37) - `avatarfallback`
+- **AvatarFallback** (line 41) - `avatarfallback`
   - Context: `<AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>`
-- **Users** (line 43) - `users`
+- **Users** (line 47) - `users`
   - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 51) - `button`
-  - Context: `<Button variant="default" size="sm" asChild className="pointer-events-none">`
-- **Link** (line 52) - `link`
-  - Context: `<Link to={`/groups/${group.id}/chat`}>`
-- **MessageSquare** (line 53) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
 - **Loader2** (line 65) - `loader2`
   - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin inline" />`
-- **Card** (line 80) - `card`
-  - Context: `<Card className="hover:shadow-md transition-shadow">`
-- **CardHeader** (line 81) - `cardheader`
+- **Card** (line 79) - `card`
+  - Context: `<Card className={`cursor-pointer transition-colors ${`
+- **CardHeader** (line 84) - `cardheader`
   - Context: `<CardHeader>`
-- **Avatar** (line 83) - `avatar`
+- **Avatar** (line 86) - `avatar`
   - Context: `<Avatar className="h-12 w-12">`
-- **AvatarImage** (line 84) - `avatarimage`
+- **AvatarImage** (line 87) - `avatarimage`
   - Context: `<AvatarImage src={group.avatar_url} alt={group.name} />`
-- **AvatarFallback** (line 85) - `avatarfallback`
+- **AvatarFallback** (line 88) - `avatarfallback`
   - Context: `<AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>`
-- **CardTitle** (line 89) - `cardtitle`
+- **CardTitle** (line 92) - `cardtitle`
   - Context: `<CardTitle className="text-lg">{group.name}</CardTitle>`
-- **Badge** (line 91) - `badge`
-  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 96) - `carddescription`
+- **CardDescription** (line 94) - `carddescription`
   - Context: `<CardDescription>{group.description}</CardDescription>`
-- **CardContent** (line 100) - `cardcontent`
+- **CardContent** (line 98) - `cardcontent`
   - Context: `<CardContent className="space-y-4">`
-- **Users** (line 102) - `users`
-  - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 109) - `button`
-  - Context: `<Button variant="default" size="sm" asChild className="flex-1">`
-- **Link** (line 110) - `link`
-  - Context: `<Link to={`/groups/${group.id}/chat`}>`
-- **MessageSquare** (line 111) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 117) - `button`
-  - Context: `<Button`
-- **Loader2** (line 125) - `loader2`
-  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
-- **Button** (line 136) - `button`
-  - Context: `<Button`
-- **Loader2** (line 145) - `loader2`
-  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
+- **Users** (line 101) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Loader2** (line 116) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin inline" />`
 
 ### 📁 src/components/chat/
 
 #### ChatActionsMenu
 **File:** `src/components/chat/ChatActionsMenu.tsx`
-**Lines:** 62
-**Last Modified:** 2025-07-09T00:09:37.999Z
+**Lines:** 72
+**Last Modified:** 2025-07-09T03:48:01.145Z
 
 **Key Elements:**
-- **ChatActionsMenuProps** (line 21) - `chatactionsmenuprops`
+- **ChatActionsMenuProps** (line 23) - `chatactionsmenuprops`
   - Context: `export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({`
-- **DropdownMenu** (line 31) - `dropdownmenu`
+- **DropdownMenu** (line 35) - `dropdownmenu`
   - Context: `<DropdownMenu>`
-- **DropdownMenuTrigger** (line 32) - `dropdownmenutrigger`
+- **DropdownMenuTrigger** (line 36) - `dropdownmenutrigger`
   - Context: `<DropdownMenuTrigger asChild>`
-- **Button** (line 33) - `button`
+- **Button** (line 37) - `button`
   - Context: `<Button`
-- **Plus** (line 39) - `plus`
+- **Plus** (line 43) - `plus`
   - Context: `<Plus className="h-4 w-4" />`
-- **DropdownMenuContent** (line 42) - `dropdownmenucontent`
-  - Context: `<DropdownMenuContent align="start" className="w-48">`
-- **DropdownMenuItem** (line 43) - `dropdownmenuitem`
-  - Context: `<DropdownMenuItem onClick={onCreateEvent}>`
-- **Calendar** (line 44) - `calendar`
-  - Context: `<Calendar className="mr-2 h-4 w-4" />`
+- **DropdownMenuContent** (line 46) - `dropdownmenucontent`
+  - Context: `<DropdownMenuContent align="start" side="top" className="w-48">`
 - **DropdownMenuItem** (line 48) - `dropdownmenuitem`
+  - Context: `<DropdownMenuItem onClick={onFindPartners}>`
+- **Users** (line 49) - `users`
+  - Context: `<Users className="mr-2 h-4 w-4" />`
+- **DropdownMenuItem** (line 53) - `dropdownmenuitem`
+  - Context: `<DropdownMenuItem onClick={onCreateEvent}>`
+- **Calendar** (line 54) - `calendar`
+  - Context: `<Calendar className="mr-2 h-4 w-4" />`
+- **DropdownMenuItem** (line 58) - `dropdownmenuitem`
   - Context: `<DropdownMenuItem onClick={onDeleteMessages} className="text-red-600 focus:text-...`
-- **Trash2** (line 49) - `trash2`
+- **Trash2** (line 59) - `trash2`
   - Context: `<Trash2 className="mr-2 h-4 w-4" />`
-- **DropdownMenuItem** (line 54) - `dropdownmenuitem`
+- **DropdownMenuItem** (line 64) - `dropdownmenuitem`
   - Context: `<DropdownMenuItem onClick={onLeave} className="text-red-600 focus:text-red-600">`
-- **LogOut** (line 55) - `logout`
+- **LogOut** (line 65) - `logout`
   - Context: `<LogOut className="mr-2 h-4 w-4" />`
+
+#### CreateBelayGroupModal
+**File:** `src/components/chat/CreateBelayGroupModal.tsx`
+**Lines:** 292
+**Last Modified:** 2025-07-09T03:48:38.872Z
+
+**Key Elements:**
+- **CreateBelayGroupModalProps** (line 36) - `createbelaygroupmodalprops`
+  - Context: `export const CreateBelayGroupModal: React.FC<CreateBelayGroupModalProps> = ({`
+- **ClimbingType** (line 44) - `climbingtype`
+  - Context: `const [climbingType, setClimbingType] = useState<ClimbingType>('mixed');`
+- **Dialog** (line 158) - `dialog`
+  - Context: `<Dialog open={open} onOpenChange={onClose}>`
+- **DialogContent** (line 159) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">`
+- **DialogHeader** (line 160) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 161) - `dialogtitle`
+  - Context: `<DialogTitle className="flex items-center gap-2">`
+- **Users** (line 162) - `users`
+  - Context: `<Users className="h-5 w-5" />`
+- **DialogDescription** (line 165) - `dialogdescription`
+  - Context: `<DialogDescription>`
+- **Label** (line 171) - `label`
+  - Context: `<Label htmlFor="climbingType" className="flex items-center gap-2">`
+- **Select** (line 174) - `select`
+  - Context: `<Select value={climbingType} onValueChange={(value) => setClimbingType(value as ...`
+- **SelectTrigger** (line 175) - `selecttrigger`
+  - Context: `<SelectTrigger>`
+- **SelectValue** (line 176) - `selectvalue`
+  - Context: `<SelectValue />`
+- **SelectContent** (line 178) - `selectcontent`
+  - Context: `<SelectContent>`
+- **SelectItem** (line 180) - `selectitem`
+  - Context: `<SelectItem key={key} value={key}>`
+- **Label** (line 192) - `label`
+  - Context: `<Label htmlFor="name">Session Name</Label>`
+- **Input** (line 193) - `input`
+  - Context: `<Input`
+- **Label** (line 203) - `label`
+  - Context: `<Label htmlFor="description">Description (optional)</Label>`
+- **Textarea** (line 204) - `textarea`
+  - Context: `<Textarea`
+- **Label** (line 214) - `label`
+  - Context: `<Label htmlFor="location" className="flex items-center gap-2">`
+- **MapPin** (line 215) - `mappin`
+  - Context: `<MapPin className="h-4 w-4" />`
+- **Input** (line 218) - `input`
+  - Context: `<Input`
+- **Label** (line 228) - `label`
+  - Context: `<Label htmlFor="sessionDate" className="flex items-center gap-2">`
+- **Clock** (line 229) - `clock`
+  - Context: `<Clock className="h-4 w-4" />`
+- **Input** (line 232) - `input`
+  - Context: `<Input`
+- **Label** (line 243) - `label`
+  - Context: `<Label htmlFor="capacity" className="flex items-center gap-2">`
+- **Users** (line 244) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Select** (line 247) - `select`
+  - Context: `<Select value={capacity} onValueChange={setCapacity}>`
+- **SelectTrigger** (line 248) - `selecttrigger`
+  - Context: `<SelectTrigger>`
+- **SelectValue** (line 249) - `selectvalue`
+  - Context: `<SelectValue />`
+- **SelectContent** (line 251) - `selectcontent`
+  - Context: `<SelectContent>`
+- **SelectItem** (line 253) - `selectitem`
+  - Context: `<SelectItem key={size} value={size.toString()}>`
+- **Lock** (line 263) - `lock`
+  - Context: `{isPrivate ? <Lock className="h-4 w-4" /> : <Globe className="h-4 w-4" />}`
+- **Globe** (line 263) - `globe`
+  - Context: `{isPrivate ? <Lock className="h-4 w-4" /> : <Globe className="h-4 w-4" />}`
+- **Label** (line 265) - `label`
+  - Context: `<Label className="text-sm font-medium">`
+- **Switch** (line 276) - `switch`
+  - Context: `<Switch checked={isPrivate} onCheckedChange={setIsPrivate} />`
+- **DialogFooter** (line 279) - `dialogfooter`
+  - Context: `<DialogFooter>`
+- **Button** (line 280) - `button`
+  - Context: `<Button type="button" variant="outline" onClick={onClose}>`
+- **Button** (line 283) - `button`
+  - Context: `<Button type="submit" disabled={isCreating}>`
+- **Loader2** (line 284) - `loader2`
+  - Context: `{isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}`
 
 #### CreateEventModal
 **File:** `src/components/chat/CreateEventModal.tsx`
-**Lines:** 183
-**Last Modified:** 2025-07-08T20:05:17.169Z
+**Lines:** 235
+**Last Modified:** 2025-07-09T03:03:00.936Z
 
 **Key Elements:**
-- **CreateEventModalProps** (line 26) - `createeventmodalprops`
+- **CreateEventModalProps** (line 28) - `createeventmodalprops`
   - Context: `export const CreateEventModal: React.FC<CreateEventModalProps> = ({`
-- **Dialog** (line 101) - `dialog`
+- **Dialog** (line 153) - `dialog`
   - Context: `<Dialog open={open} onOpenChange={onClose}>`
-- **DialogContent** (line 102) - `dialogcontent`
+- **DialogContent** (line 154) - `dialogcontent`
   - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 103) - `dialogheader`
+- **DialogHeader** (line 155) - `dialogheader`
   - Context: `<DialogHeader>`
-- **DialogTitle** (line 104) - `dialogtitle`
+- **DialogTitle** (line 156) - `dialogtitle`
   - Context: `<DialogTitle className="flex items-center gap-2">`
-- **Calendar** (line 105) - `calendar`
+- **Calendar** (line 157) - `calendar`
   - Context: `<Calendar className="h-5 w-5" />`
-- **DialogDescription** (line 108) - `dialogdescription`
+- **DialogDescription** (line 160) - `dialogdescription`
   - Context: `<DialogDescription>`
-- **Label** (line 114) - `label`
+- **Label** (line 166) - `label`
   - Context: `<Label htmlFor="title">Event Title</Label>`
-- **Input** (line 115) - `input`
+- **Input** (line 167) - `input`
   - Context: `<Input`
-- **Label** (line 124) - `label`
+- **Label** (line 176) - `label`
   - Context: `<Label htmlFor="description">Description</Label>`
-- **Textarea** (line 125) - `textarea`
+- **Textarea** (line 177) - `textarea`
   - Context: `<Textarea`
-- **Label** (line 134) - `label`
+- **Label** (line 186) - `label`
   - Context: `<Label htmlFor="location" className="flex items-center gap-2">`
-- **MapPin** (line 135) - `mappin`
+- **MapPin** (line 187) - `mappin`
   - Context: `<MapPin className="h-4 w-4" />`
-- **Input** (line 138) - `input`
+- **Input** (line 190) - `input`
   - Context: `<Input`
-- **Label** (line 147) - `label`
+- **Label** (line 199) - `label`
   - Context: `<Label htmlFor="eventDate">Date & Time</Label>`
-- **Input** (line 148) - `input`
+- **Input** (line 200) - `input`
   - Context: `<Input`
-- **Label** (line 157) - `label`
+- **Label** (line 209) - `label`
   - Context: `<Label htmlFor="maxParticipants" className="flex items-center gap-2">`
-- **Users** (line 158) - `users`
+- **Users** (line 210) - `users`
   - Context: `<Users className="h-4 w-4" />`
-- **Input** (line 161) - `input`
+- **Input** (line 213) - `input`
   - Context: `<Input`
-- **DialogFooter** (line 170) - `dialogfooter`
+- **DialogFooter** (line 222) - `dialogfooter`
   - Context: `<DialogFooter>`
-- **Button** (line 171) - `button`
+- **Button** (line 223) - `button`
   - Context: `<Button type="button" variant="outline" onClick={onClose}>`
-- **Button** (line 174) - `button`
+- **Button** (line 226) - `button`
   - Context: `<Button type="submit" disabled={isCreating}>`
-- **Loader2** (line 175) - `loader2`
+- **Loader2** (line 227) - `loader2`
   - Context: `{isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}`
 
 ### 📁 src/components/dashboard/
@@ -511,27 +566,27 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### location
 **File:** `src/components/layout/DesktopSidebar.tsx`
-**Lines:** 127
-**Last Modified:** 2025-07-09T02:09:47.969Z
+**Lines:** 129
+**Last Modified:** 2025-07-09T03:53:00.077Z
 
 **Key Elements:**
-- **Record** (line 27) - `record`
+- **Record** (line 28) - `record`
   - Context: `const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});`
-- **Mountain** (line 76) - `mountain`
+- **Mountain** (line 78) - `mountain`
   - Context: `<Mountain className="h-6 w-6 text-green-600" />`
-- **Link** (line 81) - `link`
+- **Link** (line 83) - `link`
   - Context: `<Link to="/profile" className="flex items-center space-x-3 p-3 rounded-lg bg-gre...`
-- **Avatar** (line 82) - `avatar`
+- **Avatar** (line 84) - `avatar`
   - Context: `<Avatar className="h-12 w-12">`
-- **AvatarImage** (line 83) - `avatarimage`
+- **AvatarImage** (line 85) - `avatarimage`
   - Context: `<AvatarImage src={userProfile?.avatar_url} />`
-- **AvatarFallback** (line 84) - `avatarfallback`
+- **AvatarFallback** (line 86) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Link** (line 100) - `link`
+- **Link** (line 102) - `link`
   - Context: `<Link`
-- **Icon** (line 110) - `icon`
+- **Icon** (line 112) - `icon`
   - Context: `<Icon className="h-5 w-5" />`
-- **Badge** (line 114) - `badge`
+- **Badge** (line 116) - `badge`
   - Context: `<Badge variant="destructive" className="h-5 text-xs">`
 
 #### MobileLayout
@@ -566,55 +621,55 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### location
 **File:** `src/components/layout/NavBar.tsx`
-**Lines:** 142
-**Last Modified:** 2025-07-08T20:34:04.579Z
+**Lines:** 145
+**Last Modified:** 2025-07-09T03:53:22.004Z
 
 **Key Elements:**
-- **Link** (line 29) - `link`
+- **Link** (line 32) - `link`
   - Context: `<Link to="/" className="flex items-center space-x-2">`
-- **Mountain** (line 30) - `mountain`
+- **Mountain** (line 33) - `mountain`
   - Context: `<Mountain className="h-8 w-8 text-green-600" />`
-- **Link** (line 45) - `link`
+- **Link** (line 48) - `link`
   - Context: `<Link`
-- **Icon** (line 54) - `icon`
+- **Icon** (line 57) - `icon`
   - Context: `<Icon className="h-4 w-4" />`
-- **Link** (line 61) - `link`
+- **Link** (line 64) - `link`
   - Context: `<Link to="/profile">`
-- **Avatar** (line 62) - `avatar`
+- **Avatar** (line 65) - `avatar`
   - Context: `<Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-green-300 tran...`
-- **AvatarImage** (line 63) - `avatarimage`
+- **AvatarImage** (line 66) - `avatarimage`
   - Context: `<AvatarImage src={user?.user_metadata?.avatar_url} />`
-- **AvatarFallback** (line 64) - `avatarfallback`
+- **AvatarFallback** (line 67) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 69) - `button`
+- **Button** (line 72) - `button`
   - Context: `<Button variant="ghost" size="sm" onClick={signOut}>`
-- **LogOut** (line 70) - `logout`
+- **LogOut** (line 73) - `logout`
   - Context: `<LogOut className="h-4 w-4" />`
-- **Sheet** (line 77) - `sheet`
+- **Sheet** (line 80) - `sheet`
   - Context: `<Sheet open={isOpen} onOpenChange={setIsOpen}>`
-- **SheetTrigger** (line 78) - `sheettrigger`
+- **SheetTrigger** (line 81) - `sheettrigger`
   - Context: `<SheetTrigger asChild>`
-- **Button** (line 79) - `button`
+- **Button** (line 82) - `button`
   - Context: `<Button variant="ghost" size="sm">`
-- **Menu** (line 80) - `menu`
+- **Menu** (line 83) - `menu`
   - Context: `<Menu className="h-6 w-6" />`
-- **SheetContent** (line 83) - `sheetcontent`
+- **SheetContent** (line 86) - `sheetcontent`
   - Context: `<SheetContent side="right" className="w-64">`
-- **Link** (line 85) - `link`
+- **Link** (line 88) - `link`
   - Context: `<Link`
-- **Avatar** (line 90) - `avatar`
+- **Avatar** (line 93) - `avatar`
   - Context: `<Avatar className="h-10 w-10">`
-- **AvatarImage** (line 91) - `avatarimage`
+- **AvatarImage** (line 94) - `avatarimage`
   - Context: `<AvatarImage src={user?.user_metadata?.avatar_url} />`
-- **AvatarFallback** (line 92) - `avatarfallback`
+- **AvatarFallback** (line 95) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Link** (line 106) - `link`
+- **Link** (line 109) - `link`
   - Context: `<Link`
-- **Icon** (line 116) - `icon`
+- **Icon** (line 119) - `icon`
   - Context: `<Icon className="h-5 w-5" />`
-- **Button** (line 122) - `button`
+- **Button** (line 125) - `button`
   - Context: `<Button`
-- **LogOut** (line 130) - `logout`
+- **LogOut** (line 133) - `logout`
   - Context: `<LogOut className="h-5 w-5 mr-3" />`
 
 ### 📁 src/components/ui/
@@ -702,6 +757,59 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **Key Elements:**
 - **HTMLDivElement** (line 27) - `htmldivelement`
   - Context: `extends React.HTMLAttributes<HTMLDivElement>,`
+
+#### BelayGroupMessageButton
+**File:** `src/components/ui/belay-group-message-button.tsx`
+**Lines:** 264
+**Last Modified:** 2025-07-09T03:49:15.522Z
+
+**Key Elements:**
+- **BelayGroupMessageButtonProps** (line 24) - `belaygroupmessagebuttonprops`
+  - Context: `export const BelayGroupMessageButton: React.FC<BelayGroupMessageButtonProps> = (...`
+- **BelayGroup** (line 28) - `belaygroup`
+  - Context: `const [belayGroup, setBelayGroup] = useState<BelayGroup | null>(null);`
+- **Card** (line 144) - `card`
+  - Context: `<Card className="w-full max-w-md mx-auto">`
+- **CardContent** (line 145) - `cardcontent`
+  - Context: `<CardContent className="p-4">`
+- **Loader2** (line 147) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 animate-spin" />`
+- **Card** (line 157) - `card`
+  - Context: `<Card className="w-full max-w-md mx-auto border-red-200">`
+- **CardContent** (line 158) - `cardcontent`
+  - Context: `<CardContent className="p-4">`
+- **Card** (line 170) - `card`
+  - Context: `<Card className={`w-full max-w-md mx-auto transition-all hover:shadow-md ${`
+- **CardContent** (line 173) - `cardcontent`
+  - Context: `<CardContent className="p-4 space-y-3">`
+- **Lock** (line 184) - `lock`
+  - Context: `{belayGroup.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe classN...`
+- **Globe** (line 184) - `globe`
+  - Context: `{belayGroup.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe classN...`
+- **Badge** (line 185) - `badge`
+  - Context: `<Badge variant={belayGroup.status === 'full' ? 'destructive' : 'default'} classN...`
+- **MapPin** (line 194) - `mappin`
+  - Context: `<MapPin className="h-3 w-3" />`
+- **Clock** (line 198) - `clock`
+  - Context: `<Clock className="h-3 w-3" />`
+- **Badge** (line 201) - `badge`
+  - Context: `<Badge variant="outline" className="text-xs">`
+- **Button** (line 217) - `button`
+  - Context: `<Button`
+- **UserCheck** (line 222) - `usercheck`
+  - Context: `<UserCheck className="h-3 w-3 mr-1" />`
+- **Button** (line 225) - `button`
+  - Context: `<Button size="sm" variant="outline" onClick={handleNavigateToGroups}>`
+- **Button** (line 231) - `button`
+  - Context: `<Button`
+- **Loader2** (line 237) - `loader2`
+  - Context: `{isJoining && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}`
+- **Users** (line 238) - `users`
+  - Context: `<Users className="h-3 w-3 mr-1" />`
+- **Button** (line 241) - `button`
+  - Context: `<Button size="sm" variant="outline" onClick={handleNavigateToGroups}>`
+- **Button** (line 247) - `button`
+  - Context: `<Button size="sm" variant="outline" onClick={handleNavigateToGroups} className="...`
 
 #### breadcrumb
 **File:** `src/components/ui/breadcrumb.tsx`
@@ -1002,6 +1110,25 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
   - Context: `<PopoverContent`
 - **EmojiPicker** (line 37) - `emojipicker`
   - Context: `<EmojiPicker`
+
+#### EventMessageButton
+**File:** `src/components/ui/event-message-button.tsx`
+**Lines:** 85
+**Last Modified:** 2025-07-09T03:04:37.238Z
+
+**Key Elements:**
+- **EventMessageButtonProps** (line 13) - `eventmessagebuttonprops`
+  - Context: `export const EventMessageButton: React.FC<EventMessageButtonProps> = ({`
+- **Card** (line 27) - `card`
+  - Context: `<Card`
+- **Calendar** (line 38) - `calendar`
+  - Context: `<Calendar className={`h-5 w-5 ${`
+- **ArrowRight** (line 47) - `arrowright`
+  - Context: `<ArrowRight className={`h-4 w-4 ${`
+- **Button** (line 65) - `button`
+  - Context: `<Button`
+- **Calendar** (line 78) - `calendar`
+  - Context: `<Calendar className="h-4 w-4 mr-2" />`
 
 #### useFormField
 **File:** `src/components/ui/form.tsx`
@@ -1675,47 +1802,193 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Button** (line 165) - `button`
   - Context: `<Button type="submit" className="w-full" disabled={loading}>`
 
-#### scrollToBottom
-**File:** `src/pages/ClubTalk.tsx`
-**Lines:** 526
-**Last Modified:** 2025-07-09T00:12:06.810Z
+#### navigate
+**File:** `src/pages/BelayChat.tsx`
+**Lines:** 406
+**Last Modified:** 2025-07-09T03:54:16.900Z
 
 **Key Elements:**
-- **ClubMessage** (line 27) - `clubmessage`
-  - Context: `const [messages, setMessages] = useState<ClubMessage[]>([]);`
-- **Set** (line 36) - `set`
-  - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
-- **HTMLDivElement** (line 37) - `htmldivelement`
-  - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 289) - `card`
-  - Context: `<Card className="p-8 text-center">`
-- **Input** (line 345) - `input`
-  - Context: `<Input`
-- **Button** (line 352) - `button`
+- **BelayGroup** (line 19) - `belaygroup`
+  - Context: `const [belayGroup, setBelayGroup] = useState<BelayGroup | null>(null);`
+- **BelayGroupMessage** (line 20) - `belaygroupmessage`
+  - Context: `const [messages, setMessages] = useState<BelayGroupMessage[]>([]);`
+- **HTMLDivElement** (line 25) - `htmldivelement`
+  - Context: `const messagesEndRef = useRef<HTMLDivElement>(null);`
+- **Loader2** (line 219) - `loader2`
+  - Context: `<Loader2 className="h-6 w-6 animate-spin" />`
+- **Button** (line 231) - `button`
+  - Context: `<Button onClick={() => navigate('/belay-groups')}>`
+- **Card** (line 242) - `card`
+  - Context: `<Card className="max-w-md">`
+- **CardContent** (line 243) - `cardcontent`
+  - Context: `<CardContent className="p-6 text-center">`
+- **Button** (line 248) - `button`
+  - Context: `<Button onClick={() => navigate('/belay-groups')}>`
+- **Button** (line 266) - `button`
   - Context: `<Button`
-- **Search** (line 357) - `search`
-  - Context: `<Search className="h-4 w-4" />`
-- **Avatar** (line 405) - `avatar`
-  - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 406) - `avatarimage`
+- **ArrowLeft** (line 271) - `arrowleft`
+  - Context: `<ArrowLeft className="h-4 w-4" />`
+- **Button** (line 283) - `button`
+  - Context: `<Button`
+- **UserMinus** (line 289) - `userminus`
+  - Context: `<UserMinus className="h-4 w-4 mr-2" />`
+- **MapPin** (line 299) - `mappin`
+  - Context: `<MapPin className="h-3 w-3" />`
+- **Clock** (line 303) - `clock`
+  - Context: `<Clock className="h-3 w-3" />`
+- **Badge** (line 306) - `badge`
+  - Context: `<Badge variant="outline" className="text-xs ml-1">`
+- **Users** (line 318) - `users`
+  - Context: `<Users className="h-8 w-8 mx-auto mb-2" />`
+- **Avatar** (line 333) - `avatar`
+  - Context: `<Avatar className="h-8 w-8">`
+- **AvatarImage** (line 334) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 407) - `avatarfallback`
+- **AvatarFallback** (line 335) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 473) - `button`
-  - Context: `<Button`
-- **Trash2** (line 479) - `trash2`
-  - Context: `<Trash2 className="h-4 w-4" />`
-- **ChatActionsMenu** (line 485) - `chatactionsmenu`
-  - Context: `<ChatActionsMenu`
-- **Input** (line 492) - `input`
+- **Input** (line 389) - `input`
   - Context: `<Input`
-- **EmojiPickerComponent** (line 506) - `emojipickercomponent`
+- **EmojiPickerComponent** (line 396) - `emojipickercomponent`
   - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
-- **Button** (line 509) - `button`
-  - Context: `<Button`
-- **Send** (line 514) - `send`
+- **Button** (line 399) - `button`
+  - Context: `<Button type="submit" disabled={!newMessage.trim()}>`
+- **Send** (line 400) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 519) - `createeventmodal`
+
+#### navigate
+**File:** `src/pages/BelayGroups.tsx`
+**Lines:** 364
+**Last Modified:** 2025-07-09T04:09:10.452Z
+
+**Key Elements:**
+- **BelayGroup** (line 22) - `belaygroup`
+  - Context: `const [belayGroups, setBelayGroups] = useState<BelayGroup[]>([]);`
+- **BelayGroup** (line 23) - `belaygroup`
+  - Context: `const [filteredGroups, setFilteredGroups] = useState<BelayGroup[]>([]);`
+- **Loader2** (line 207) - `loader2`
+  - Context: `<Loader2 className="h-6 w-6 animate-spin" />`
+- **Card** (line 223) - `card`
+  - Context: `<Card>`
+- **CardContent** (line 224) - `cardcontent`
+  - Context: `<CardContent className="p-4">`
+- **Search** (line 227) - `search`
+  - Context: `<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 te...`
+- **Input** (line 228) - `input`
+  - Context: `<Input`
+- **Select** (line 236) - `select`
+  - Context: `<Select value={climbingTypeFilter} onValueChange={(value) => setClimbingTypeFilt...`
+- **SelectTrigger** (line 237) - `selecttrigger`
+  - Context: `<SelectTrigger className="w-[160px]">`
+- **SelectValue** (line 238) - `selectvalue`
+  - Context: `<SelectValue placeholder="Climbing Type" />`
+- **SelectContent** (line 240) - `selectcontent`
+  - Context: `<SelectContent>`
+- **SelectItem** (line 241) - `selectitem`
+  - Context: `<SelectItem value="all">All Types</SelectItem>`
+- **SelectItem** (line 243) - `selectitem`
+  - Context: `<SelectItem key={key} value={key}>`
+- **Select** (line 249) - `select`
+  - Context: `<Select value={privacyFilter} onValueChange={(value) => setPrivacyFilter(value a...`
+- **SelectTrigger** (line 250) - `selecttrigger`
+  - Context: `<SelectTrigger className="w-[120px]">`
+- **SelectValue** (line 251) - `selectvalue`
+  - Context: `<SelectValue placeholder="Filter" />`
+- **SelectContent** (line 253) - `selectcontent`
+  - Context: `<SelectContent>`
+- **SelectItem** (line 254) - `selectitem`
+  - Context: `<SelectItem value="all">All Groups</SelectItem>`
+- **SelectItem** (line 255) - `selectitem`
+  - Context: `<SelectItem value="public">Public</SelectItem>`
+- **SelectItem** (line 256) - `selectitem`
+  - Context: `<SelectItem value="private">Private</SelectItem>`
+- **SelectItem** (line 257) - `selectitem`
+  - Context: `<SelectItem value="joined">Joined</SelectItem>`
+- **Card** (line 267) - `card`
+  - Context: `<Card>`
+- **CardContent** (line 268) - `cardcontent`
+  - Context: `<CardContent className="p-8 text-center">`
+- **Users** (line 269) - `users`
+  - Context: `<Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />`
+- **Card** (line 285) - `card`
+  - Context: `<Card key={group.id} className={`transition-all hover:shadow-lg ${group.is_parti...`
+- **CardHeader** (line 286) - `cardheader`
+  - Context: `<CardHeader className="pb-3">`
+- **CardTitle** (line 291) - `cardtitle`
+  - Context: `<CardTitle className="text-base">{group.name}</CardTitle>`
+- **Lock** (line 298) - `lock`
+  - Context: `{group.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe className="...`
+- **Globe** (line 298) - `globe`
+  - Context: `{group.privacy === 'private' ? <Lock className="h-3 w-3" /> : <Globe className="...`
+- **UserCheck** (line 299) - `usercheck`
+  - Context: `{group.is_participant && <UserCheck className="h-3 w-3 text-green-600" />}`
+- **CardContent** (line 303) - `cardcontent`
+  - Context: `<CardContent className="space-y-3">`
+- **MapPin** (line 306) - `mappin`
+  - Context: `<MapPin className="h-3 w-3" />`
+- **Clock** (line 310) - `clock`
+  - Context: `<Clock className="h-3 w-3" />`
+- **Badge** (line 312) - `badge`
+  - Context: `<Badge variant="outline" className="text-xs">`
+- **Users** (line 317) - `users`
+  - Context: `<Users className="h-3 w-3" />`
+- **Badge** (line 319) - `badge`
+  - Context: `<Badge variant={group.status === 'full' ? 'destructive' : 'default'} className="...`
+- **Button** (line 333) - `button`
+  - Context: `<Button`
+- **UserCheck** (line 337) - `usercheck`
+  - Context: `<UserCheck className="h-4 w-4 mr-2" />`
+- **Button** (line 341) - `button`
+  - Context: `<Button`
+- **Loader2** (line 346) - `loader2`
+  - Context: `{joiningGroupId === group.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" /...`
+- **Users** (line 347) - `users`
+  - Context: `<Users className="h-4 w-4 mr-2" />`
+- **Button** (line 351) - `button`
+  - Context: `<Button disabled className="w-full">`
+
+#### scrollToBottom
+**File:** `src/pages/ClubTalk.tsx`
+**Lines:** 535
+**Last Modified:** 2025-07-09T03:07:47.238Z
+
+**Key Elements:**
+- **ClubMessage** (line 29) - `clubmessage`
+  - Context: `const [messages, setMessages] = useState<ClubMessage[]>([]);`
+- **Set** (line 38) - `set`
+  - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
+- **HTMLDivElement** (line 39) - `htmldivelement`
+  - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
+- **Card** (line 291) - `card`
+  - Context: `<Card className="p-8 text-center">`
+- **Input** (line 347) - `input`
+  - Context: `<Input`
+- **Button** (line 354) - `button`
+  - Context: `<Button`
+- **Search** (line 359) - `search`
+  - Context: `<Search className="h-4 w-4" />`
+- **Avatar** (line 407) - `avatar`
+  - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
+- **AvatarImage** (line 408) - `avatarimage`
+  - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
+- **AvatarFallback** (line 409) - `avatarfallback`
+  - Context: `<AvatarFallback>`
+- **EventMessageButton** (line 445) - `eventmessagebutton`
+  - Context: `<EventMessageButton`
+- **Button** (line 480) - `button`
+  - Context: `<Button`
+- **Trash2** (line 486) - `trash2`
+  - Context: `<Trash2 className="h-4 w-4" />`
+- **ChatActionsMenu** (line 492) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu`
+- **Input** (line 499) - `input`
+  - Context: `<Input`
+- **EmojiPickerComponent** (line 513) - `emojipickercomponent`
+  - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
+- **Button** (line 516) - `button`
+  - Context: `<Button`
+- **Send** (line 521) - `send`
+  - Context: `<Send className="h-4 w-4" />`
+- **CreateEventModal** (line 526) - `createeventmodal`
   - Context: `<CreateEventModal`
 
 #### navigate
@@ -1750,7 +2023,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### checkAdminStatus
 **File:** `src/pages/Dashboard.tsx`
 **Lines:** 75
-**Last Modified:** 2025-07-09T02:09:48.034Z
+**Last Modified:** 2025-07-09T03:09:50.297Z
 
 **Key Elements:**
 - **Shield** (line 53) - `shield`
@@ -1764,93 +2037,95 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/pages/EventChat.tsx`
-**Lines:** 838
-**Last Modified:** 2025-07-09T02:41:45.031Z
+**Lines:** 847
+**Last Modified:** 2025-07-09T03:13:06.098Z
 
 **Key Elements:**
-- **Event** (line 47) - `event`
+- **Event** (line 49) - `event`
   - Context: `const [event, setEvent] = useState<Event | null>(null);`
-- **EventMessage** (line 48) - `eventmessage`
+- **EventMessage** (line 50) - `eventmessage`
   - Context: `const [messages, setMessages] = useState<EventMessage[]>([]);`
-- **Set** (line 58) - `set`
+- **Set** (line 60) - `set`
   - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
-- **HTMLDivElement** (line 60) - `htmldivelement`
+- **HTMLDivElement** (line 62) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 444) - `card`
+- **Card** (line 446) - `card`
   - Context: `<Card className="p-8">`
-- **Card** (line 503) - `card`
+- **Card** (line 505) - `card`
   - Context: `<Card className="p-8 text-center">`
-- **Button** (line 507) - `button`
+- **Button** (line 509) - `button`
   - Context: `<Button`
-- **Button** (line 514) - `button`
+- **Button** (line 516) - `button`
   - Context: `<Button`
-- **Button** (line 533) - `button`
+- **Button** (line 535) - `button`
   - Context: `<Button`
-- **ArrowLeft** (line 541) - `arrowleft`
+- **ArrowLeft** (line 543) - `arrowleft`
   - Context: `<ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />`
-- **CalendarDays** (line 547) - `calendardays`
+- **CalendarDays** (line 549) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-1" />`
-- **MapPin** (line 551) - `mappin`
+- **MapPin** (line 553) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-1" />`
-- **Users** (line 555) - `users`
+- **Users** (line 557) - `users`
   - Context: `<Users className="h-4 w-4 mr-1" />`
-- **Users** (line 563) - `users`
+- **Users** (line 565) - `users`
   - Context: `<Users className="h-3 w-3 mr-1" />`
-- **Button** (line 566) - `button`
+- **Button** (line 568) - `button`
   - Context: `<Button`
-- **ChevronUp** (line 573) - `chevronup`
+- **ChevronUp** (line 575) - `chevronup`
   - Context: `<ChevronUp className="h-3 w-3" />`
-- **ChevronDown** (line 575) - `chevrondown`
+- **ChevronDown** (line 577) - `chevrondown`
   - Context: `<ChevronDown className="h-3 w-3" />`
-- **CalendarDays** (line 610) - `calendardays`
+- **CalendarDays** (line 612) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />`
-- **MapPin** (line 619) - `mappin`
+- **MapPin** (line 621) - `mappin`
   - Context: `<MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />`
-- **Users** (line 625) - `users`
+- **Users** (line 627) - `users`
   - Context: `<Users className="h-4 w-4 text-purple-600 flex-shrink-0" />`
-- **Avatar** (line 691) - `avatar`
+- **Avatar** (line 693) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 692) - `avatarimage`
+- **AvatarImage** (line 694) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 693) - `avatarfallback`
+- **AvatarFallback** (line 695) - `avatarfallback`
   - Context: `<AvatarFallback className="text-xs">`
-- **Button** (line 761) - `button`
+- **EventMessageButton** (line 733) - `eventmessagebutton`
+  - Context: `<EventMessageButton`
+- **Button** (line 768) - `button`
   - Context: `<Button`
-- **Trash2** (line 767) - `trash2`
+- **Trash2** (line 774) - `trash2`
   - Context: `<Trash2 className="h-4 w-4" />`
-- **ChatActionsMenu** (line 779) - `chatactionsmenu`
+- **ChatActionsMenu** (line 786) - `chatactionsmenu`
   - Context: `<ChatActionsMenu`
-- **Input** (line 788) - `input`
+- **Input** (line 795) - `input`
   - Context: `<Input`
-- **EmojiPickerComponent** (line 797) - `emojipickercomponent`
+- **EmojiPickerComponent** (line 804) - `emojipickercomponent`
   - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
-- **Button** (line 800) - `button`
+- **Button** (line 807) - `button`
   - Context: `<Button`
-- **Send** (line 806) - `send`
+- **Send** (line 813) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 811) - `createeventmodal`
+- **CreateEventModal** (line 818) - `createeventmodal`
   - Context: `<CreateEventModal`
-- **Dialog** (line 818) - `dialog`
+- **Dialog** (line 827) - `dialog`
   - Context: `<Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>`
-- **DialogContent** (line 819) - `dialogcontent`
+- **DialogContent** (line 828) - `dialogcontent`
   - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 820) - `dialogheader`
+- **DialogHeader** (line 829) - `dialogheader`
   - Context: `<DialogHeader>`
-- **DialogTitle** (line 821) - `dialogtitle`
+- **DialogTitle** (line 830) - `dialogtitle`
   - Context: `<DialogTitle>Leave Event</DialogTitle>`
-- **DialogDescription** (line 822) - `dialogdescription`
+- **DialogDescription** (line 831) - `dialogdescription`
   - Context: `<DialogDescription>`
-- **DialogFooter** (line 826) - `dialogfooter`
+- **DialogFooter** (line 835) - `dialogfooter`
   - Context: `<DialogFooter>`
-- **Button** (line 827) - `button`
+- **Button** (line 836) - `button`
   - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 830) - `button`
+- **Button** (line 839) - `button`
   - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
 #### navigate
 **File:** `src/pages/Events.tsx`
-**Lines:** 150
-**Last Modified:** 2025-07-09T02:09:48.039Z
+**Lines:** 170
+**Last Modified:** 2025-07-09T03:56:26.390Z
 
 **Key Elements:**
 - **Card** (line 31) - `card`
@@ -1861,17 +2136,17 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
 - **EventCard** (line 78) - `eventcard`
   - Context: `<EventCard`
-- **EventCard** (line 92) - `eventcard`
+- **EventCard** (line 96) - `eventcard`
   - Context: `<EventCard`
-- **Card** (line 109) - `card`
+- **Card** (line 113) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 110) - `cardcontent`
+- **CardContent** (line 114) - `cardcontent`
   - Context: `<CardContent>`
-- **CalendarDays** (line 111) - `calendardays`
+- **CalendarDays** (line 115) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **EventCard** (line 125) - `eventcard`
+- **EventCard** (line 135) - `eventcard`
   - Context: `<EventCard`
-- **EventCard** (line 138) - `eventcard`
+- **EventCard** (line 158) - `eventcard`
   - Context: `<EventCard`
 
 #### location
@@ -1885,8 +2160,8 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/pages/Groups.tsx`
-**Lines:** 246
-**Last Modified:** 2025-07-09T02:09:48.044Z
+**Lines:** 260
+**Last Modified:** 2025-07-09T04:17:46.050Z
 
 **Key Elements:**
 - **Search** (line 104) - `search`
@@ -1901,39 +2176,39 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
   - Context: `<Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
 - **GroupCard** (line 148) - `groupcard`
   - Context: `<GroupCard`
-- **GroupCard** (line 162) - `groupcard`
+- **GroupCard** (line 166) - `groupcard`
   - Context: `<GroupCard`
-- **GroupCard** (line 188) - `groupcard`
+- **GroupCard** (line 192) - `groupcard`
   - Context: `<GroupCard`
-- **GroupCard** (line 201) - `groupcard`
+- **GroupCard** (line 215) - `groupcard`
   - Context: `<GroupCard`
-- **Card** (line 214) - `card`
+- **Card** (line 228) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 215) - `cardcontent`
+- **CardContent** (line 229) - `cardcontent`
   - Context: `<CardContent>`
-- **Users** (line 216) - `users`
+- **Users** (line 230) - `users`
   - Context: `<Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Dialog** (line 226) - `dialog`
+- **Dialog** (line 240) - `dialog`
   - Context: `<Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>`
-- **DialogContent** (line 227) - `dialogcontent`
+- **DialogContent** (line 241) - `dialogcontent`
   - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 228) - `dialogheader`
+- **DialogHeader** (line 242) - `dialogheader`
   - Context: `<DialogHeader>`
-- **DialogTitle** (line 229) - `dialogtitle`
+- **DialogTitle** (line 243) - `dialogtitle`
   - Context: `<DialogTitle>Leave Group</DialogTitle>`
-- **DialogDescription** (line 230) - `dialogdescription`
+- **DialogDescription** (line 244) - `dialogdescription`
   - Context: `<DialogDescription>`
-- **DialogFooter** (line 234) - `dialogfooter`
+- **DialogFooter** (line 248) - `dialogfooter`
   - Context: `<DialogFooter>`
-- **Button** (line 235) - `button`
+- **Button** (line 249) - `button`
   - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 238) - `button`
+- **Button** (line 252) - `button`
   - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
 #### checkScreenSize
 **File:** `src/pages/Home.tsx`
-**Lines:** 142
-**Last Modified:** 2025-07-08T21:25:30.172Z
+**Lines:** 148
+**Last Modified:** 2025-07-09T03:16:03.260Z
 
 **Key Elements:**
 - **Mountain** (line 30) - `mountain`
@@ -1978,37 +2253,37 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
   - Context: `<Link to="/auth">Get Started Today</Link>`
 - **Dashboard** (line 92) - `dashboard`
   - Context: `return <Dashboard />;`
-- **Mountain** (line 101) - `mountain`
+- **Mountain** (line 103) - `mountain`
   - Context: `<Mountain className="h-16 w-16 text-green-600 mr-4" />`
-- **Card** (line 109) - `card`
+- **Card** (line 114) - `card`
   - Context: `<Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() =...`
-- **CardHeader** (line 110) - `cardheader`
+- **CardHeader** (line 115) - `cardheader`
   - Context: `<CardHeader>`
-- **Users** (line 111) - `users`
+- **Users** (line 116) - `users`
   - Context: `<Users className="h-8 w-8 text-green-600 mb-2" />`
-- **CardTitle** (line 112) - `cardtitle`
+- **CardTitle** (line 117) - `cardtitle`
   - Context: `<CardTitle>Group Chats</CardTitle>`
-- **CardDescription** (line 113) - `carddescription`
+- **CardDescription** (line 118) - `carddescription`
   - Context: `<CardDescription>`
-- **Card** (line 118) - `card`
+- **Card** (line 123) - `card`
   - Context: `<Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() =...`
-- **CardHeader** (line 119) - `cardheader`
+- **CardHeader** (line 124) - `cardheader`
   - Context: `<CardHeader>`
-- **Calendar** (line 120) - `calendar`
+- **Calendar** (line 125) - `calendar`
   - Context: `<Calendar className="h-8 w-8 text-orange-600 mb-2" />`
-- **CardTitle** (line 121) - `cardtitle`
+- **CardTitle** (line 126) - `cardtitle`
   - Context: `<CardTitle>Climbing Events</CardTitle>`
-- **CardDescription** (line 122) - `carddescription`
+- **CardDescription** (line 127) - `carddescription`
   - Context: `<CardDescription>`
-- **Card** (line 127) - `card`
+- **Card** (line 132) - `card`
   - Context: `<Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() =...`
-- **CardHeader** (line 128) - `cardheader`
+- **CardHeader** (line 133) - `cardheader`
   - Context: `<CardHeader>`
-- **Users** (line 129) - `users`
+- **Users** (line 134) - `users`
   - Context: `<Users className="h-8 w-8 text-blue-600 mb-2" />`
-- **CardTitle** (line 130) - `cardtitle`
+- **CardTitle** (line 135) - `cardtitle`
   - Context: `<CardTitle>Community Chat</CardTitle>`
-- **CardDescription** (line 131) - `carddescription`
+- **CardDescription** (line 136) - `carddescription`
   - Context: `<CardDescription>`
 
 #### NotFound

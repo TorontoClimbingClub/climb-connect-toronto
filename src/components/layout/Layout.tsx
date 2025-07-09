@@ -24,7 +24,8 @@ export function Layout({
   // Mobile-first layout with CSS-first responsive classes
   const MobileLayout = () => (
     <div className={`layout-container layout-mobile ${fullscreen ? 'layout-fullscreen' : 'layout-default'}`}>
-      <NavBar />
+      {/* Hide navbar in fullscreen mode for true fullscreen chat experience */}
+      {!fullscreen && <NavBar />}
       {fullscreen ? (
         <main className="layout-main layout-main-fullscreen">
           {children}

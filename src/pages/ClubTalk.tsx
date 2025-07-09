@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,8 +38,10 @@ export default function ClubTalk() {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isMobile, isChrome } = useSimpleMobileDetection();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -278,6 +281,11 @@ export default function ClubTalk() {
     scrollToBottom();
   }, [messages]);
 
+  // Apply mobile chat input spacing
+  useEffect(() => {
+    addMobileChatInputSpacing();
+  }, [isMobile, isChrome]);
+
   // Filter messages based on search
   const filteredMessages = messages.filter(message =>
     !searchTerm || 
@@ -471,7 +479,21 @@ export default function ClubTalk() {
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t bg-white flex-shrink-0 sticky bottom-0">
+      <div 
+        ref={chatInputRef}
+        className="p-4 border-t bg-white flex-shrink-0 sticky bottom-0 chat-input-mobile"
+        data-mobile-enhanced={isMobile}
+        data-browser-chrome={isChrome}
+        style={isMobile ? {
+          position: 'sticky',
+          bottom: '0',
+          paddingBottom: '25px',
+          marginBottom: '0',
+          zIndex: 1000,
+          backgroundColor: 'white',
+          borderTop: '1px solid #e5e7eb'
+        } : {}}
+      >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between max-w-4xl mx-auto">
             <span className="text-sm text-red-700">
@@ -522,6 +544,11 @@ export default function ClubTalk() {
           </Button>
         </div>
       </div>
+      
+      {/* Mobile spacer to ensure input is visible above browser navigation */}
+      {isMobile && (
+        <div style={{ height: '25px', flexShrink: 0 }} />
+      )}
       
       <CreateEventModal 
         open={showCreateEventModal} 

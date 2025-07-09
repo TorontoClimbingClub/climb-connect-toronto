@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,9 +24,16 @@ export default function BelayChat() {
   const [isParticipant, setIsParticipant] = useState(false);
   const [participantCount, setParticipantCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isMobile, isChrome } = useSimpleMobileDetection();
+
+  // Apply mobile chat input spacing
+  useEffect(() => {
+    addMobileChatInputSpacing();
+  }, [isMobile, isChrome]);
 
   useEffect(() => {
     if (!belayGroupId || !user) return;
@@ -383,7 +391,21 @@ export default function BelayChat() {
       </div>
 
       {/* Message Input */}
-      <div className="bg-white border-t p-4">
+      <div 
+        ref={chatInputRef}
+        className="bg-white border-t p-4 chat-input-mobile"
+        data-mobile-enhanced={isMobile}
+        data-browser-chrome={isChrome}
+        style={isMobile ? {
+          position: 'sticky',
+          bottom: '0',
+          paddingBottom: '25px',
+          marginBottom: '0',
+          zIndex: 1000,
+          backgroundColor: 'white',
+          borderTop: '1px solid #e5e7eb'
+        } : {}}
+      >
         <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
           <div className="flex-1 relative">
             <Input
@@ -401,6 +423,11 @@ export default function BelayChat() {
           </Button>
         </form>
       </div>
+      
+      {/* Mobile spacer to ensure input is visible above browser navigation */}
+      {isMobile && (
+        <div style={{ height: '25px', flexShrink: 0 }} />
+      )}
     </div>
   );
 }

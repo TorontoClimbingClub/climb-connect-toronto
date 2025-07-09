@@ -27,7 +27,6 @@ export default function Groups() {
   const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'joined' | 'available'>('all');
 
   const handleLeaveClick = (groupId: string) => {
     setLeaveGroupId(groupId);
@@ -77,19 +76,11 @@ export default function Groups() {
   // Combine all groups for filtering
   const allGroups = [...myGroups, ...availableGroups];
   
-  // Filter groups based on search and filter type
+  // Filter groups based on search
   const filteredGroups = allGroups.filter(group => {
     const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    
-    switch (filterType) {
-      case 'joined':
-        return matchesSearch && group.is_member;
-      case 'available':
-        return matchesSearch && !group.is_member;
-      default:
-        return matchesSearch;
-    }
+    return matchesSearch;
   });
 
   const filteredJoinedGroups = filteredGroups.filter(group => group.is_member);
@@ -97,29 +88,17 @@ export default function Groups() {
 
   return (
     <div className="space-y-6 bg-white md:bg-white h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8 overflow-y-auto md:overflow-visible">
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:justify-end">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-          <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              id="group-search"
-              placeholder="Search groups..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-full sm:w-64"
-            />
-          </div>
-          
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as 'all' | 'joined' | 'available')}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-auto"
-          >
-            <option value="all">All Groups</option>
-            <option value="joined">Joined</option>
-            <option value="available">Available</option>
-          </select>
+      {/* Search */}
+      <div className="flex justify-center">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            id="group-search"
+            placeholder="Search groups..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
         </div>
       </div>
 
@@ -134,7 +113,7 @@ export default function Groups() {
       ) : (
         <>
           {/* My Groups Section */}
-          {filteredJoinedGroups.length > 0 && (filterType === 'all' || filterType === 'joined') && (
+          {filteredJoinedGroups.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Groups</h2>
               
@@ -159,23 +138,27 @@ export default function Groups() {
               {/* Mobile Layout */}
               <div className="md:hidden desktop-grid-3">
                 {filteredJoinedGroups.map((group) => (
-                  <GroupCard
+                  <div
                     key={group.id}
-                    group={group}
-                    showChatButton={true}
-                    onLeave={handleLeaveClick}
-                    isLeaving={isLeaving}
-                  />
+                    onClick={() => navigateToGroupChat(group.id, group.name)}
+                  >
+                    <GroupCard
+                      group={group}
+                      showChatButton={true}
+                      onLeave={handleLeaveClick}
+                      isLeaving={isLeaving}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
           {/* Available Groups Section */}
-          {filteredAvailableGroups.length > 0 && (filterType === 'all' || filterType === 'available') && (
+          {filteredAvailableGroups.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                {filterType === 'available' ? 'Available Groups' : 'Groups you might be interested in'}
+                Groups you might be interested in
               </h2>
               
               {/* Desktop Layout */}
@@ -198,12 +181,22 @@ export default function Groups() {
               {/* Mobile Layout */}
               <div className="md:hidden desktop-grid-3">
                 {filteredAvailableGroups.map((group) => (
-                  <GroupCard
+                  <div
                     key={group.id}
-                    group={group}
-                    onJoin={handleJoinGroup}
-                    isJoining={isJoining}
-                  />
+                    onClick={() => {
+                      if (group.is_member) {
+                        navigateToGroupChat(group.id, group.name);
+                      } else {
+                        handleJoinGroup(group.id);
+                      }
+                    }}
+                  >
+                    <GroupCard
+                      group={group}
+                      onJoin={handleJoinGroup}
+                      isJoining={isJoining}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
