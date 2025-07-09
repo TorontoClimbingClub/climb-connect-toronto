@@ -38,6 +38,13 @@ export function ChatInput({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSend();
+      // Force scroll to bottom after sending message
+      setTimeout(() => {
+        const messageContainer = document.querySelector('.chat-scrollbar');
+        if (messageContainer) {
+          messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+      }, 100);
     }
   };
 

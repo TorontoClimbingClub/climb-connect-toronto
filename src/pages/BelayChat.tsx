@@ -105,7 +105,19 @@ export default function BelayChat() {
             .single();
 
           if (messageWithProfile) {
-            setMessages(prev => [...prev, messageWithProfile]);
+            setMessages(prev => {
+              const updatedMessages = [...prev, messageWithProfile];
+              
+              // Force scroll to bottom after adding new message
+              setTimeout(() => {
+                const messageContainer = document.querySelector('.chat-scrollbar');
+                if (messageContainer) {
+                  messageContainer.scrollTop = messageContainer.scrollHeight;
+                }
+              }, 50);
+              
+              return updatedMessages;
+            });
           }
         }
       )

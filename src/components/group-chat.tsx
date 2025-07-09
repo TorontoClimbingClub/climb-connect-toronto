@@ -301,7 +301,17 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
               if (prev.find(m => m.id === messageWithProfile.id)) {
                 return prev;
               }
-              return [...prev, messageWithProfile];
+              const newMessages = [...prev, messageWithProfile];
+              
+              // Force scroll to bottom after adding new message
+              setTimeout(() => {
+                const messageContainer = document.querySelector('.chat-scrollbar');
+                if (messageContainer) {
+                  messageContainer.scrollTop = messageContainer.scrollHeight;
+                }
+              }, 50);
+              
+              return newMessages;
             });
           }
         }

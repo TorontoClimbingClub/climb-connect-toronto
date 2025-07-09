@@ -407,7 +407,17 @@ export default function EventChat() {
             if (current.find(m => m.id === newMsg.id)) {
               return current;
             }
-            return [...current, newMsg];
+            const updatedMessages = [...current, newMsg];
+            
+            // Force scroll to bottom after adding new message
+            setTimeout(() => {
+              const messageContainer = document.querySelector('.chat-scrollbar');
+              if (messageContainer) {
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+              }
+            }, 50);
+            
+            return updatedMessages;
           });
           
         }

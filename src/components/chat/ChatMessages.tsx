@@ -52,9 +52,25 @@ export function ChatMessages({
   useEffect(() => {
     if (viewportRef.current) {
       const scrollContainer = viewportRef.current;
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      });
     }
   }, [messages]);
+
+  // Force scroll to bottom on initial load
+  useEffect(() => {
+    if (viewportRef.current && messages.length > 0) {
+      const scrollContainer = viewportRef.current;
+      // Double requestAnimationFrame for reliability
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+      });
+    }
+  }, [messages.length > 0]);
 
   if (isLoading) {
     return (
