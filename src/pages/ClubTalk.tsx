@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useMobileViewport, applyChatInputPosition } from '@/utils/mobileViewport';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, Trash2, ArrowLeft } from 'lucide-react';
+import { Search, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
-import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
+import { ChatContainer } from '@/components/chat/ChatContainer';
+import { ChatHeader } from '@/components/chat/ChatHeader';
+import { ChatMessages } from '@/components/chat/ChatMessages';
+import { ChatInput } from '@/components/chat/ChatInput';
 import { EventMessageButton } from '@/components/ui/event-message-button';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
@@ -431,14 +432,6 @@ export default function ClubTalk() {
           isDeleteMode={isDeleteMode}
         />
       </ChatInput>
-      
-      <CreateEventModal 
-        open={showCreateEventModal} 
-        onClose={() => setShowCreateEventModal(false)}
-        groupName="Club Talk"
-        chatType="club"
-        chatId="club"
-      />
       
       <CreateEventModal 
         open={showCreateEventModal} 
