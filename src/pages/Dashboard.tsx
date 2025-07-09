@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { useDashboard } from '@/hooks/useDashboard';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Calendar,
@@ -16,56 +16,20 @@ import {
   Clock,
   ArrowRight,
   Shield,
-  Hash,
-  MessageCircle
+  Hash
 } from 'lucide-react';
 
-interface DashboardStats {
-  totalEvents: number;
-  totalGroups: number;
-  totalMessages: number;
-  activeUsers: number;
-}
-
-interface UpcomingEvent {
-  id: string;
-  title: string;
-  location: string;
-  event_date: string;
-  participant_count: number;
-  max_participants?: number;
-  is_participant: boolean;
-}
-
-interface ActiveChat {
-  id: string;
-  name: string;
-  type: 'event' | 'group' | 'club';
-  messageCount: number;
-  lastActivity: string;
-  href: string;
-}
 
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalEvents: 0,
-    totalGroups: 0,
-    totalMessages: 0,
-    activeUsers: 0
-  });
-  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
-  const [activeChats, setActiveChats] = useState<ActiveChat[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { stats, upcomingEvents, activeChats, isLoading } = useDashboard();
   const [isAdmin, setIsAdmin] = useState(false);
   const [eventFilter, setEventFilter] = useState<'all' | 'joined'>('all');
 
-  const { user } = useAuth();
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (user) {
       checkAdminStatus();
-      loadDashboardData();
     }
   }, [user]);
 
@@ -83,76 +47,7 @@ export default function Dashboard() {
 
       setIsAdmin(data?.is_admin || false);
     } catch (error) {
-      console.error('Error checking admin status:', error);
       setIsAdmin(false);
-    }
-  };
-
-  const loadDashboardData = async () => {
-    try {
-      // Load stats
-      const [eventsCount, groupsCount, messagesCount, usersCount] = await Promise.all([
-        supabase.from('events').select('id', { count: 'exact', head: true }),
-        supabase.from('groups').select('id', { count: 'exact', head: true }),
-        supabase.from('messages').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true })
-      ]);
-
-      setStats({
-        totalEvents: eventsCount.count || 0,
-        totalGroups: groupsCount.count || 0,
-        totalMessages: messagesCount.count || 0,
-        activeUsers: usersCount.count || 0
-      });
-
-      // Load upcoming events with participant status
-      const { data: events } = await supabase
-        .from('events')
-        .select(`
-          id,
-          title,
-          location,
-          event_date,
-          max_participants,
-          event_participants(count)
-        `)
-        .gte('event_date', new Date().toISOString())
-        .order('event_date', { ascending: true })
-        .limit(10);
-
-      if (events) {
-        // Check participation status for each event
-        const eventsWithParticipation = await Promise.all(
-          events.map(async (event) => {
-            const { data: participation } = await supabase
-              .from('event_participants')
-              .select('user_id')
-              .eq('event_id', event.id)
-              .eq('user_id', user?.id)
-              .single();
-
-            return {
-              id: event.id,
-              title: event.title,
-              location: event.location,
-              event_date: event.event_date,
-              participant_count: Array.isArray(event.event_participants) ? event.event_participants.length : 0,
-              max_participants: event.max_participants,
-              is_participant: !!participation
-            };
-          })
-        );
-
-        setUpcomingEvents(eventsWithParticipation);
-      }
-
-      // Load most active chats
-      await loadMostActiveChats();
-
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -179,98 +74,6 @@ export default function Dashboard() {
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
-  const loadMostActiveChats = async () => {
-    try {
-      const chats: ActiveChat[] = [];
-
-      // Get event chats with message counts
-      const { data: eventChats } = await supabase
-        .from('events')
-        .select(`
-          id,
-          title,
-          event_messages(count),
-          event_messages!inner(created_at)
-        `)
-        .order('event_messages(created_at)', { ascending: false })
-        .limit(10);
-
-      if (eventChats) {
-        eventChats.forEach(event => {
-          const messageCount = Array.isArray(event.event_messages) ? event.event_messages.length : 0;
-          if (messageCount > 0) {
-            chats.push({
-              id: event.id,
-              name: event.title,
-              type: 'event',
-              messageCount,
-              lastActivity: event.event_messages[0]?.created_at || '',
-              href: `/events/${event.id}/chat`
-            });
-          }
-        });
-      }
-
-      // Get group chats with message counts
-      const { data: groupChats } = await supabase
-        .from('groups')
-        .select(`
-          id,
-          name,
-          group_messages(count),
-          group_messages!inner(created_at)
-        `)
-        .order('group_messages(created_at)', { ascending: false })
-        .limit(10);
-
-      if (groupChats) {
-        groupChats.forEach(group => {
-          const messageCount = Array.isArray(group.group_messages) ? group.group_messages.length : 0;
-          if (messageCount > 0) {
-            chats.push({
-              id: group.id,
-              name: group.name,
-              type: 'group',
-              messageCount,
-              lastActivity: group.group_messages[0]?.created_at || '',
-              href: `/groups/${group.id}/chat`
-            });
-          }
-        });
-      }
-
-      // Get club chat message count
-      const { count: clubMessageCount } = await supabase
-        .from('club_messages')
-        .select('id', { count: 'exact', head: true });
-
-      if (clubMessageCount && clubMessageCount > 0) {
-        const { data: latestClubMessage } = await supabase
-          .from('club_messages')
-          .select('created_at')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        chats.push({
-          id: 'club-talk',
-          name: 'Club Talk',
-          type: 'club',
-          messageCount: clubMessageCount,
-          lastActivity: latestClubMessage?.created_at || '',
-          href: '/club-talk'
-        });
-      }
-
-      // Sort by message count and take top 5
-      chats.sort((a, b) => b.messageCount - a.messageCount);
-      setActiveChats(chats.slice(0, 5));
-
-    } catch (error) {
-      console.error('Error loading active chats:', error);
-      setActiveChats([]);
-    }
-  };
 
   const getChatIcon = (type: 'event' | 'group' | 'club') => {
     switch (type) {
@@ -297,7 +100,7 @@ export default function Dashboard() {
 
 
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
@@ -322,7 +125,7 @@ export default function Dashboard() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalEvents}</div>
+              <div className="text-2xl font-bold">{stats?.totalEvents || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Total events created
               </p>
@@ -335,7 +138,7 @@ export default function Dashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalGroups}</div>
+              <div className="text-2xl font-bold">{stats?.totalGroups || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Active climbing groups
               </p>
@@ -348,7 +151,7 @@ export default function Dashboard() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMessages}</div>
+              <div className="text-2xl font-bold">{stats?.totalMessages || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Community messages
               </p>
@@ -361,7 +164,7 @@ export default function Dashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.activeUsers}</div>
+              <div className="text-2xl font-bold">{stats?.activeUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Registered members
               </p>
@@ -395,7 +198,7 @@ export default function Dashboard() {
                   : ''
               }`}
             >
-              {filteredEvents.length > 0 ? (
+              {filteredEvents && filteredEvents.length > 0 ? (
                 filteredEvents.map((event) => (
                   <Link
                     key={event.id}
@@ -462,7 +265,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {activeChats.length > 0 ? (
+              {activeChats && activeChats.length > 0 ? (
                 activeChats.map((chat) => {
                   const Icon = getChatIcon(chat.type);
                   return (
