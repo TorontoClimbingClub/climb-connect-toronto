@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
+import { useMobileViewport, applyChatInputPosition } from '@/utils/mobileViewport';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, Trash2 } from 'lucide-react';
+import { Send, Search, Trash2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
 import { EventMessageButton } from '@/components/ui/event-message-button';
@@ -40,8 +41,9 @@ export default function ClubTalk() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const { isMobile, isChrome } = useSimpleMobileDetection();
+  const viewportState = useMobileViewport();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -281,10 +283,12 @@ export default function ClubTalk() {
     scrollToBottom();
   }, [messages]);
 
-  // Apply mobile chat input spacing
+  // Apply mobile chat input positioning
   useEffect(() => {
-    addMobileChatInputSpacing();
-  }, [isMobile, isChrome]);
+    if (chatInputRef.current && viewportState.isMobile) {
+      applyChatInputPosition(chatInputRef.current, viewportState);
+    }
+  }, [viewportState]);
 
   // Filter messages based on search
   const filteredMessages = messages.filter(message =>
@@ -343,12 +347,22 @@ export default function ClubTalk() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white">
+    <div className={`w-full flex flex-col bg-white ${viewportState.isMobile ? 'chat-container' : 'h-full'}`}>
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white">
-        <div>
-          <h3 className="font-semibold">Club Talk</h3>
-          <p className="text-sm text-gray-500">Toronto Climbing Club discussion • {messages.length} messages</p>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="p-1"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h3 className="font-semibold">Club Talk</h3>
+            <p className="text-sm text-gray-500">Toronto Climbing Club discussion • {messages.length} messages</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {showSearch && (
@@ -481,18 +495,9 @@ export default function ClubTalk() {
       {/* Message Input */}
       <div 
         ref={chatInputRef}
-        className="p-4 border-t bg-white flex-shrink-0 sticky bottom-0 chat-input-mobile"
-        data-mobile-enhanced={isMobile}
-        data-browser-chrome={isChrome}
-        style={isMobile ? {
-          position: 'sticky',
-          bottom: '0',
-          paddingBottom: '25px',
-          marginBottom: '0',
-          zIndex: 1000,
-          backgroundColor: 'white',
-          borderTop: '1px solid #e5e7eb'
-        } : {}}
+        className={`p-4 border-t bg-white flex-shrink-0 z-50 ${
+          viewportState.isMobile ? '' : 'sticky bottom-0'
+        }`}
       >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between max-w-4xl mx-auto">
@@ -544,11 +549,6 @@ export default function ClubTalk() {
           </Button>
         </div>
       </div>
-      
-      {/* Mobile spacer to ensure input is visible above browser navigation */}
-      {isMobile && (
-        <div style={{ height: '25px', flexShrink: 0 }} />
-      )}
       
       <CreateEventModal 
         open={showCreateEventModal} 
