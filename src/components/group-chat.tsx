@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
+import { useMobileViewport, applyChatInputPosition } from '@/utils/mobileViewport';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,7 +55,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isMobile, isChrome } = useSimpleMobileDetection();
+  const viewportState = useMobileViewport();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -279,10 +279,12 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     }
   }, [user, checkAdminStatus]);
 
-  // Apply mobile chat input spacing
+  // Apply mobile chat input positioning
   useEffect(() => {
-    addMobileChatInputSpacing();
-  }, [isMobile, isChrome]);
+    if (chatInputRef.current && viewportState.isMobile) {
+      applyChatInputPosition(chatInputRef.current, viewportState);
+    }
+  }, [viewportState]);
 
   // Set up real-time subscription
   useEffect(() => {
@@ -416,7 +418,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white">
+    <div className={`w-full flex flex-col bg-white ${viewportState.isMobile ? 'chat-container' : 'h-full'}`}>
       {/* Chat Header */}
       <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white">
         <div className="flex items-center gap-3">
@@ -573,18 +575,9 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       {/* Message Input - Fixed to bottom */}
       <div 
         ref={chatInputRef}
-        className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0 chat-input-mobile"
-        data-mobile-enhanced={isMobile}
-        data-browser-chrome={isChrome}
-        style={isMobile ? {
-          position: 'sticky',
-          bottom: '0',
-          paddingBottom: '25px',
-          marginBottom: '0',
-          zIndex: 1000,
-          backgroundColor: 'white',
-          borderTop: '1px solid #e5e7eb'
-        } : {}}
+        className={`p-4 border-t flex-shrink-0 bg-white z-50 ${
+          viewportState.isMobile ? 'chat-input-sticky' : 'sticky bottom-0'
+        }`}
       >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
@@ -641,10 +634,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         </div>
       </div>
       
-      {/* Mobile spacer to ensure input is visible above browser navigation */}
-      {isMobile && (
-        <div style={{ height: '25px', flexShrink: 0 }} />
-      )}
 
       <CreateEventModal 
         open={showCreateEventModal} 
