@@ -25,6 +25,7 @@ interface Event {
   created_at: string;
   participant_count: number;
   is_participant: boolean;
+  has_unread?: boolean;
   profiles: {
     display_name: string;
   };
@@ -200,6 +201,40 @@ export default function Events() {
     } finally {
       // Clear loading state
       setJoiningEventId(null);
+    }
+  };
+
+  const handleLeaveClick = async (eventId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update UI optimistically
+      setEvents(prev => prev.map(event => 
+        event.id === eventId 
+          ? { ...event, is_participant: false, participant_count: Math.max(0, event.participant_count - 1) }
+          : event
+      ));
+
+      toast({
+        title: "Left event successfully",
+      });
+
+      // Refresh data to ensure consistency
+      loadEvents();
+    } catch (error: any) {
+      console.error('Error leaving event:', error);
+      toast({
+        title: "Failed to leave event",
+        variant: "destructive",
+      });
     }
   };
 

@@ -77,8 +77,7 @@ export function useKeyboardShortcuts() {
     },
     {
       key: '/',
-      action: (e: KeyboardEvent) => {
-        e.preventDefault();
+      action: () => {
         const searchInput = document.getElementById('global-search') || 
                            document.getElementById('event-search') || 
                            document.getElementById('group-search');
