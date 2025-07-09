@@ -6,26 +6,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Calendar, LogOut, Trash2 } from 'lucide-react';
+import { Plus, Calendar, LogOut, Trash2, Users } from 'lucide-react';
 
 interface ChatActionsMenuProps {
   onCreateEvent: () => void;
+  onFindPartners?: () => void;
   onLeave?: () => void;
   leaveText?: string;
   className?: string;
   isAdmin?: boolean;
   onDeleteMessages?: () => void;
   isDeleteMode?: boolean;
+  isGymChat?: boolean;
 }
 
 export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({
   onCreateEvent,
+  onFindPartners,
   onLeave,
   leaveText,
   className = "",
   isAdmin = false,
   onDeleteMessages,
-  isDeleteMode = false
+  isDeleteMode = false,
+  isGymChat = false
 }) => {
   return (
     <DropdownMenu>
@@ -40,6 +44,12 @@ export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" side="top" className="w-48">
+        {isGymChat && onFindPartners && (
+          <DropdownMenuItem onClick={onFindPartners}>
+            <Users className="mr-2 h-4 w-4" />
+            Find Partners
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={onCreateEvent}>
           <Calendar className="mr-2 h-4 w-4" />
           Create Event

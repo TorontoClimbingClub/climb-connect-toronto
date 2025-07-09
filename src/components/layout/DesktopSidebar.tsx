@@ -12,7 +12,8 @@ import {
   Users, 
   MessageCircle, 
   Calendar, 
-  Home
+  Home,
+  UserCheck
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -36,6 +37,7 @@ export function DesktopSidebar() {
   const navigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/', icon: Home },
     { name: 'Events', href: '/events', icon: Calendar, badge: unreadCounts.events },
+    { name: 'Belay Groups', href: '/belay-groups', icon: UserCheck, badge: unreadCounts.belayGroups },
     { name: 'Club Talk', href: '/club-talk', icon: Hash, badge: unreadCounts.clubTalk },
     { name: 'Gym Groups', href: '/groups', icon: Users, badge: unreadCounts.groups },
     { name: 'Community', href: '/chat', icon: MessageCircle, badge: unreadCounts.community },

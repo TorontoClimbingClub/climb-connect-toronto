@@ -30,7 +30,11 @@ export function EventCard({
 
   if (compact) {
     return (
-      <div className="border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 cursor-pointer transition-colors p-4">
+      <div className={`border rounded-lg cursor-pointer transition-colors p-4 ${
+        event.is_participant 
+          ? 'border-orange-400 hover:border-orange-500 hover:bg-gray-50' 
+          : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+      }`}>
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold text-gray-900 truncate">{event.title}</h3>
@@ -54,33 +58,28 @@ export function EventCard({
           </div>
           
           <div className="flex items-center gap-3 ml-6">
-            {event.is_participant ? (
-              <Button variant="default" size="sm" asChild className="pointer-events-none">
-                <Link to={`/events/${event.id}/chat`}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Open Chat
-                </Link>
-              </Button>
-            ) : (
-              <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
-                isActionLoading
-                  ? 'bg-gray-100 text-gray-600'
-                  : isFull
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-green-100 text-green-800'
-              }`}>
-                {isActionLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin inline" />
-                    {isJoining ? 'Joining...' : 'Leaving...'}
-                  </>
-                ) : isFull ? (
-                  'Full'
-                ) : (
-                  'Join Event'
-                )}
-              </div>
-            )}
+            <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
+              event.is_participant 
+                ? 'bg-gray-100 text-gray-800'
+                : isActionLoading
+                ? 'bg-gray-100 text-gray-600'
+                : isFull
+                ? 'bg-red-100 text-red-800'
+                : 'bg-green-100 text-green-800'
+            }`}>
+              {event.is_participant ? (
+                'Open Chat'
+              ) : isActionLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin inline" />
+                  {isJoining ? 'Joining...' : 'Leaving...'}
+                </>
+              ) : isFull ? (
+                'Full'
+              ) : (
+                'Join Event'
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -88,15 +87,14 @@ export function EventCard({
   }
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`cursor-pointer transition-colors ${
+      event.is_participant 
+        ? 'border-orange-400 hover:border-orange-500 hover:bg-gray-50' 
+        : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+    }`}>
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{event.title}</CardTitle>
-          {event.is_participant && (
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              Joined
-            </Badge>
-          )}
         </div>
         <CardDescription>{event.description}</CardDescription>
       </CardHeader>
@@ -110,62 +108,37 @@ export function EventCard({
             <MapPin className="h-4 w-4 mr-2" />
             {event.location}
           </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <Users className="h-4 w-4 mr-2" />
-            {event.participant_count}{event.max_participants ? `/${event.max_participants}` : ''} participants
-          </div>
         </div>
 
-        {event.is_participant ? (
-          <div className="flex gap-2">
-            {showChatButton && (
-              <Button variant="default" size="sm" asChild className="flex-1">
-                <Link to={`/events/${event.id}/chat`}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Chat
-                </Link>
-              </Button>
-            )}
-            {onLeave && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onLeave(event.id)}
-                disabled={isLeaving}
-              >
-                {isLeaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Leaving...
-                  </>
-                ) : (
-                  'Leave'
-                )}
-              </Button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <Users className="h-4 w-4" />
+            <span>{event.participant_count}{event.max_participants ? `/${event.max_participants}` : ''} participants</span>
+          </div>
+          
+          <div className={`px-3 py-1 rounded-md text-sm font-medium pointer-events-none ${
+            event.is_participant 
+              ? 'bg-gray-100 text-gray-800'
+              : isActionLoading
+              ? 'bg-gray-100 text-gray-600'
+              : isFull
+              ? 'bg-red-100 text-red-800'
+              : 'bg-green-100 text-green-800'
+          }`}>
+            {event.is_participant ? (
+              'Open Chat'
+            ) : isActionLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin inline" />
+                {isJoining ? 'Joining...' : 'Leaving...'}
+              </>
+            ) : isFull ? (
+              'Full'
+            ) : (
+              'Join Event'
             )}
           </div>
-        ) : (
-          onJoin && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => onJoin(event.id)}
-              disabled={isActionLoading || isFull}
-              className="w-full"
-            >
-              {isJoining ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Joining...
-                </>
-              ) : isFull ? (
-                'Full'
-              ) : (
-                'Join'
-              )}
-            </Button>
-          )
-        )}
+        </div>
       </CardContent>
     </Card>
   );

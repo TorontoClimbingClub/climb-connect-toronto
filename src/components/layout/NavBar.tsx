@@ -5,16 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { Mountain, Menu, Calendar, User, LogOut, Users, MessageCircle, Hash } from 'lucide-react';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { Mountain, Menu, Calendar, User, LogOut, Users, MessageCircle, Hash, UserCheck } from 'lucide-react';
 
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { userProfile } = useUserProfile();
   const location = useLocation();
 
   const navigation = [
     { name: 'Club Talk', shortName: 'Club', href: '/club-talk', icon: Hash },
     { name: 'Gym Talk', shortName: 'Gym', href: '/groups', icon: Users },
+    { name: 'Belay Groups', shortName: 'Belay', href: '/belay-groups', icon: UserCheck },
     { name: 'Crag Talk', shortName: 'Crag', href: '/chat', icon: MessageCircle },
     { name: 'Events', shortName: 'Events', href: '/events', icon: Calendar },
   ];
@@ -62,7 +65,7 @@ export function NavBar() {
                 <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-green-300 transition-all">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback>
-                    {user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
+                    {userProfile?.display_name?.[0] || user?.user_metadata?.display_name?.[0] || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Link>
@@ -90,12 +93,12 @@ export function NavBar() {
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
                       <AvatarFallback>
-                        {user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
+                        {userProfile?.display_name?.[0] || user?.user_metadata?.display_name?.[0] || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="text-sm font-medium">
-                        {user?.user_metadata?.display_name || user?.email}
+                        {userProfile?.display_name || user?.user_metadata?.display_name || 'User'}
                       </p>
                     </div>
                   </Link>

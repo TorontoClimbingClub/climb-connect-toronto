@@ -11,10 +11,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
 import { EventMessageButton } from '@/components/ui/event-message-button';
+import { BelayGroupMessageButton } from '@/components/ui/belay-group-message-button';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
+import { CreateBelayGroupModal } from '@/components/chat/CreateBelayGroupModal';
 import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
 import { isEventCreationMessage } from '@/utils/eventMessageUtils';
+import { isBelayGroupMessage } from '@/utils/belayGroupUtils';
 
 interface GroupMessage {
   id: string;
@@ -42,6 +45,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showCreateBelayGroupModal, setShowCreateBelayGroupModal] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
@@ -213,6 +217,10 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
   const handleCreateEvent = () => {
     setShowCreateEventModal(true);
+  };
+
+  const handleFindPartners = () => {
+    setShowCreateBelayGroupModal(true);
   };
 
   const handleLeaveGroup = async () => {
@@ -525,6 +533,11 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                           content={message.content}
                           isOwnMessage={isOwnMessage}
                         />
+                      ) : isBelayGroupMessage(message.content) ? (
+                        <BelayGroupMessageButton 
+                          message={message.content}
+                          isOwnMessage={isOwnMessage}
+                        />
                       ) : shouldDisplayWithoutBubble(message.content) ? (
                         <div className="text-2xl sm:text-3xl">
                           {message.content}
@@ -570,11 +583,13 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         <div className="flex gap-2 items-end">
           <ChatActionsMenu 
             onCreateEvent={handleCreateEvent}
+            onFindPartners={handleFindPartners}
             onLeave={handleLeaveClick}
             leaveText="Leave Group"
             isAdmin={isAdmin}
             onDeleteMessages={toggleDeleteMode}
             isDeleteMode={isDeleteMode}
+            isGymChat={true}
           />
           <div className="flex-1 relative">
             <Input
@@ -611,6 +626,13 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         groupName={groupName}
         chatType="group"
         chatId={groupId}
+      />
+
+      <CreateBelayGroupModal 
+        open={showCreateBelayGroupModal} 
+        onClose={() => setShowCreateBelayGroupModal(false)}
+        gymId={groupId}
+        gymName={groupName}
       />
       
       {/* Leave Group Confirmation Dialog */}

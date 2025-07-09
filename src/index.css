@@ -1,6 +1,3 @@
-/* Import chat transitions - must be first */
-@import './styles/chat-transitions.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -576,7 +573,6 @@ All colors MUST be HSL.
   }
 
 /* Chat Transitions */
-@import url('./styles/chat-transitions.css');
 
 /* Layout System - CSS-First Responsive Design */
 .layout-container {

@@ -25,7 +25,7 @@ export default function Events() {
   if (!user) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="text-center md:text-left py-8 md:py-0">
           <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
         </div>
         <Card className="text-center p-8">
@@ -42,7 +42,7 @@ export default function Events() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="text-center md:text-left py-8 md:py-0">
           <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -58,7 +58,7 @@ export default function Events() {
   return (
     <div className="space-y-6 relative h-full overflow-y-auto md:overflow-visible">
       {/* Header */}
-      <div>
+      <div className="text-center md:text-left py-8 md:py-0">
         <h1 className="text-3xl font-bold text-gray-900">Climbing Events</h1>
         <p className="text-gray-600 mt-1">Discover and join climbing events in Toronto</p>
       </div>
@@ -89,13 +89,17 @@ export default function Events() {
           {/* Mobile Layout */}
           <div className="md:hidden desktop-grid-3">
             {myEvents.map((event) => (
-              <EventCard
+              <div
                 key={event.id}
-                event={event}
-                showChatButton={true}
-                onLeave={leaveEvent}
-                isLeaving={isLeaving}
-              />
+                onClick={() => navigateToEventChat(event.id)}
+              >
+                <EventCard
+                  event={event}
+                  showChatButton={true}
+                  onLeave={leaveEvent}
+                  isLeaving={isLeaving}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -120,7 +124,13 @@ export default function Events() {
             {availableEvents.map((event) => (
               <div
                 key={event.id}
-                onClick={() => joinEvent(event.id)}
+                onClick={() => {
+                  if (event.is_participant) {
+                    navigateToEventChat(event.id);
+                  } else {
+                    joinEvent(event.id);
+                  }
+                }}
               >
                 <EventCard
                   event={event}
@@ -135,12 +145,22 @@ export default function Events() {
           {/* Mobile Layout */}
           <div className="md:hidden desktop-grid-3">
             {availableEvents.map((event) => (
-              <EventCard
+              <div
                 key={event.id}
-                event={event}
-                onJoin={joinEvent}
-                isJoining={isJoining}
-              />
+                onClick={() => {
+                  if (event.is_participant) {
+                    navigateToEventChat(event.id);
+                  } else {
+                    joinEvent(event.id);
+                  }
+                }}
+              >
+                <EventCard
+                  event={event}
+                  onJoin={joinEvent}
+                  isJoining={isJoining}
+                />
+              </div>
             ))}
           </div>
         </>

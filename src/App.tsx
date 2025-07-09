@@ -14,6 +14,8 @@ import EventChat from "./pages/EventChat";
 import Profile from "./pages/Profile";
 import Groups from "./pages/Groups";
 import GroupChat from "./pages/GroupChat";
+import BelayGroups from "./pages/BelayGroups";
+import BelayChat from "./pages/BelayChat";
 import Community from "./pages/Community";
 import ClubTalk from "./pages/ClubTalk";
 import Administrator from "./pages/Administrator";
@@ -70,6 +72,18 @@ const App = () => (
                 <Layout useDesktopLayout={true} fullscreen>
                   <GroupChat />
                 </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/belay-groups" element={
+              <ProtectedRoute>
+                <Layout useDesktopLayout={true} layoutType="two-panel">
+                  <BelayGroups />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/belay-groups/:id/chat" element={
+              <ProtectedRoute>
+                <BelayChat />
               </ProtectedRoute>
             } />
             <Route path="/chat" element={
