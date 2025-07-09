@@ -220,7 +220,19 @@ export default function Administrator() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card 
+          className="admin-stats-card"
+          style={{ 
+            transition: 'none', 
+            transform: 'none',
+            boxShadow: 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transition = 'none';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px';
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-blue-600" />
@@ -230,7 +242,19 @@ export default function Administrator() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="admin-stats-card"
+          style={{ 
+            transition: 'none', 
+            transform: 'none',
+            boxShadow: 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transition = 'none';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px';
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
             <MessageSquare className="h-4 w-4 text-green-600" />
@@ -240,7 +264,19 @@ export default function Administrator() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="admin-stats-card"
+          style={{ 
+            transition: 'none', 
+            transform: 'none',
+            boxShadow: 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transition = 'none';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px';
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Events</CardTitle>
             <Calendar className="h-4 w-4 text-orange-600" />
@@ -250,7 +286,19 @@ export default function Administrator() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="admin-stats-card"
+          style={{ 
+            transition: 'none', 
+            transform: 'none',
+            boxShadow: 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transition = 'none';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = 'rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px';
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Groups</CardTitle>
             <Users className="h-4 w-4 text-purple-600" />

@@ -18,20 +18,32 @@ export function Layout({
   contextPanel,
   layoutType = 'two-panel'
 }: LayoutProps) {
-  const [isDesktop, setIsDesktop] = useState(false);
+  // Better initial state to reduce flash - assume desktop if window is wide enough initially
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return false; // SSR fallback
+  });
 
   useEffect(() => {
     const checkScreenSize = () => {
       setIsDesktop(window.innerWidth >= 768); // md breakpoint
     };
 
-    checkScreenSize();
+    // Only set up listener if initial check differs
+    const currentIsDesktop = window.innerWidth >= 768;
+    if (currentIsDesktop !== isDesktop) {
+      setIsDesktop(currentIsDesktop);
+    }
+
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  }, [isDesktop]);
 
   // Auto-detect layout: use desktop layout only if requested AND on desktop screen
   const shouldUseDesktopLayout = useDesktopLayout && isDesktop;
+  
   // Mobile-first layout (original behavior)
   const MobileLayout = () => (
     <div className={`${fullscreen ? 'h-screen' : 'min-h-screen'} bg-gray-50 flex flex-col overflow-x-hidden w-full max-w-full`}>

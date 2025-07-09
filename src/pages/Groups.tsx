@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -287,13 +287,8 @@ export default function Groups() {
 
   return (
     <div className="space-y-6 bg-white md:bg-white min-h-full -m-4 md:-m-6 lg:-m-8 p-4 md:p-6 lg:p-8">
-        {/* Header with Search and Filters */}
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gym Groups</h1>
-            <p className="text-gray-600 mt-1">Find partners at your local climbing gym</p>
-          </div>
-          
+        {/* Search and Filters */}
+        <div className="flex items-center space-x-4 justify-end">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -331,8 +326,22 @@ export default function Groups() {
           {/* Desktop Layout: Each group as a row */}
           <div className="hidden md:block space-y-4">
           {filteredGroups.map((group) => (
-            <Card key={group.id} className="desktop-card-hover">
-              <CardContent className="p-6">
+            <div
+              key={group.id}
+              className={`border rounded-lg cursor-pointer transition-colors ${
+                group.is_member 
+                  ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
+                  : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+              }`}
+              onClick={() => {
+                if (group.is_member) {
+                  navigateToGroupChat(group.id, group.name);
+                } else {
+                  handleJoinGroup(group.id);
+                }
+              }}
+            >
+              <div className="p-6">
                 <div className="flex items-center justify-between">
                   {/* Left section: Avatar, name, description, and stats */}
                   <div className="flex items-center gap-4 flex-1">
@@ -346,14 +355,7 @@ export default function Groups() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-xl font-semibold text-gray-900">{group.name}</h3>
-                        {group.is_member && (
-                          <Badge variant="secondary">Member</Badge>
-                        )}
                       </div>
-                      
-                      <p className="text-gray-600 mb-3 max-w-2xl">
-                        {group.description || "No description available"}
-                      </p>
                       
                       <div className="flex items-center gap-1 text-sm text-gray-500">
                         <Users className="h-4 w-4" />
@@ -362,50 +364,42 @@ export default function Groups() {
                     </div>
                   </div>
                   
-                  {/* Right section: Action buttons */}
+                  {/* Right section: Status indicator */}
                   <div className="flex items-center gap-3 ml-6">
-                    {group.is_member ? (
-                      <>
-                        <Button
-                          onClick={() => navigateToGroupChat(group.id, group.name)}
-                          className="min-w-[140px]"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Open Chat
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleLeaveClick(group.id)}
-                          className="min-w-[100px]"
-                        >
-                          Leave
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        onClick={() => handleJoinGroup(group.id)}
-                        className="min-w-[140px]"
-                      >
-                        Join Group
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    )}
+                    <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
+                      group.is_member 
+                        ? 'bg-orange-100 text-orange-800'
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {group.is_member ? 'Open Chat' : 'Join Group'}
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
         {/* Mobile Layout: Keep original grid layout */}
         <div className="md:hidden desktop-grid-3">
           {filteredGroups.map((group) => (
-          <Card 
-            key={group.id} 
-            className="desktop-card-hover"
+          <div
+            key={group.id}
+            className={`border rounded-lg cursor-pointer transition-colors ${
+              group.is_member 
+                ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
+                : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+            }`}
+            onClick={() => {
+              if (group.is_member) {
+                navigateToGroupChat(group.id, group.name);
+              } else {
+                handleJoinGroup(group.id);
+              }
+            }}
           >
-            <CardHeader>
-              <div className="flex items-start justify-between">
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={group.avatar_url || undefined} />
@@ -414,57 +408,29 @@ export default function Groups() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">
+                    <h3 className="text-lg font-semibold text-gray-900">
                       {group.name}
-                    </CardTitle>
-                    {group.is_member && (
-                      <Badge variant="secondary" className="mt-1">
-                        Member
-                      </Badge>
-                    )}
+                    </h3>
                   </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <CardDescription>{group.description}</CardDescription>
               
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 text-sm text-gray-500">
                   <Users className="h-4 w-4" />
                   <span>{group.member_count || 0} members</span>
                 </div>
+                
+                <div className={`px-3 py-1 rounded-md text-sm font-medium pointer-events-none ${
+                  group.is_member 
+                    ? 'bg-orange-100 text-orange-800'
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {group.is_member ? 'Open Chat' : 'Join Group'}
+                </div>
               </div>
-
-              <div className="flex gap-2">
-                {group.is_member ? (
-                  <>
-                    <Button
-                      className="flex-1"
-                      onClick={() => navigateToGroupChat(group.id, group.name)}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Open Chat
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleLeaveClick(group.id)}
-                    >
-                      Leave
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    className="w-full"
-                    onClick={() => handleJoinGroup(group.id)}
-                  >
-                    Join Group
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
           ))}
         </div>
         </>

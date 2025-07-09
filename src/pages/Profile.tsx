@@ -41,6 +41,14 @@ interface EventChat {
   participant_count?: number;
 }
 
+interface CommunityGroup {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  member_count?: number;
+}
+
 
 export default function Profile() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -52,6 +60,7 @@ export default function Profile() {
   // Admin section states
   const [groupChats, setGroupChats] = useState<GroupChat[]>([]);
   const [eventChats, setEventChats] = useState<EventChat[]>([]);
+  const [communityGroups, setCommunityGroups] = useState<CommunityGroup[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
@@ -59,6 +68,11 @@ export default function Profile() {
   const [editGroupDescription, setEditGroupDescription] = useState('');
   const [editEventTitle, setEditEventTitle] = useState('');
   const [editEventDescription, setEditEventDescription] = useState('');
+  
+  // Community group editing states
+  const [editingCommunityId, setEditingCommunityId] = useState<string | null>(null);
+  const [editCommunityName, setEditCommunityName] = useState('');
+  const [editCommunityDescription, setEditCommunityDescription] = useState('');
   const [editEventDate, setEditEventDate] = useState('');
   const [editEventLocation, setEditEventLocation] = useState('');
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
@@ -250,12 +264,51 @@ export default function Profile() {
   const cancelEditing = () => {
     setEditingGroupId(null);
     setEditingEventId(null);
+    setEditingCommunityId(null);
     setEditGroupName('');
     setEditGroupDescription('');
     setEditEventTitle('');
     setEditEventDescription('');
     setEditEventDate('');
     setEditEventLocation('');
+    setEditCommunityName('');
+    setEditCommunityDescription('');
+  };
+  
+  const startEditingCommunity = (community: CommunityGroup) => {
+    setEditingCommunityId(community.id);
+    setEditCommunityName(community.name);
+    setEditCommunityDescription(community.description || '');
+  };
+  
+  const updateCommunityGroup = async (id: string, name: string, description: string) => {
+    try {
+      const { error } = await supabase
+        .from('groups')
+        .update({ 
+          name: name.trim(),
+          description: description.trim() || null 
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Community group updated successfully.",
+      });
+
+      // Refresh the data
+      loadAdminChats();
+      cancelEditing();
+    } catch (error) {
+      console.error('Error updating community group:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update community group.",
+        variant: "destructive",
+      });
+    }
   };
 
   const deleteGroup = async (groupId: string) => {
@@ -593,7 +646,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="groups" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="groups" className="flex items-center space-x-2">
                   <MessageSquare className="h-4 w-4" />
                   <span>Group Chats</span>
@@ -601,6 +654,10 @@ export default function Profile() {
                 <TabsTrigger value="events" className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4" />
                   <span>Event Chats</span>
+                </TabsTrigger>
+                <TabsTrigger value="community" className="flex items-center space-x-2">
+                  <Settings className="h-4 w-4" />
+                  <span>Community</span>
                 </TabsTrigger>
               </TabsList>
               
@@ -864,6 +921,108 @@ export default function Profile() {
                                         </AlertDialogFooter>
                                       </AlertDialogContent>
                                     </AlertDialog>
+                                  </div>
+                                )}
+                              </div>
+                            </Card>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="community" className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Community Groups</h3>
+                    <Badge variant="outline">{communityGroups.length} communities</Badge>
+                  </div>
+                  
+                  <div className="h-64 overflow-y-auto border rounded-lg p-2">
+                    {adminLoading ? (
+                      <div className="space-y-2">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-16 bg-gray-200 rounded-lg"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {communityGroups.length === 0 ? (
+                          <div className="flex items-center justify-center h-32 text-gray-500">
+                            <div className="text-center">
+                              <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>No community groups found</p>
+                            </div>
+                          </div>
+                        ) : (
+                          communityGroups.map((community) => (
+                            <Card key={community.id} className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  {editingCommunityId === community.id ? (
+                                    <div className="space-y-3 w-full">
+                                      <div className="flex items-center space-x-2">
+                                        <Input
+                                          value={editCommunityName}
+                                          onChange={(e) => setEditCommunityName(e.target.value)}
+                                          className="flex-1"
+                                          placeholder="Community name"
+                                        />
+                                      </div>
+                                      <Textarea
+                                        value={editCommunityDescription}
+                                        onChange={(e) => setEditCommunityDescription(e.target.value)}
+                                        className="w-full"
+                                        placeholder="Community description (optional)"
+                                        rows={2}
+                                      />
+                                      <div className="flex space-x-2">
+                                        <Button
+                                          size="sm"
+                                          onClick={() => updateCommunityGroup(community.id, editCommunityName, editCommunityDescription)}
+                                          disabled={!editCommunityName.trim()}
+                                        >
+                                          <Save className="h-4 w-4 mr-1" />
+                                          Save
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={cancelEditing}
+                                        >
+                                          <X className="h-4 w-4 mr-1" />
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center space-x-2">
+                                      <div>
+                                        <p className="font-medium">{community.name}</p>
+                                        {community.description && (
+                                          <p className="text-sm text-gray-600 mb-1">{community.description}</p>
+                                        )}
+                                        <p className="text-sm text-gray-500">
+                                          {community.member_count} members • Created {format(new Date(community.created_at), 'MMM d, yyyy')}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                {editingCommunityId !== community.id && (
+                                  <div className="flex space-x-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => startEditingCommunity(community)}
+                                      title="Edit Community"
+                                    >
+                                      <Edit2 className="h-4 w-4" />
+                                    </Button>
                                   </div>
                                 )}
                               </div>

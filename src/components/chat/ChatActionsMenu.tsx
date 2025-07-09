@@ -6,16 +6,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, LogOut, Trash2 } from 'lucide-react';
 
 interface ChatActionsMenuProps {
   onCreateEvent: () => void;
+  onLeave?: () => void;
+  leaveText?: string;
   className?: string;
+  isAdmin?: boolean;
+  onDeleteMessages?: () => void;
+  isDeleteMode?: boolean;
 }
 
 export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({
   onCreateEvent,
-  className = ""
+  onLeave,
+  leaveText,
+  className = "",
+  isAdmin = false,
+  onDeleteMessages,
+  isDeleteMode = false
 }) => {
   return (
     <DropdownMenu>
@@ -34,6 +44,18 @@ export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({
           <Calendar className="mr-2 h-4 w-4" />
           Create Event
         </DropdownMenuItem>
+        {isAdmin && onDeleteMessages && (
+          <DropdownMenuItem onClick={onDeleteMessages} className="text-red-600 focus:text-red-600">
+            <Trash2 className="mr-2 h-4 w-4" />
+            {isDeleteMode ? 'Cancel Delete' : 'Delete Messages'}
+          </DropdownMenuItem>
+        )}
+        {onLeave && (
+          <DropdownMenuItem onClick={onLeave} className="text-red-600 focus:text-red-600">
+            <LogOut className="mr-2 h-4 w-4" />
+            {leaveText || 'Leave'}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

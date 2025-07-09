@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, ArrowLeft, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Send, Search, ArrowLeft, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
+import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
 
 interface GroupMessage {
   id: string;
@@ -38,6 +40,9 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -70,11 +75,35 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     }
   }, [user]);
 
-  // Delete message function for admins
-  const deleteMessage = async (messageId: string) => {
-    if (!isAdmin) return;
+  // Toggle delete mode
+  const toggleDeleteMode = () => {
+    setIsDeleteMode(!isDeleteMode);
+    setSelectedMessages(new Set());
+  };
+
+  // Toggle message selection
+  const toggleMessageSelection = (messageId: string) => {
+    setSelectedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(messageId)) {
+        newSet.delete(messageId);
+      } else {
+        newSet.add(messageId);
+      }
+      return newSet;
+    });
+  };
+
+  // Delete selected messages
+  const deleteSelectedMessages = async () => {
+    if (!isAdmin || selectedMessages.size === 0) return;
     
-    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+    const messageCount = selectedMessages.size;
+    const confirmText = messageCount === 1 ? 
+      'Are you sure you want to delete this message? This action cannot be undone.' :
+      `Are you sure you want to delete ${messageCount} messages? This action cannot be undone.`;
+    
+    if (!confirm(confirmText)) {
       return;
     }
     
@@ -82,15 +111,26 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       const { error } = await supabase
         .from('group_messages')
         .delete()
-        .eq('id', messageId);
+        .in('id', Array.from(selectedMessages));
 
       if (error) throw error;
 
-      // Remove message from local state
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      // Remove messages from local state
+      setMessages(prev => prev.filter(msg => !selectedMessages.has(msg.id)));
+      setSelectedMessages(new Set());
+      setIsDeleteMode(false);
+      
+      toast({
+        title: "Success",
+        description: `${messageCount} message${messageCount === 1 ? '' : 's'} deleted successfully.`,
+      });
     } catch (error) {
-      console.error('Error deleting message:', error);
-      alert('Failed to delete message. Please try again.');
+      console.error('Error deleting messages:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete messages. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -142,7 +182,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     console.log('Sending group message:', { content: newMessage, user_id: user.id, group_id: groupId });
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('group_messages')
         .insert([
           {
@@ -150,23 +190,14 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             user_id: user.id,
             group_id: groupId,
           },
-        ])
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          group_id,
-          profiles(display_name, avatar_url)
-        `)
-        .single();
+        ]);
 
       if (error) {
         console.error('Error sending group message:', error);
         return;
       }
 
-      console.log('Group message sent successfully:', data);
+      console.log('Group message sent successfully');
       setNewMessage('');
       
     } catch (error) {
@@ -180,6 +211,48 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
   const handleCreateEvent = () => {
     setShowCreateEventModal(true);
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Left group',
+        description: 'You have left the group.'
+      });
+
+      // Navigate back to groups page
+      navigate('/groups');
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      toast({
+        title: 'Error leaving group',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleLeaveClick = () => {
+    setShowLeaveDialog(true);
+  };
+
+  const confirmLeave = () => {
+    handleLeaveGroup();
+    setShowLeaveDialog(false);
+  };
+
+  const cancelLeave = () => {
+    setShowLeaveDialog(false);
   };
 
 
@@ -369,7 +442,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 min-h-0" ref={viewportRef}>
+      <div className="flex-1 overflow-y-auto p-4 min-h-0 chat-scrollbar" ref={viewportRef}>
         <div className="space-y-4">
           {!messagesLoaded ? (
             // Loading state for messages
@@ -391,50 +464,75 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
               No messages yet. Start the conversation!
             </div>
           ) : (
-            filteredMessages.map((message) => {
+            filteredMessages.map((message, index) => {
               const isOwnMessage = message.user_id === user?.id;
+              const prevMessage = filteredMessages[index - 1];
+              const isConsecutive = prevMessage && prevMessage.user_id === message.user_id;
               
               return (
                 <div
                   key={message.id}
-                  className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'} ${
+                    isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
+                  } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
+                  onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
                 >
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={message.profiles?.avatar_url} />
-                    <AvatarFallback>
-                      {message.profiles?.display_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium">
-                        {message.profiles?.display_name || 'Unknown User'}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatTimestamp(message.created_at)}
-                      </span>
-                      {isAdmin && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deleteMessage(message.id)}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          title="Delete message (Admin)"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                  {/* Avatar - only show for other users' messages */}
+                  {!isOwnMessage && (
+                    <div className="flex flex-col items-center mr-3">
+                      {!isConsecutive ? (
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={message.profiles?.avatar_url} />
+                          <AvatarFallback>
+                            {message.profiles?.display_name?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="h-8 w-8" />
                       )}
                     </div>
+                  )}
+                  
+                  <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                    {/* Show name and timestamp only for first message in sequence */}
+                    {!isConsecutive && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium">
+                          {message.profiles?.display_name || 'Unknown User'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatTimestamp(message.created_at)}
+                        </span>
+                      </div>
+                    )}
                     
-                    <div
-                      className={`rounded-lg px-3 py-2 max-w-full break-words ${
-                        isOwnMessage
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      {message.content}
+                    <div className="flex items-center gap-2">
+                      {/* Show checkbox in delete mode */}
+                      {isDeleteMode && (
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.has(message.id)}
+                          onChange={() => toggleMessageSelection(message.id)}
+                          className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                      
+                      {shouldDisplayWithoutBubble(message.content) ? (
+                        <div className="text-2xl sm:text-3xl">
+                          {message.content}
+                        </div>
+                      ) : (
+                        <div
+                          className={`px-3 py-2 rounded-2xl break-words ${
+                            isOwnMessage
+                              ? 'bg-blue-500 text-white rounded-br-md'
+                              : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -446,8 +544,31 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
 
       {/* Message Input - Fixed to bottom */}
       <div className="p-4 border-t flex-shrink-0 bg-white sticky bottom-0">
+        {isDeleteMode && selectedMessages.size > 0 && (
+          <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
+            <span className="text-sm text-red-700">
+              {selectedMessages.size} message{selectedMessages.size === 1 ? '' : 's'} selected
+            </span>
+            <Button
+              onClick={deleteSelectedMessages}
+              size="sm"
+              variant="destructive"
+              className="flex items-center space-x-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete Selected</span>
+            </Button>
+          </div>
+        )}
         <div className="flex gap-2 items-end">
-          <ChatActionsMenu onCreateEvent={handleCreateEvent} />
+          <ChatActionsMenu 
+            onCreateEvent={handleCreateEvent}
+            onLeave={handleLeaveClick}
+            leaveText="Leave Group"
+            isAdmin={isAdmin}
+            onDeleteMessages={toggleDeleteMode}
+            isDeleteMode={isDeleteMode}
+          />
           <div className="flex-1 relative">
             <Input
               placeholder={`Message ${groupName}...`}
@@ -460,6 +581,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                 }
               }}
               className="pr-12"
+              disabled={isDeleteMode}
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
               <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
@@ -467,7 +589,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           </div>
           <Button 
             onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || isDeleteMode}
             size="icon"
           >
             <Send className="h-4 w-4" />
@@ -481,6 +603,26 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         groupId={groupId}
         groupName={groupName}
       />
+      
+      {/* Leave Group Confirmation Dialog */}
+      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Leave Group</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to leave {groupName}? You'll need to be re-invited to join again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelLeave}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmLeave}>
+              Leave Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

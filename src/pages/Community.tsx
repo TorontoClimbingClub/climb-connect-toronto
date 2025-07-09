@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Users, Mountain, TreePine, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
@@ -225,20 +223,96 @@ export default function Community() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Desktop Layout: Each community as a row */}
+      <div className="hidden md:block space-y-4">
         {chats.map((chat) => {
           const IconComponent = chat.icon;
           return (
-            <Card
+            <div
               key={chat.id}
-              className={`hover:shadow-lg transition-all duration-300 ${
-                chat.has_unread
-                  ? 'ring-2 ring-orange-400 shadow-orange-200 shadow-lg'
-                  : ''
+              className={`border rounded-lg cursor-pointer transition-colors ${
+                chat.is_member 
+                  ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
+                  : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
               }`}
+              onClick={() => {
+                if (chat.is_member) {
+                  navigateToChat(chat.id, chat.name);
+                } else {
+                  handleJoinChat(chat.id, chat.name);
+                }
+              }}
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  {/* Left section: Avatar, name, description, and stats */}
+                  <div className="flex items-center gap-4 flex-1">
+                    <Avatar className="h-16 w-16">
+                      {chat.avatar_url ? (
+                        <AvatarImage src={chat.avatar_url} />
+                      ) : (
+                        <AvatarFallback className="bg-green-100">
+                          <IconComponent className="h-8 w-8 text-green-600" />
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                          {chat.name}
+                          {chat.has_unread && (
+                            <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                          )}
+                        </h3>
+                      </div>
+                      <p className="text-gray-600 mb-2">{chat.description}</p>
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <Users className="h-4 w-4" />
+                        <span>{chat.member_count || 0} members</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right section: Status indicator */}
+                  <div className="flex items-center gap-3 ml-6">
+                    <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
+                      chat.is_member 
+                        ? 'bg-orange-100 text-orange-800'
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {chat.is_member ? 'Open Chat' : 'Join Chat'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Mobile Layout: Keep original grid layout */}
+      <div className="md:hidden grid gap-4 grid-cols-1 sm:grid-cols-2">
+        {chats.map((chat) => {
+          const IconComponent = chat.icon;
+          return (
+            <div
+              key={chat.id}
+              className={`border rounded-lg cursor-pointer transition-colors ${
+                chat.is_member 
+                  ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
+                  : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
+              }`}
+              onClick={() => {
+                if (chat.is_member) {
+                  navigateToChat(chat.id, chat.name);
+                } else {
+                  handleJoinChat(chat.id, chat.name);
+                }
+              }}
+            >
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
                       {chat.avatar_url ? (
@@ -250,51 +324,34 @@ export default function Community() {
                       )}
                     </Avatar>
                     <div>
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                         {chat.name}
                         {chat.has_unread && (
                           <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                         )}
-                      </CardTitle>
-                      {chat.is_member && (
-                        <Badge variant="secondary" className="mt-1">
-                          Member
-                        </Badge>
-                      )}
+                      </h3>
                     </div>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <CardDescription>{chat.description}</CardDescription>
-
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
+                
+                <p className="text-gray-600 text-sm mb-3">{chat.description}</p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
                     <Users className="h-4 w-4" />
                     <span>{chat.member_count || 0} members</span>
                   </div>
+                  
+                  <div className={`px-3 py-1 rounded-md text-sm font-medium pointer-events-none ${
+                    chat.is_member 
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {chat.is_member ? 'Open Chat' : 'Join Chat'}
+                  </div>
                 </div>
-
-                <div className="flex gap-2">
-                  {chat.is_member ? (
-                    <Button
-                      className="w-full"
-                      onClick={() => navigateToChat(chat.id, chat.name)}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Open Chat
-                    </Button>
-                  ) : (
-                    <Button
-                      className="w-full"
-                      onClick={() => handleJoinChat(chat.id, chat.name)}
-                    >
-                      Join Chat
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>

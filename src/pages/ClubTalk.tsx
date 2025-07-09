@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Search, X } from 'lucide-react';
+import { Send, Search, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
+import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
 
 interface ClubMessage {
   id: string;
@@ -31,6 +32,8 @@ export default function ClubTalk() {
   const [showSearch, setShowSearch] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -65,28 +68,59 @@ export default function ClubTalk() {
     }
   }, [user]);
 
-  // Function to delete a message (admin only)
-  const deleteMessage = async (messageId: string) => {
-    if (!isAdmin) return;
+  // Toggle delete mode
+  const toggleDeleteMode = () => {
+    setIsDeleteMode(!isDeleteMode);
+    setSelectedMessages(new Set());
+  };
 
-    if (!confirm('Are you sure you want to delete this message?')) {
+  // Toggle message selection
+  const toggleMessageSelection = (messageId: string) => {
+    setSelectedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(messageId)) {
+        newSet.delete(messageId);
+      } else {
+        newSet.add(messageId);
+      }
+      return newSet;
+    });
+  };
+
+  // Delete selected messages
+  const deleteSelectedMessages = async () => {
+    if (!isAdmin || selectedMessages.size === 0) return;
+    
+    const messageCount = selectedMessages.size;
+    const confirmText = messageCount === 1 ? 
+      'Are you sure you want to delete this message? This action cannot be undone.' :
+      `Are you sure you want to delete ${messageCount} messages? This action cannot be undone.`;
+    
+    if (!confirm(confirmText)) {
       return;
     }
-
+    
     try {
       const { error } = await supabase
         .from('club_messages')
         .delete()
-        .eq('id', messageId);
+        .in('id', Array.from(selectedMessages));
 
       if (error) throw error;
 
-      // Remove message from local state
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
-    } catch (error) {
-      console.error('Error deleting message:', error);
+      // Remove messages from local state
+      setMessages(prev => prev.filter(msg => !selectedMessages.has(msg.id)));
+      setSelectedMessages(new Set());
+      setIsDeleteMode(false);
+      
       toast({
-        title: "Failed to delete message",
+        title: "Success",
+        description: `${messageCount} message${messageCount === 1 ? '' : 's'} deleted successfully.`,
+      });
+    } catch (error) {
+      console.error('Error deleting messages:', error);
+      toast({
+        title: "Failed to delete messages",
         variant: "destructive",
       });
     }
@@ -139,22 +173,14 @@ export default function ClubTalk() {
     if (!newMessage.trim() || !user) return;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('club_messages')
         .insert([
           {
             content: newMessage.trim(),
             user_id: user.id,
           },
-        ])
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles(display_name, avatar_url)
-        `)
-        .single();
+        ]);
 
       if (error) {
         console.error('Error sending club message:', error);
@@ -173,11 +199,7 @@ export default function ClubTalk() {
       }
 
       setNewMessage('');
-      
-      if (data) {
-        setMessages(prev => [...prev, data]);
-        scrollToBottom();
-      }
+      // Message will be added via real-time subscription
     } catch (error) {
       console.error('Error in handleSendMessage:', error);
     }
@@ -339,7 +361,7 @@ export default function ClubTalk() {
 
       {/* Messages Area */}
       <div 
-        className="flex-1 overflow-y-auto p-4 min-h-0"
+        className="flex-1 overflow-y-auto p-4 min-h-0 chat-scrollbar"
         ref={viewportRef}
       >
         <div className="space-y-4">
@@ -363,50 +385,75 @@ export default function ClubTalk() {
               No messages yet. Start the conversation!
             </div>
           ) : (
-            filteredMessages.map((message) => {
+            filteredMessages.map((message, index) => {
               const isOwnMessage = message.user_id === user?.id;
+              const prevMessage = filteredMessages[index - 1];
+              const isConsecutive = prevMessage && prevMessage.user_id === message.user_id;
               
               return (
                 <div
                   key={message.id}
-                  className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'} ${
+                    isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
+                  } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
+                  onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
                 >
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={message.profiles?.avatar_url} />
-                    <AvatarFallback>
-                      {message.profiles?.display_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium">
-                        {message.profiles?.display_name || 'Unknown User'}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatTimestamp(message.created_at)}
-                      </span>
-                      {isAdmin && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deleteMessage(message.id)}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          title="Delete message (Admin)"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                  {/* Avatar - only show for other users' messages */}
+                  {!isOwnMessage && (
+                    <div className="flex flex-col items-center mr-3">
+                      {!isConsecutive ? (
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={message.profiles?.avatar_url} />
+                          <AvatarFallback>
+                            {message.profiles?.display_name?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="h-8 w-8" />
                       )}
                     </div>
+                  )}
+                  
+                  <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                    {/* Show name and timestamp only for first message in sequence */}
+                    {!isConsecutive && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium">
+                          {message.profiles?.display_name || 'Unknown User'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatTimestamp(message.created_at)}
+                        </span>
+                      </div>
+                    )}
                     
-                    <div
-                      className={`rounded-lg px-3 py-2 max-w-full break-words ${
-                        isOwnMessage
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      {message.content}
+                    <div className="flex items-center gap-2">
+                      {/* Show checkbox in delete mode */}
+                      {isDeleteMode && (
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.has(message.id)}
+                          onChange={() => toggleMessageSelection(message.id)}
+                          className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                      
+                      {shouldDisplayWithoutBubble(message.content) ? (
+                        <div className="text-2xl sm:text-3xl">
+                          {message.content}
+                        </div>
+                      ) : (
+                        <div
+                          className={`px-3 py-2 rounded-2xl break-words ${
+                            isOwnMessage
+                              ? 'bg-blue-500 text-white rounded-br-md'
+                              : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -418,8 +465,29 @@ export default function ClubTalk() {
 
       {/* Message Input */}
       <div className="p-4 border-t bg-white flex-shrink-0 sticky bottom-0">
+        {isDeleteMode && selectedMessages.size > 0 && (
+          <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between max-w-4xl mx-auto">
+            <span className="text-sm text-red-700">
+              {selectedMessages.size} message{selectedMessages.size === 1 ? '' : 's'} selected
+            </span>
+            <Button
+              onClick={deleteSelectedMessages}
+              size="sm"
+              variant="destructive"
+              className="flex items-center space-x-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete Selected</span>
+            </Button>
+          </div>
+        )}
         <div className="flex gap-2 max-w-4xl mx-auto">
-          <ChatActionsMenu onCreateEvent={handleCreateEvent} />
+          <ChatActionsMenu 
+            onCreateEvent={handleCreateEvent} 
+            isAdmin={isAdmin}
+            onDeleteMessages={toggleDeleteMode}
+            isDeleteMode={isDeleteMode}
+          />
           <div className="flex-1 relative">
             <Input
               placeholder="Type a message..."
@@ -432,6 +500,7 @@ export default function ClubTalk() {
                 }
               }}
               className="pr-12"
+              disabled={isDeleteMode}
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
               <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
@@ -439,7 +508,7 @@ export default function ClubTalk() {
           </div>
           <Button 
             onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || isDeleteMode}
             size="icon"
           >
             <Send className="h-4 w-4" />

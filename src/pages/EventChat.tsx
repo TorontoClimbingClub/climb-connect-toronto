@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, ArrowLeft, CalendarDays, MapPin, Users, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Send, ArrowLeft, CalendarDays, MapPin, Users, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
+import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
 
 interface EventMessage {
   id: string;
@@ -50,6 +52,10 @@ export default function EventChat() {
   const [isParticipant, setIsParticipant] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [joiningEvent, setJoiningEvent] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const viewportRef = useRef<HTMLDivElement>(null);
 
   // Function to scroll to bottom
@@ -79,11 +85,35 @@ export default function EventChat() {
     }
   }, [user]);
 
-  // Delete message function for admins
-  const deleteMessage = async (messageId: string) => {
-    if (!isAdmin) return;
+  // Toggle delete mode
+  const toggleDeleteMode = () => {
+    setIsDeleteMode(!isDeleteMode);
+    setSelectedMessages(new Set());
+  };
+
+  // Toggle message selection
+  const toggleMessageSelection = (messageId: string) => {
+    setSelectedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(messageId)) {
+        newSet.delete(messageId);
+      } else {
+        newSet.add(messageId);
+      }
+      return newSet;
+    });
+  };
+
+  // Delete selected messages
+  const deleteSelectedMessages = async () => {
+    if (!isAdmin || selectedMessages.size === 0) return;
     
-    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+    const messageCount = selectedMessages.size;
+    const confirmText = messageCount === 1 ? 
+      'Are you sure you want to delete this message? This action cannot be undone.' :
+      `Are you sure you want to delete ${messageCount} messages? This action cannot be undone.`;
+    
+    if (!confirm(confirmText)) {
       return;
     }
     
@@ -91,17 +121,24 @@ export default function EventChat() {
       const { error } = await supabase
         .from('event_messages')
         .delete()
-        .eq('id', messageId);
+        .in('id', Array.from(selectedMessages));
 
       if (error) throw error;
 
-      // Remove message from local state
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      // Remove messages from local state
+      setMessages(prev => prev.filter(msg => !selectedMessages.has(msg.id)));
+      setSelectedMessages(new Set());
+      setIsDeleteMode(false);
+      
+      toast({
+        title: "Success",
+        description: `${messageCount} message${messageCount === 1 ? '' : 's'} deleted successfully.`,
+      });
     } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error('Error deleting messages:', error);
       toast({
         title: "Error",
-        description: "Failed to delete message. Please try again.",
+        description: "Failed to delete messages. Please try again.",
         variant: "destructive",
       });
     }
@@ -123,6 +160,44 @@ export default function EventChat() {
     } catch (error) {
       console.error('Error checking participation:', error);
       setIsParticipant(false);
+    }
+  };
+
+  // Join event function
+  const handleJoinEvent = async () => {
+    if (!user || !eventId || joiningEvent) return;
+
+    setJoiningEvent(true);
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .insert([{
+          event_id: eventId,
+          user_id: user.id
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Joined Event!",
+        description: "You have successfully joined the event.",
+      });
+
+      // Refresh participant status and event data
+      await Promise.all([
+        checkParticipation(),
+        loadEvent()
+      ]);
+
+    } catch (error) {
+      console.error('Error joining event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningEvent(false);
     }
   };
 
@@ -193,7 +268,7 @@ export default function EventChat() {
     if (!newMessage.trim() || !user || !eventId || !isParticipant) return;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('event_messages')
         .insert([
           {
@@ -201,16 +276,7 @@ export default function EventChat() {
             user_id: user.id,
             event_id: eventId,
           },
-        ])
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          event_id,
-          profiles(display_name, avatar_url)
-        `)
-        .single();
+        ]);
 
       if (error) throw error;
 
@@ -232,6 +298,48 @@ export default function EventChat() {
 
   const handleCreateEvent = () => {
     setShowCreateEventModal(true);
+  };
+
+  const handleLeaveEvent = async () => {
+    if (!user || !eventId) return;
+
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Left event',
+        description: 'You have left the event.'
+      });
+
+      // Navigate back to events page
+      navigate('/events');
+    } catch (error) {
+      console.error('Error leaving event:', error);
+      toast({
+        title: 'Error leaving event',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleLeaveClick = () => {
+    setShowLeaveDialog(true);
+  };
+
+  const confirmLeave = () => {
+    handleLeaveEvent();
+    setShowLeaveDialog(false);
+  };
+
+  const cancelLeave = () => {
+    setShowLeaveDialog(false);
   };
 
 
@@ -326,7 +434,7 @@ export default function EventChat() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-full">
         <Card className="p-8">
           <p className="text-gray-500">Please sign in to access event chat.</p>
         </Card>
@@ -356,7 +464,7 @@ export default function EventChat() {
         </div>
         
         {/* Messages Skeleton */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 chat-scrollbar">
           <div className="space-y-3 sm:space-y-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-start space-x-2 sm:space-x-3">
@@ -385,18 +493,33 @@ export default function EventChat() {
 
   if (!isParticipant) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-full">
         <Card className="p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">Not a Participant</h3>
-          <p className="text-gray-500 mb-4">You must join this event to access the chat.</p>
-          <Button onClick={() => navigate('/events')}>Back to Events</Button>
+          <h3 className="text-lg font-medium mb-2">Join Event</h3>
+          <p className="text-gray-500 mb-4">Join this event to access the chat and participate.</p>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleJoinEvent} 
+              disabled={joiningEvent}
+              className="w-full"
+            >
+              {joiningEvent ? 'Joining...' : 'Join Event'}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/events')}
+              className="w-full"
+            >
+              Back to Events
+            </Button>
+          </div>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex flex-col chat-container bg-white">
+    <div className="h-full w-full flex flex-col bg-white overflow-hidden">
       {/* Header */}
       <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -440,7 +563,7 @@ export default function EventChat() {
       </div>
 
       {/* Messages */}
-      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 min-h-0">
+      <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 chat-scrollbar">
         <div className="space-y-3 sm:space-y-4">
           {!messagesLoaded ? (
             // Loading state for messages
@@ -462,53 +585,79 @@ export default function EventChat() {
               No messages yet. Start the conversation!
             </div>
           ) : (
-            messages.map((message) => {
+            messages.map((message, index) => {
               const isOwnMessage = message.user_id === user?.id;
+              const prevMessage = messages[index - 1];
+              const isConsecutive = prevMessage && prevMessage.user_id === message.user_id;
+              
               return (
                 <div
                   key={message.id}
-                  className={`flex items-start space-x-2 sm:space-x-3 ${
-                    isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''
-                  }`}
+                  className={`flex items-start ${
+                    isOwnMessage ? 'justify-end' : 'justify-start'
+                  } ${isConsecutive ? 'mt-1' : 'mt-4'} ${
+                    isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
+                  } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
+                  onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
                 >
-                  <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
-                    <AvatarImage src={message.profiles?.avatar_url} />
-                    <AvatarFallback className="text-xs">
-                      {message.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div
-                    className={`flex flex-col min-w-0 flex-1 ${
-                      isOwnMessage ? 'items-end' : 'items-start'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-xs sm:text-sm font-medium truncate">
-                        {message.profiles?.display_name || 'Unknown User'}
-                      </span>
-                      <span className="text-xs text-gray-500 flex-shrink-0">
-                        {format(new Date(message.created_at), 'p')}
-                      </span>
-                      {isAdmin && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deleteMessage(message.id)}
-                          className="h-5 w-5 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          title="Delete message (Admin)"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                  {/* Avatar - only show for other users' messages */}
+                  {!isOwnMessage && (
+                    <div className="flex flex-col items-center mr-3">
+                      {!isConsecutive ? (
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={message.profiles?.avatar_url} />
+                          <AvatarFallback className="text-xs">
+                            {message.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="h-8 w-8" />
                       )}
                     </div>
-                    <div
-                      className={`px-3 py-2 rounded-lg max-w-[85%] sm:max-w-md break-words ${
-                        isOwnMessage
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      {message.content}
+                  )}
+                  
+                  <div className={`flex flex-col max-w-[75%] ${
+                    isOwnMessage ? 'items-end' : 'items-start'
+                  }`}>
+                    {/* Show name and timestamp only for first message in sequence */}
+                    {!isConsecutive && (
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="text-xs sm:text-sm font-medium truncate">
+                          {message.profiles?.display_name || 'Unknown User'}
+                        </span>
+                        <span className="text-xs text-gray-500 flex-shrink-0">
+                          {format(new Date(message.created_at), 'p')}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-2">
+                      {/* Show checkbox in delete mode */}
+                      {isDeleteMode && (
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.has(message.id)}
+                          onChange={() => toggleMessageSelection(message.id)}
+                          className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                      
+                      {shouldDisplayWithoutBubble(message.content) ? (
+                        <div className="text-2xl sm:text-3xl">
+                          {message.content}
+                        </div>
+                      ) : (
+                        <div
+                          className={`px-3 py-2 rounded-2xl break-words ${
+                            isOwnMessage
+                              ? 'bg-green-600 text-white rounded-br-md'
+                              : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -518,8 +667,24 @@ export default function EventChat() {
         </div>
       </div>
 
-      {/* Input - Fixed to bottom */}
-      <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0 sticky bottom-0">
+      {/* Input */}
+      <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0">
+        {isDeleteMode && selectedMessages.size > 0 && (
+          <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
+            <span className="text-sm text-red-700">
+              {selectedMessages.size} message{selectedMessages.size === 1 ? '' : 's'} selected
+            </span>
+            <Button
+              onClick={deleteSelectedMessages}
+              size="sm"
+              variant="destructive"
+              className="flex items-center space-x-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete Selected</span>
+            </Button>
+          </div>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -527,7 +692,14 @@ export default function EventChat() {
           }}
           className="flex space-x-2"
         >
-          <ChatActionsMenu onCreateEvent={handleCreateEvent} />
+          <ChatActionsMenu 
+            onCreateEvent={handleCreateEvent}
+            onLeave={isParticipant ? handleLeaveClick : undefined}
+            leaveText="Leave Event"
+            isAdmin={isAdmin}
+            onDeleteMessages={toggleDeleteMode}
+            isDeleteMode={isDeleteMode}
+          />
           <div className="flex-1 relative">
             <Input
               value={newMessage}
@@ -535,6 +707,7 @@ export default function EventChat() {
               placeholder="Type a message..."
               className="pr-12"
               autoComplete="off"
+              disabled={isDeleteMode}
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
               <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
@@ -544,7 +717,7 @@ export default function EventChat() {
             type="submit" 
             size="icon" 
             className="bg-green-600 hover:bg-green-700 flex-shrink-0"
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || isDeleteMode}
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -556,6 +729,26 @@ export default function EventChat() {
         onClose={() => setShowCreateEventModal(false)}
         groupName={event?.title}
       />
+      
+      {/* Leave Event Confirmation Dialog */}
+      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Leave Event</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to leave {event?.title}? You can rejoin later if needed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelLeave}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmLeave}>
+              Leave Event
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

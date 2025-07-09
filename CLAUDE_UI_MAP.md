@@ -15,11 +15,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **This map may be outdated:** Source files have been modified since last MAP generation
 **Action Required:** Run `npm run ui:update-map` before proceeding
 
-**Last Updated:** 2025-07-08T21:55:26.214Z
+**Last Updated:** 2025-07-08T22:42:19.759Z
 **Project:** climb-connect-toronto
 **Components Scanned:** 71
 **Total Files:** 71
-**Latest File Modified:** Tue Jul 08 2025 17:46:41 GMT-0400 (Eastern Daylight Time)
+**Latest File Modified:** Tue Jul 08 2025 18:41:09 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -222,60 +222,50 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### checkScreenSize
 **File:** `src/components/layout/DesktopSidebar.tsx`
-**Lines:** 200
-**Last Modified:** 2025-07-08T21:15:49.812Z
+**Lines:** 204
+**Last Modified:** 2025-07-08T22:39:34.050Z
 
 **Key Elements:**
-- **Record** (line 44) - `record`
+- **UserProfile** (line 37) - `userprofile`
+  - Context: `const [userProfile, setUserProfile] = useState<UserProfile | null>(null);`
+- **Record** (line 48) - `record`
   - Context: `const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});`
-- **Button** (line 96) - `button`
-  - Context: `<Button`
-- **ChevronRight** (line 102) - `chevronright`
-  - Context: `<ChevronRight className="h-4 w-4" />`
-- **Link** (line 108) - `link`
-  - Context: `<Link`
-- **Icon** (line 117) - `icon`
-  - Context: `<Icon className="h-5 w-5" />`
-- **Badge** (line 119) - `badge`
-  - Context: `<Badge`
-- **Mountain** (line 139) - `mountain`
+- **Mountain** (line 151) - `mountain`
   - Context: `<Mountain className="h-6 w-6 text-green-600" />`
-- **Button** (line 142) - `button`
-  - Context: `<Button`
-- **ChevronDown** (line 148) - `chevrondown`
-  - Context: `<ChevronDown className="h-4 w-4" />`
-- **Avatar** (line 154) - `avatar`
-  - Context: `<Avatar className="h-10 w-10">`
-- **AvatarImage** (line 155) - `avatarimage`
-  - Context: `<AvatarImage src={user?.user_metadata?.avatar_url} />`
-- **AvatarFallback** (line 156) - `avatarfallback`
+- **Link** (line 157) - `link`
+  - Context: `<Link to="/profile" className="hover:opacity-80 transition-opacity">`
+- **Avatar** (line 158) - `avatar`
+  - Context: `<Avatar className="h-12 w-12 cursor-pointer">`
+- **AvatarImage** (line 159) - `avatarimage`
+  - Context: `<AvatarImage src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} />`
+- **AvatarFallback** (line 160) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Link** (line 173) - `link`
+- **Link** (line 177) - `link`
   - Context: `<Link`
-- **Icon** (line 183) - `icon`
+- **Icon** (line 187) - `icon`
   - Context: `<Icon className="h-5 w-5" />`
-- **Badge** (line 187) - `badge`
+- **Badge** (line 191) - `badge`
   - Context: `<Badge variant="destructive" className="h-5 text-xs">`
 
 #### checkScreenSize
 **File:** `src/components/layout/Layout.tsx`
-**Lines:** 69
-**Last Modified:** 2025-07-08T21:36:25.605Z
+**Lines:** 81
+**Last Modified:** 2025-07-08T22:40:56.868Z
 
 **Key Elements:**
-- **NavBar** (line 38) - `navbar`
+- **NavBar** (line 50) - `navbar`
   - Context: `<NavBar />`
-- **MultiPanelLayout** (line 56) - `multipanellayout`
+- **MultiPanelLayout** (line 68) - `multipanellayout`
   - Context: `<MultiPanelLayout`
-- **DesktopLayout** (line 67) - `desktoplayout`
+- **DesktopLayout** (line 79) - `desktoplayout`
   - Context: `return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;`
-- **MobileLayout** (line 67) - `mobilelayout`
+- **MobileLayout** (line 79) - `mobilelayout`
   - Context: `return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;`
 
 #### getLayoutClass
 **File:** `src/components/layout/MultiPanelLayout.tsx`
 **Lines:** 185
-**Last Modified:** 2025-07-08T21:36:35.866Z
+**Last Modified:** 2025-07-08T22:41:09.283Z
 
 **Key Elements:**
 - **DesktopSidebar** (line 55) - `desktopsidebar`
@@ -1260,8 +1250,8 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### checkAdminStatus
 **File:** `src/pages/Administrator.tsx`
-**Lines:** 328
-**Last Modified:** 2025-07-08T18:09:39.949Z
+**Lines:** 376
+**Last Modified:** 2025-07-08T22:35:08.659Z
 
 **Key Elements:**
 - **User** (line 27) - `user`
@@ -1275,72 +1265,72 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Shield** (line 214) - `shield`
   - Context: `<Shield className="h-8 w-8 text-blue-600" />`
 - **Card** (line 223) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 224) - `cardheader`
+  - Context: `<Card`
+- **CardHeader** (line 236) - `cardheader`
   - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 225) - `cardtitle`
+- **CardTitle** (line 237) - `cardtitle`
   - Context: `<CardTitle className="text-sm font-medium">Total Users</CardTitle>`
-- **Users** (line 226) - `users`
+- **Users** (line 238) - `users`
   - Context: `<Users className="h-4 w-4 text-blue-600" />`
-- **CardContent** (line 228) - `cardcontent`
+- **CardContent** (line 240) - `cardcontent`
   - Context: `<CardContent>`
-- **Card** (line 233) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 234) - `cardheader`
+- **Card** (line 245) - `card`
+  - Context: `<Card`
+- **CardHeader** (line 258) - `cardheader`
   - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 235) - `cardtitle`
+- **CardTitle** (line 259) - `cardtitle`
   - Context: `<CardTitle className="text-sm font-medium">Total Messages</CardTitle>`
-- **MessageSquare** (line 236) - `messagesquare`
+- **MessageSquare** (line 260) - `messagesquare`
   - Context: `<MessageSquare className="h-4 w-4 text-green-600" />`
-- **CardContent** (line 238) - `cardcontent`
+- **CardContent** (line 262) - `cardcontent`
   - Context: `<CardContent>`
-- **Card** (line 243) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 244) - `cardheader`
+- **Card** (line 267) - `card`
+  - Context: `<Card`
+- **CardHeader** (line 280) - `cardheader`
   - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 245) - `cardtitle`
+- **CardTitle** (line 281) - `cardtitle`
   - Context: `<CardTitle className="text-sm font-medium">Total Events</CardTitle>`
-- **Calendar** (line 246) - `calendar`
+- **Calendar** (line 282) - `calendar`
   - Context: `<Calendar className="h-4 w-4 text-orange-600" />`
-- **CardContent** (line 248) - `cardcontent`
+- **CardContent** (line 284) - `cardcontent`
   - Context: `<CardContent>`
-- **Card** (line 253) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 254) - `cardheader`
+- **Card** (line 289) - `card`
+  - Context: `<Card`
+- **CardHeader** (line 302) - `cardheader`
   - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 255) - `cardtitle`
+- **CardTitle** (line 303) - `cardtitle`
   - Context: `<CardTitle className="text-sm font-medium">Total Groups</CardTitle>`
-- **Users** (line 256) - `users`
+- **Users** (line 304) - `users`
   - Context: `<Users className="h-4 w-4 text-purple-600" />`
-- **CardContent** (line 258) - `cardcontent`
+- **CardContent** (line 306) - `cardcontent`
   - Context: `<CardContent>`
-- **Card** (line 265) - `card`
+- **Card** (line 313) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 266) - `cardheader`
+- **CardHeader** (line 314) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 267) - `cardtitle`
+- **CardTitle** (line 315) - `cardtitle`
   - Context: `<CardTitle className="flex items-center gap-2">`
-- **UserCog** (line 268) - `usercog`
+- **UserCog** (line 316) - `usercog`
   - Context: `<UserCog className="h-5 w-5" />`
-- **CardDescription** (line 271) - `carddescription`
+- **CardDescription** (line 319) - `carddescription`
   - Context: `<CardDescription>`
-- **CardContent** (line 275) - `cardcontent`
+- **CardContent** (line 323) - `cardcontent`
   - Context: `<CardContent>`
-- **Avatar** (line 280) - `avatar`
+- **Avatar** (line 328) - `avatar`
   - Context: `<Avatar>`
-- **AvatarImage** (line 281) - `avatarimage`
+- **AvatarImage** (line 329) - `avatarimage`
   - Context: `<AvatarImage src={userData.avatar_url} />`
-- **AvatarFallback** (line 282) - `avatarfallback`
+- **AvatarFallback** (line 330) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Badge** (line 290) - `badge`
+- **Badge** (line 338) - `badge`
   - Context: `<Badge variant="secondary" className="text-xs">`
-- **Shield** (line 291) - `shield`
+- **Shield** (line 339) - `shield`
   - Context: `<Shield className="h-3 w-3 mr-1" />`
-- **Button** (line 303) - `button`
+- **Button** (line 351) - `button`
   - Context: `<Button`
-- **Button** (line 311) - `button`
+- **Button** (line 359) - `button`
   - Context: `<Button`
-- **Trash2** (line 318) - `trash2`
+- **Trash2** (line 366) - `trash2`
   - Context: `<Trash2 className="h-4 w-4" />`
 
 #### handleSignIn
@@ -1757,7 +1747,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### navigate
 **File:** `src/pages/Groups.tsx`
 **Lines:** 494
-**Last Modified:** 2025-07-08T21:46:41.055Z
+**Last Modified:** 2025-07-08T21:56:15.459Z
 
 **Key Elements:**
 - **Group** (line 26) - `group`

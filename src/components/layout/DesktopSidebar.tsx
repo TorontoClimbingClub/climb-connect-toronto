@@ -5,15 +5,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Mountain, 
   Hash, 
   Users, 
   MessageCircle, 
   Calendar, 
-  Home,
-  ChevronDown,
-  ChevronRight
+  Home
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -24,13 +23,18 @@ interface NavigationItem {
   active?: boolean;
 }
 
+interface UserProfile {
+  id: string;
+  display_name: string;
+  avatar_url?: string;
+}
+
 
 
 export function DesktopSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  
   // Hide completely on mobile - should never show below 768px
   const [isMobile, setIsMobile] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
   useEffect(() => {
     const checkScreenSize = () => {
@@ -51,10 +55,10 @@ export function DesktopSidebar() {
 
   const navigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/', icon: Home },
+    { name: 'Events', href: '/events', icon: Calendar, badge: unreadCounts.events },
     { name: 'Club Talk', href: '/club-talk', icon: Hash, badge: unreadCounts.clubTalk },
     { name: 'Gym Groups', href: '/groups', icon: Users, badge: unreadCounts.groups },
     { name: 'Community', href: '/chat', icon: MessageCircle, badge: unreadCounts.community },
-    { name: 'Events', href: '/events', icon: Calendar, badge: unreadCounts.events },
   ];
 
   const isActive = (path: string) => {
@@ -83,85 +87,85 @@ export function DesktopSidebar() {
     setUnreadCounts({});
   };
 
+  const loadUserProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error loading user profile:', error);
+        return;
+      }
+
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
+  // Load user profile and set up real-time subscription
+  useEffect(() => {
+    if (user) {
+      loadUserProfile();
+
+      // Set up real-time subscription for profile changes
+      const subscription = supabase
+        .channel('profile_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Profile updated:', payload);
+            // Update local state with new profile data
+            setUserProfile(payload.new as UserProfile);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [user]);
+
 
   // Don't render anything on mobile
   if (isMobile) {
     return null;
   }
 
-  if (isCollapsed) {
-    return (
-      <div className="sidebar-panel w-16 p-2">
-        <div className="flex flex-col items-center space-y-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(false)}
-            className="w-10 h-10 p-0"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`relative w-10 h-10 flex items-center justify-center rounded-md transition-colors ${
-                  isActive(item.href)
-                    ? 'bg-green-100 text-green-800'
-                    : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                {item.badge && item.badge > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center"
-                  >
-                    {item.badge > 99 ? '99+' : item.badge}
-                  </Badge>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="sidebar-panel p-4 flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-2">
-          <Mountain className="h-6 w-6 text-green-600" />
-          <span className="font-bold text-green-800">TCC</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsCollapsed(true)}
-          className="p-1"
-        >
-          <ChevronDown className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center space-x-2 mb-6">
+        <Mountain className="h-6 w-6 text-green-600" />
+        <span className="font-bold text-green-800">TCC</span>
       </div>
 
       {/* User Profile */}
       <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 mb-6">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={user?.user_metadata?.avatar_url} />
-          <AvatarFallback>
-            {user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
-          </AvatarFallback>
-        </Avatar>
+        <Link to="/profile" className="hover:opacity-80 transition-opacity">
+          <Avatar className="h-12 w-12 cursor-pointer">
+            <AvatarImage src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} />
+            <AvatarFallback>
+              {userProfile?.display_name?.[0] || user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-900 truncate">
-            {user?.user_metadata?.display_name || user?.email}
+            {userProfile?.display_name || user?.user_metadata?.display_name || user?.email}
           </p>
-          <p className="text-xs text-gray-500">Online</p>
         </div>
       </div>
 

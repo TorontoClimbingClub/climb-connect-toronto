@@ -188,7 +188,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           )}
 
           {!loading && results.length > 0 && (
-            <div className="space-y-2 max-h-80 overflow-y-auto">
+            <div className="space-y-2 max-h-80 overflow-y-auto chat-scrollbar">
               {results.map((result) => (
                 <button
                   key={`${result.type}-${result.id}`}

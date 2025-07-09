@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
-import { CalendarDays, MapPin, Users, MessageSquare, LogOut, Loader2 } from 'lucide-react';
+import { CalendarDays, MapPin, Users, MessageSquare, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface Event {
@@ -34,8 +34,6 @@ export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [joiningEventId, setJoiningEventId] = useState<string | null>(null);
-  const [leaveEventId, setLeaveEventId] = useState<string | null>(null);
-  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -111,122 +109,76 @@ export default function Events() {
     navigate(`/events/${eventId}/chat`);
   };
 
-  const handleLeaveClick = (eventId: string) => {
-    setLeaveEventId(eventId);
-    setIsLeaveDialogOpen(true);
-  };
-
-  const confirmLeave = () => {
-    if (leaveEventId) {
-      toggleParticipation(leaveEventId, true);
-      setIsLeaveDialogOpen(false);
-      setLeaveEventId(null);
-    }
-  };
-
-  const cancelLeave = () => {
-    setIsLeaveDialogOpen(false);
-    setLeaveEventId(null);
-  };
 
   const toggleParticipation = async (eventId: string, isParticipating: boolean) => {
-    if (!user || joiningEventId === eventId) return;
+    if (!user || joiningEventId === eventId || isParticipating) return;
 
     // Set loading state for this specific event
     setJoiningEventId(eventId);
 
     try {
-      if (isParticipating) {
-        // Optimistically update UI for leaving event
+      // First check if already participating
+      const { data: existingParticipation, error: checkError } = await supabase
+        .from('event_participants')
+        .select('user_id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 = no rows found, which is expected for new participation
+        throw checkError;
+      }
+
+      if (existingParticipation) {
+        // Already participating - just show message and update UI
+        toast({
+          title: "Already joined this event",
+        });
+        // Force UI update to show correct state
+        loadEvents();
+        return;
+      }
+
+      // Optimistically update UI for joining event
+      setEvents(prev => prev.map(event => 
+        event.id === eventId 
+          ? { ...event, is_participant: true, participant_count: event.participant_count + 1 }
+          : event
+      ));
+
+      // Actually insert the participation
+      const { error: insertError } = await supabase
+        .from('event_participants')
+        .insert([
+          {
+            event_id: eventId,
+            user_id: user.id,
+          },
+        ]);
+
+      if (insertError) {
+        // Rollback optimistic update on error
         setEvents(prev => prev.map(event => 
           event.id === eventId 
             ? { ...event, is_participant: false, participant_count: Math.max(0, event.participant_count - 1) }
             : event
         ));
-
-        const { error } = await supabase
-          .from('event_participants')
-          .delete()
-          .eq('event_id', eventId)
-          .eq('user_id', user.id);
-
-        if (error) {
-          // Rollback on error
-          setEvents(prev => prev.map(event => 
-            event.id === eventId 
-              ? { ...event, is_participant: true, participant_count: event.participant_count + 1 }
-              : event
-          ));
-          throw error;
-        }
-
-        toast({
-          title: "Left event successfully",
-        });
-      } else {
-        // First check if already participating
-        const { data: existingParticipation, error: checkError } = await supabase
-          .from('event_participants')
-          .select('user_id')
-          .eq('event_id', eventId)
-          .eq('user_id', user.id)
-          .single();
-
-        if (checkError && checkError.code !== 'PGRST116') {
-          // PGRST116 = no rows found, which is expected for new participation
-          throw checkError;
-        }
-
-        if (existingParticipation) {
-          // Already participating - just show message and update UI
+        
+        if (insertError.code === '23505') {
+          // Unique constraint violation - already participating
           toast({
             title: "Already joined this event",
           });
-          // Force UI update to show correct state
-          loadEvents();
+          loadEvents(); // Sync UI state
           return;
         }
-
-        // Optimistically update UI for joining event
-        setEvents(prev => prev.map(event => 
-          event.id === eventId 
-            ? { ...event, is_participant: true, participant_count: event.participant_count + 1 }
-            : event
-        ));
-
-        // Actually insert the participation
-        const { error: insertError } = await supabase
-          .from('event_participants')
-          .insert([
-            {
-              event_id: eventId,
-              user_id: user.id,
-            },
-          ]);
-
-        if (insertError) {
-          // Rollback optimistic update on error
-          setEvents(prev => prev.map(event => 
-            event.id === eventId 
-              ? { ...event, is_participant: false, participant_count: Math.max(0, event.participant_count - 1) }
-              : event
-          ));
-          
-          if (insertError.code === '23505') {
-            // Unique constraint violation - already participating
-            toast({
-              title: "Already joined this event",
-            });
-            loadEvents(); // Sync UI state
-            return;
-          }
-          throw insertError;
-        }
-
-        toast({
-          title: "Joined event successfully!",
-        });
+        throw insertError;
       }
+
+      toast({
+        title: "Joined event successfully!",
+      });
 
       // Refresh data to ensure consistency
       loadEvents();
@@ -308,7 +260,61 @@ export default function Events() {
         {myEvents.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">You're Attending</h2>
-          <div className="desktop-grid-3">
+          
+          {/* Desktop Layout: Each event as a row */}
+          <div className="hidden md:block space-y-4">
+            {myEvents.map((event) => (
+              <div
+                key={event.id}
+                className="border border-orange-400 rounded-lg hover:border-orange-500 hover:bg-orange-50 cursor-pointer transition-colors"
+                onClick={() => navigateToEventChat(event.id)}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    {/* Left section: Event info */}
+                    <div className="flex-1">
+                      <div className="mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900">{event.title}</h3>
+                      </div>
+                      <p className="text-gray-600 mb-2 truncate">{event.description}</p>
+                      <div className="flex items-center gap-6 text-sm text-gray-600 flex-wrap">
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <CalendarDays className="h-4 w-4" />
+                          <span className="whitespace-nowrap">{format(new Date(event.event_date), 'PPP p')}</span>
+                        </div>
+                        <div className="flex items-center gap-1 min-w-0">
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Users className="h-4 w-4" />
+                          <span className="whitespace-nowrap">{event.participant_count}{event.max_participants ? `/${event.max_participants}` : ''} participants</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Right section: Actions */}
+                    <div className="flex items-center gap-3 ml-6">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        asChild
+                        className="pointer-events-none"
+                      >
+                        <Link to={`/events/${event.id}/chat`}>
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Open Chat
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Layout: Keep original card layout */}
+          <div className="md:hidden desktop-grid-3">
             {myEvents.map((event) => (
               <Card 
                 key={event.id} 
@@ -355,13 +361,6 @@ export default function Events() {
                         Chat
                       </Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleLeaveClick(event.id)}
-                    >
-                      Leave
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -383,113 +382,161 @@ export default function Events() {
           </CardContent>
         </Card>
       ) : (
-        <div className="desktop-grid-3">
-          {availableEvents.map((event) => (
-            <Card 
-              key={event.id} 
-              className="desktop-card-hover"
-            >
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {event.title}
-                    {event.has_unread && (
-                      <span className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>
+        <>
+          {/* Desktop Layout: Each event as a row */}
+          <div className="hidden md:block space-y-4">
+            {availableEvents.map((event) => (
+              <div
+                key={event.id}
+                className="border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 cursor-pointer transition-colors"
+                onClick={() => toggleParticipation(event.id, event.is_participant)}
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    {/* Left section: Event info */}
+                    <div className="flex-1">
+                      <div className="mb-2">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-xl font-semibold text-gray-900">{event.title}</h3>
+                          {event.has_unread && (
+                            <span className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 mb-2 truncate">{event.description}</p>
+                      <div className="flex items-center gap-6 text-sm text-gray-600 flex-wrap">
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <CalendarDays className="h-4 w-4" />
+                          <span className="whitespace-nowrap">{format(new Date(event.event_date), 'PPP p')}</span>
+                        </div>
+                        <div className="flex items-center gap-1 min-w-0">
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Users className="h-4 w-4" />
+                          <span className="whitespace-nowrap">{event.participant_count}{event.max_participants ? `/${event.max_participants}` : ''} participants</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Right section: Action button */}
+                    <div className="flex items-center gap-3 ml-6">
+                      <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
+                        joiningEventId === event.id
+                          ? 'bg-gray-100 text-gray-600'
+                          : (event.max_participants && event.participant_count >= event.max_participants)
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {joiningEventId === event.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin inline" />
+                            Joining...
+                          </>
+                        ) : (event.max_participants && event.participant_count >= event.max_participants) ? (
+                          'Full'
+                        ) : (
+                          'Join Event'
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Layout: Keep original card layout */}
+          <div className="md:hidden desktop-grid-3">
+            {availableEvents.map((event) => (
+              <Card 
+                key={event.id} 
+                className="desktop-card-hover"
+              >
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {event.title}
+                      {event.has_unread && (
+                        <span className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>
+                      )}
+                    </CardTitle>
+                    {event.is_participant && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        Joined
+                      </Badge>
                     )}
-                  </CardTitle>
-                  {event.is_participant && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Joined
-                    </Badge>
-                  )}
-                </div>
-                <CardDescription>{event.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <CalendarDays className="h-4 w-4 mr-2" />
-                    {format(new Date(event.event_date), 'PPP p')}
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {event.location}
+                  <CardDescription>{event.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <CalendarDays className="h-4 w-4 mr-2" />
+                      {format(new Date(event.event_date), 'PPP p')}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      {event.location}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="h-4 w-4 mr-2" />
+                      {event.participant_count}{event.max_participants ? `/${event.max_participants}` : ''} participants
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="h-4 w-4 mr-2" />
-                    {event.participant_count}{event.max_participants ? `/${event.max_participants}` : ''} participants
-                  </div>
-                </div>
-                {event.is_participant ? (
-                  <div className="flex gap-2">
+                  {event.is_participant ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        asChild
+                        className="flex-1"
+                      >
+                        <Link 
+                          to={`/events/${event.id}/chat`}
+                          onClick={() => navigateToEventChat(event.id)}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Chat
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleLeaveClick(event.id)}
+                      >
+                        Leave
+                      </Button>
+                    </div>
+                  ) : (
                     <Button
                       variant="default"
                       size="sm"
-                      asChild
-                      className="flex-1"
+                      onClick={() => toggleParticipation(event.id, event.is_participant)}
+                      disabled={
+                        joiningEventId === event.id || 
+                        (event.max_participants && event.participant_count >= event.max_participants)
+                      }
+                      className="w-full"
                     >
-                      <Link 
-                        to={`/events/${event.id}/chat`}
-                        onClick={() => navigateToEventChat(event.id)}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Chat
-                      </Link>
+                      {joiningEventId === event.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Joining...
+                        </>
+                      ) : (
+                        'Join'
+                      )}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleLeaveClick(event.id)}
-                    >
-                      Leave
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => toggleParticipation(event.id, event.is_participant)}
-                    disabled={
-                      joiningEventId === event.id || 
-                      (event.max_participants && event.participant_count >= event.max_participants)
-                    }
-                    className="w-full"
-                  >
-                    {joiningEventId === event.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Joining...
-                      </>
-                    ) : (
-                      'Join'
-                    )}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
       )}
 
-      {/* Leave Event Confirmation Dialog */}
-      <Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Leave Event</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to leave this event? You can rejoin at any time if there are still spots available.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={cancelLeave}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmLeave}>
-              Leave Event
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
