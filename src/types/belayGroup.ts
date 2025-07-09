@@ -8,12 +8,12 @@ export interface BelayGroup {
   creator_id: string;
   name: string;
   description?: string;
-  climbing_type: ClimbingType;
+  climbing_type: ClimbingType | string; // Allow string to match database response
   location: string;
   session_date: string;
-  privacy: BelayGroupPrivacy;
+  privacy: BelayGroupPrivacy | string; // Allow string to match database response
   capacity: number;
-  status: BelayGroupStatus;
+  status: BelayGroupStatus | string; // Allow string to match database response
   created_at: string;
   updated_at: string;
   
@@ -24,16 +24,29 @@ export interface BelayGroup {
   participants?: BelayGroupParticipant[];
   gym_name?: string;
   is_participant?: boolean;
+  creator?: {
+    id?: string;
+    display_name: string;
+    avatar_url?: string;
+  };
+  gym?: {
+    id?: string;
+    name: string;
+  };
 }
 
 export interface BelayGroupParticipant {
-  belay_group_id: string;
+  belay_group_id?: string; // Make optional for flexible usage
   user_id: string;
-  joined_at: string;
+  joined_at?: string; // Make optional for flexible usage
   
   // Joined data from queries
   display_name?: string;
   avatar_url?: string;
+  profiles?: {
+    display_name: string;
+    avatar_url?: string;
+  };
 }
 
 export interface BelayGroupMessage {
@@ -46,6 +59,10 @@ export interface BelayGroupMessage {
   // Joined data from queries
   display_name?: string;
   avatar_url?: string;
+  profiles?: {
+    display_name: string;
+    avatar_url?: string;
+  } | null;
 }
 
 export interface CreateBelayGroupData {
@@ -70,6 +87,7 @@ export interface BelayGroupWithDetails extends BelayGroup {
     name: string;
   };
   participants: Array<{
+    belay_group_id?: string; // Make optional to match interface
     user_id: string;
     display_name: string;
     avatar_url?: string;

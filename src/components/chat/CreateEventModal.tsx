@@ -120,7 +120,7 @@ ${maxParticipants ? `\n👥 Max ${maxParticipants} participants` : ''}
           }
 
           await supabase
-            .from(messageTable)
+            .from(messageTable as any) // Type assertion to handle dynamic table names
             .insert([messageData]);
         }
       }
