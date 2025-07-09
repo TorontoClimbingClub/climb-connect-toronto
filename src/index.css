@@ -376,6 +376,21 @@ All colors MUST be HSL.
     }
   }
 
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
   /* Responsive utilities */
   @media (max-width: 767px) {
     .desktop-layout,
@@ -599,7 +614,7 @@ All colors MUST be HSL.
 }
 
 .layout-content {
-  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 h-full overflow-y-auto;
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-4 md:py-4 h-full overflow-y-auto;
 }
 
 .layout-panels {

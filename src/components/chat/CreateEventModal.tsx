@@ -21,13 +21,17 @@ interface CreateEventModalProps {
   onClose: () => void;
   groupId?: string;
   groupName?: string;
+  chatType?: 'group' | 'event' | 'club';
+  chatId?: string;
 }
 
 export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   open,
   onClose,
   groupId,
-  groupName
+  groupName,
+  chatType,
+  chatId
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -71,6 +75,54 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               user_id: user.id,
             },
           ]);
+      }
+
+      // Post event creation message to the current chat
+      if (data && chatType && chatId) {
+        const eventMessage = `🎯 New Event Created: "${title}"
+
+📅 ${new Date(eventDate).toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        })}
+📍 ${location}
+${description ? `\n📝 ${description}` : ''}
+${maxParticipants ? `\n👥 Max ${maxParticipants} participants` : ''}
+
+[EVENT:${data.id}] Click to join this event!`;
+
+        let messageTable = '';
+        let messageEventId = null;
+
+        if (chatType === 'group') {
+          messageTable = 'group_messages';
+        } else if (chatType === 'event') {
+          messageTable = 'event_messages';
+          messageEventId = chatId;
+        } else if (chatType === 'club') {
+          messageTable = 'club_messages';
+        }
+
+        if (messageTable) {
+          const messageData: any = {
+            content: eventMessage,
+            user_id: user.id,
+          };
+
+          if (chatType === 'group') {
+            messageData.group_id = chatId;
+          } else if (chatType === 'event') {
+            messageData.event_id = messageEventId;
+          }
+
+          await supabase
+            .from(messageTable)
+            .insert([messageData]);
+        }
       }
 
       toast({

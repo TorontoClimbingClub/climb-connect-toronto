@@ -39,7 +39,7 @@ export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({
           <Plus className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48">
+      <DropdownMenuContent align="start" side="top" className="w-48">
         <DropdownMenuItem onClick={onCreateEvent}>
           <Calendar className="mr-2 h-4 w-4" />
           Create Event

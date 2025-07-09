@@ -95,17 +95,22 @@ export default function Home() {
   // For authenticated users on mobile, show the original mobile home view
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50">
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center">
-            <Mountain className="h-16 w-16 text-green-600 mr-4" />
-            <h1 className="text-5xl font-bold text-green-800">
-              Toronto Climbing Club
-            </h1>
+      <div className="max-w-6xl mx-auto px-4 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
+        {/* Centered Title Section */}
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center">
+              <Mountain className="h-16 w-16 text-green-600 mr-4" />
+              <h1 className="text-4xl md:text-5xl font-bold text-green-800">
+                Toronto Climbing Club
+              </h1>
+            </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        {/* Cards Section */}
+        <div className="pb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/groups'}>
             <CardHeader>
               <Users className="h-8 w-8 text-green-600 mb-2" />
@@ -133,6 +138,7 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
           </Card>
+          </div>
         </div>
 
       </div>

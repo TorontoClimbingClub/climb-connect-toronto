@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Send, ArrowLeft, CalendarDays, MapPin, Users, Trash2 } from 'lucide-react';
+import { Send, ArrowLeft, CalendarDays, MapPin, Users, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
+import { EventMessageButton } from '@/components/ui/event-message-button';
 import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
+import { isEventCreationMessage } from '@/utils/eventMessageUtils';
 
 interface EventMessage {
   id: string;
@@ -56,6 +58,7 @@ export default function EventChat() {
   const [joiningEvent, setJoiningEvent] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
+  const [isEventDetailsExpanded, setIsEventDetailsExpanded] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   // Function to scroll to bottom
@@ -89,6 +92,11 @@ export default function EventChat() {
   const toggleDeleteMode = () => {
     setIsDeleteMode(!isDeleteMode);
     setSelectedMessages(new Set());
+  };
+
+  // Toggle event details expansion
+  const toggleEventDetails = () => {
+    setIsEventDetailsExpanded(!isEventDetailsExpanded);
   };
 
   // Toggle message selection
@@ -519,9 +527,9 @@ export default function EventChat() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-white overflow-hidden relative">
       {/* Header */}
-      <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0">
+      <div className="border-b p-3 sm:p-4 bg-white flex-shrink-0 relative z-20">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
@@ -550,16 +558,94 @@ export default function EventChat() {
                   {event?.participant_count} participants
                 </div>
               </div>
-              {/* Mobile event info - condensed */}
+              {/* Mobile event info - expandable */}
               <div className="sm:hidden text-xs text-gray-600 mt-1">
-                <div className="flex items-center">
-                  <Users className="h-3 w-3 mr-1" />
-                  {event?.participant_count} • {event && format(new Date(event.event_date), 'MMM d')}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Users className="h-3 w-3 mr-1" />
+                    {event?.participant_count} • {event && format(new Date(event.event_date), 'MMM d')}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleEventDetails}
+                    className="h-6 w-6 p-0 hover:bg-gray-100 transition-transform duration-200"
+                  >
+                    {isEventDetailsExpanded ? (
+                      <ChevronUp className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Expandable Event Details Overlay - Mobile Only */}
+      <div 
+        className={`sm:hidden absolute top-full left-0 right-0 z-30 bg-white border-b shadow-lg transition-all duration-300 ease-out ${
+          isEventDetailsExpanded 
+            ? 'opacity-100 translate-y-0 pointer-events-auto' 
+            : 'opacity-0 -translate-y-2 pointer-events-none'
+        }`}
+      >
+        {event && (
+          <div className="p-4 bg-gradient-to-b from-gray-50 to-white">
+            <div className="space-y-3">
+              {/* Event Description */}
+              {event.description && (
+                <div className="animate-fade-in">
+                  <h4 className="font-medium text-gray-900 text-sm mb-1">Description</h4>
+                  <p className="text-gray-700 text-sm leading-relaxed">{event.description}</p>
+                </div>
+              )}
+              
+              {/* Event Details Grid */}
+              <div className="space-y-2 animate-fade-in">
+                <h4 className="font-medium text-gray-900 text-sm">Event Details</h4>
+                
+                {/* Date and Time */}
+                <div className="flex items-start space-x-2">
+                  <CalendarDays className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-gray-700">
+                    <div className="font-medium">{format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}</div>
+                    <div className="text-gray-600">{format(new Date(event.event_date), 'h:mm a')}</div>
+                  </div>
+                </div>
+                
+                {/* Location */}
+                <div className="flex items-start space-x-2">
+                  <MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-gray-700 leading-relaxed">{event.location}</div>
+                </div>
+                
+                {/* Participants */}
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                  <div className="text-sm text-gray-700">
+                    <span className="font-medium">{event.participant_count}</span>
+                    {event.max_participants && (
+                      <span className="text-gray-600">/{event.max_participants}</span>
+                    )} participants
+                    {event.max_participants && (
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div 
+                          className="bg-green-600 h-2 rounded-full transition-all duration-500 ease-out" 
+                          style={{ 
+                            width: `${Math.min((event.participant_count / event.max_participants) * 100, 100)}%` 
+                          }}
+                        ></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -588,14 +674,14 @@ export default function EventChat() {
             messages.map((message, index) => {
               const isOwnMessage = message.user_id === user?.id;
               const prevMessage = messages[index - 1];
-              const isConsecutive = prevMessage && prevMessage.user_id === message.user_id;
+              const isThreaded = prevMessage && prevMessage.user_id === message.user_id;
               
               return (
                 <div
                   key={message.id}
                   className={`flex items-start ${
                     isOwnMessage ? 'justify-end' : 'justify-start'
-                  } ${isConsecutive ? 'mt-1' : 'mt-4'} ${
+                  } ${isThreaded ? 'mt-0.5' : 'mt-4'} ${
                     isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
                   } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
                   onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
@@ -603,7 +689,7 @@ export default function EventChat() {
                   {/* Avatar - only show for other users' messages */}
                   {!isOwnMessage && (
                     <div className="flex flex-col items-center mr-3">
-                      {!isConsecutive ? (
+                      {!isThreaded ? (
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={message.profiles?.avatar_url} />
                           <AvatarFallback className="text-xs">
@@ -620,7 +706,7 @@ export default function EventChat() {
                     isOwnMessage ? 'items-end' : 'items-start'
                   }`}>
                     {/* Show name and timestamp only for first message in sequence */}
-                    {!isConsecutive && (
+                    {!isThreaded && (
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="text-xs sm:text-sm font-medium truncate">
                           {message.profiles?.display_name || 'Unknown User'}
@@ -643,7 +729,12 @@ export default function EventChat() {
                         />
                       )}
                       
-                      {shouldDisplayWithoutBubble(message.content) ? (
+                      {isEventCreationMessage(message.content) ? (
+                        <EventMessageButton 
+                          content={message.content}
+                          isOwnMessage={isOwnMessage}
+                        />
+                      ) : shouldDisplayWithoutBubble(message.content) ? (
                         <div className="text-2xl sm:text-3xl">
                           {message.content}
                         </div>
@@ -728,6 +819,8 @@ export default function EventChat() {
         open={showCreateEventModal} 
         onClose={() => setShowCreateEventModal(false)}
         groupName={event?.title}
+        chatType="event"
+        chatId={eventId}
       />
       
       {/* Leave Event Confirmation Dialog */}

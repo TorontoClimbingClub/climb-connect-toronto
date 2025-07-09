@@ -10,9 +10,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
+import { EventMessageButton } from '@/components/ui/event-message-button';
 import { ChatActionsMenu } from '@/components/chat/ChatActionsMenu';
 import { CreateEventModal } from '@/components/chat/CreateEventModal';
 import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
+import { isEventCreationMessage } from '@/utils/eventMessageUtils';
 
 interface GroupMessage {
   id: string;
@@ -467,12 +469,12 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             filteredMessages.map((message, index) => {
               const isOwnMessage = message.user_id === user?.id;
               const prevMessage = filteredMessages[index - 1];
-              const isConsecutive = prevMessage && prevMessage.user_id === message.user_id;
+              const isThreaded = prevMessage && prevMessage.user_id === message.user_id;
               
               return (
                 <div
                   key={message.id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-1' : 'mt-4'} ${
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${isThreaded ? 'mt-0.5' : 'mt-4'} ${
                     isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
                   } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
                   onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
@@ -480,7 +482,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                   {/* Avatar - only show for other users' messages */}
                   {!isOwnMessage && (
                     <div className="flex flex-col items-center mr-3">
-                      {!isConsecutive ? (
+                      {!isThreaded ? (
                         <Avatar className="h-8 w-8 flex-shrink-0">
                           <AvatarImage src={message.profiles?.avatar_url} />
                           <AvatarFallback>
@@ -495,7 +497,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                   
                   <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
                     {/* Show name and timestamp only for first message in sequence */}
-                    {!isConsecutive && (
+                    {!isThreaded && (
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium">
                           {message.profiles?.display_name || 'Unknown User'}
@@ -518,7 +520,12 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                         />
                       )}
                       
-                      {shouldDisplayWithoutBubble(message.content) ? (
+                      {isEventCreationMessage(message.content) ? (
+                        <EventMessageButton 
+                          content={message.content}
+                          isOwnMessage={isOwnMessage}
+                        />
+                      ) : shouldDisplayWithoutBubble(message.content) ? (
                         <div className="text-2xl sm:text-3xl">
                           {message.content}
                         </div>
@@ -602,6 +609,8 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         onClose={() => setShowCreateEventModal(false)}
         groupId={groupId}
         groupName={groupName}
+        chatType="group"
+        chatId={groupId}
       />
       
       {/* Leave Group Confirmation Dialog */}

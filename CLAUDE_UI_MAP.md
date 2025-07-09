@@ -15,11 +15,11 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 **This map may be outdated:** Source files have been modified since last MAP generation
 **Action Required:** Run `npm run ui:update-map` before proceeding
 
-**Last Updated:** 2025-07-08T22:42:19.759Z
+**Last Updated:** 2025-07-09T02:48:45.234Z
 **Project:** climb-connect-toronto
-**Components Scanned:** 71
-**Total Files:** 71
-**Latest File Modified:** Tue Jul 08 2025 18:41:09 GMT-0400 (Eastern Daylight Time)
+**Components Scanned:** 76
+**Total Files:** 76
+**Latest File Modified:** Tue Jul 08 2025 22:41:45 GMT-0400 (Eastern Daylight Time)
 
 ## 📋 UI EDITING PROTOCOL (WSL Environment)
 1. **UPDATE MAP:** Run `npm run ui:update-map` (essential!)
@@ -46,7 +46,7 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 #### navigate
 **File:** `src/components/GlobalSearch.tsx`
 **Lines:** 235
-**Last Modified:** 2025-07-08T19:47:16.390Z
+**Last Modified:** 2025-07-08T23:36:51.137Z
 
 **Key Elements:**
 - **SearchResult** (line 26) - `searchresult`
@@ -97,73 +97,211 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/components/group-chat.tsx`
-**Lines:** 486
-**Last Modified:** 2025-07-08T18:53:19.855Z
+**Lines:** 628
+**Last Modified:** 2025-07-09T00:21:09.528Z
 
 **Key Elements:**
-- **GroupMessage** (line 33) - `groupmessage`
+- **GroupMessage** (line 35) - `groupmessage`
   - Context: `const [messages, setMessages] = useState<GroupMessage[]>([]);`
-- **HTMLDivElement** (line 41) - `htmldivelement`
+- **Set** (line 45) - `set`
+  - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
+- **HTMLDivElement** (line 46) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Button** (line 332) - `button`
+- **Button** (line 405) - `button`
   - Context: `<Button`
-- **ArrowLeft** (line 338) - `arrowleft`
+- **ArrowLeft** (line 411) - `arrowleft`
   - Context: `<ArrowLeft className="h-5 w-5" />`
-- **Input** (line 347) - `input`
+- **Input** (line 420) - `input`
   - Context: `<Input`
-- **Button** (line 354) - `button`
+- **Button** (line 427) - `button`
   - Context: `<Button`
-- **X** (line 366) - `x`
+- **X** (line 439) - `x`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Search** (line 366) - `search`
+- **Search** (line 439) - `search`
   - Context: `{showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}`
-- **Avatar** (line 402) - `avatar`
+- **Avatar** (line 484) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 403) - `avatarimage`
+- **AvatarImage** (line 485) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 404) - `avatarfallback`
+- **AvatarFallback** (line 486) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 418) - `button`
+- **Button** (line 552) - `button`
   - Context: `<Button`
-- **X** (line 425) - `x`
-  - Context: `<X className="h-3 w-3" />`
-- **ChatActionsMenu** (line 450) - `chatactionsmenu`
-  - Context: `<ChatActionsMenu onCreateEvent={handleCreateEvent} />`
-- **Input** (line 452) - `input`
+- **Trash2** (line 558) - `trash2`
+  - Context: `<Trash2 className="h-4 w-4" />`
+- **ChatActionsMenu** (line 564) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu`
+- **Input** (line 573) - `input`
   - Context: `<Input`
-- **EmojiPickerComponent** (line 465) - `emojipickercomponent`
+- **EmojiPickerComponent** (line 587) - `emojipickercomponent`
   - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
-- **Button** (line 468) - `button`
+- **Button** (line 590) - `button`
   - Context: `<Button`
-- **Send** (line 473) - `send`
+- **Send** (line 595) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 478) - `createeventmodal`
+- **CreateEventModal** (line 600) - `createeventmodal`
   - Context: `<CreateEventModal`
+- **Dialog** (line 608) - `dialog`
+  - Context: `<Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>`
+- **DialogContent** (line 609) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[425px]">`
+- **DialogHeader** (line 610) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 611) - `dialogtitle`
+  - Context: `<DialogTitle>Leave Group</DialogTitle>`
+- **DialogDescription** (line 612) - `dialogdescription`
+  - Context: `<DialogDescription>`
+- **DialogFooter** (line 616) - `dialogfooter`
+  - Context: `<DialogFooter>`
+- **Button** (line 617) - `button`
+  - Context: `<Button variant="outline" onClick={cancelLeave}>`
+- **Button** (line 620) - `button`
+  - Context: `<Button variant="destructive" onClick={confirmLeave}>`
+
+### 📁 src/components/cards/
+
+#### EventCard
+**File:** `src/components/cards/EventCard.tsx`
+**Lines:** 172
+**Last Modified:** 2025-07-09T02:09:47.939Z
+
+**Key Elements:**
+- **CalendarDays** (line 40) - `calendardays`
+  - Context: `<CalendarDays className="h-4 w-4" />`
+- **MapPin** (line 44) - `mappin`
+  - Context: `<MapPin className="h-4 w-4 flex-shrink-0" />`
+- **Users** (line 48) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Button** (line 58) - `button`
+  - Context: `<Button variant="default" size="sm" asChild className="pointer-events-none">`
+- **Link** (line 59) - `link`
+  - Context: `<Link to={`/events/${event.id}/chat`}>`
+- **MessageSquare** (line 60) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
+- **Loader2** (line 74) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin inline" />`
+- **Card** (line 91) - `card`
+  - Context: `<Card className="hover:shadow-md transition-shadow">`
+- **CardHeader** (line 92) - `cardheader`
+  - Context: `<CardHeader>`
+- **CardTitle** (line 94) - `cardtitle`
+  - Context: `<CardTitle className="text-lg">{event.title}</CardTitle>`
+- **Badge** (line 96) - `badge`
+  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
+- **CardDescription** (line 101) - `carddescription`
+  - Context: `<CardDescription>{event.description}</CardDescription>`
+- **CardContent** (line 103) - `cardcontent`
+  - Context: `<CardContent className="space-y-4">`
+- **CalendarDays** (line 106) - `calendardays`
+  - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
+- **MapPin** (line 110) - `mappin`
+  - Context: `<MapPin className="h-4 w-4 mr-2" />`
+- **Users** (line 114) - `users`
+  - Context: `<Users className="h-4 w-4 mr-2" />`
+- **Button** (line 122) - `button`
+  - Context: `<Button variant="default" size="sm" asChild className="flex-1">`
+- **Link** (line 123) - `link`
+  - Context: `<Link to={`/events/${event.id}/chat`}>`
+- **MessageSquare** (line 124) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
+- **Button** (line 130) - `button`
+  - Context: `<Button`
+- **Loader2** (line 138) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
+- **Button** (line 149) - `button`
+  - Context: `<Button`
+- **Loader2** (line 158) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
+
+#### GroupCard
+**File:** `src/components/cards/GroupCard.tsx`
+**Lines:** 157
+**Last Modified:** 2025-07-09T02:09:47.944Z
+
+**Key Elements:**
+- **Avatar** (line 35) - `avatar`
+  - Context: `<Avatar className="h-10 w-10 flex-shrink-0">`
+- **AvatarImage** (line 36) - `avatarimage`
+  - Context: `<AvatarImage src={group.avatar_url} alt={group.name} />`
+- **AvatarFallback** (line 37) - `avatarfallback`
+  - Context: `<AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>`
+- **Users** (line 43) - `users`
+  - Context: `<Users className="h-4 w-4" />`
+- **Button** (line 51) - `button`
+  - Context: `<Button variant="default" size="sm" asChild className="pointer-events-none">`
+- **Link** (line 52) - `link`
+  - Context: `<Link to={`/groups/${group.id}/chat`}>`
+- **MessageSquare** (line 53) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
+- **Loader2** (line 65) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin inline" />`
+- **Card** (line 80) - `card`
+  - Context: `<Card className="hover:shadow-md transition-shadow">`
+- **CardHeader** (line 81) - `cardheader`
+  - Context: `<CardHeader>`
+- **Avatar** (line 83) - `avatar`
+  - Context: `<Avatar className="h-12 w-12">`
+- **AvatarImage** (line 84) - `avatarimage`
+  - Context: `<AvatarImage src={group.avatar_url} alt={group.name} />`
+- **AvatarFallback** (line 85) - `avatarfallback`
+  - Context: `<AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>`
+- **CardTitle** (line 89) - `cardtitle`
+  - Context: `<CardTitle className="text-lg">{group.name}</CardTitle>`
+- **Badge** (line 91) - `badge`
+  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
+- **CardDescription** (line 96) - `carddescription`
+  - Context: `<CardDescription>{group.description}</CardDescription>`
+- **CardContent** (line 100) - `cardcontent`
+  - Context: `<CardContent className="space-y-4">`
+- **Users** (line 102) - `users`
+  - Context: `<Users className="h-4 w-4 mr-2" />`
+- **Button** (line 109) - `button`
+  - Context: `<Button variant="default" size="sm" asChild className="flex-1">`
+- **Link** (line 110) - `link`
+  - Context: `<Link to={`/groups/${group.id}/chat`}>`
+- **MessageSquare** (line 111) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
+- **Button** (line 117) - `button`
+  - Context: `<Button`
+- **Loader2** (line 125) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
+- **Button** (line 136) - `button`
+  - Context: `<Button`
+- **Loader2** (line 145) - `loader2`
+  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
 
 ### 📁 src/components/chat/
 
 #### ChatActionsMenu
 **File:** `src/components/chat/ChatActionsMenu.tsx`
-**Lines:** 40
-**Last Modified:** 2025-07-08T18:50:25.419Z
+**Lines:** 62
+**Last Modified:** 2025-07-09T00:09:37.999Z
 
 **Key Elements:**
-- **ChatActionsMenuProps** (line 16) - `chatactionsmenuprops`
+- **ChatActionsMenuProps** (line 21) - `chatactionsmenuprops`
   - Context: `export const ChatActionsMenu: React.FC<ChatActionsMenuProps> = ({`
-- **DropdownMenu** (line 21) - `dropdownmenu`
+- **DropdownMenu** (line 31) - `dropdownmenu`
   - Context: `<DropdownMenu>`
-- **DropdownMenuTrigger** (line 22) - `dropdownmenutrigger`
+- **DropdownMenuTrigger** (line 32) - `dropdownmenutrigger`
   - Context: `<DropdownMenuTrigger asChild>`
-- **Button** (line 23) - `button`
+- **Button** (line 33) - `button`
   - Context: `<Button`
-- **Plus** (line 29) - `plus`
+- **Plus** (line 39) - `plus`
   - Context: `<Plus className="h-4 w-4" />`
-- **DropdownMenuContent** (line 32) - `dropdownmenucontent`
+- **DropdownMenuContent** (line 42) - `dropdownmenucontent`
   - Context: `<DropdownMenuContent align="start" className="w-48">`
-- **DropdownMenuItem** (line 33) - `dropdownmenuitem`
+- **DropdownMenuItem** (line 43) - `dropdownmenuitem`
   - Context: `<DropdownMenuItem onClick={onCreateEvent}>`
-- **Calendar** (line 34) - `calendar`
+- **Calendar** (line 44) - `calendar`
   - Context: `<Calendar className="mr-2 h-4 w-4" />`
+- **DropdownMenuItem** (line 48) - `dropdownmenuitem`
+  - Context: `<DropdownMenuItem onClick={onDeleteMessages} className="text-red-600 focus:text-...`
+- **Trash2** (line 49) - `trash2`
+  - Context: `<Trash2 className="mr-2 h-4 w-4" />`
+- **DropdownMenuItem** (line 54) - `dropdownmenuitem`
+  - Context: `<DropdownMenuItem onClick={onLeave} className="text-red-600 focus:text-red-600">`
+- **LogOut** (line 55) - `logout`
+  - Context: `<LogOut className="mr-2 h-4 w-4" />`
 
 #### CreateEventModal
 **File:** `src/components/chat/CreateEventModal.tsx`
@@ -218,49 +356,198 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 - **Loader2** (line 175) - `loader2`
   - Context: `{isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}`
 
+### 📁 src/components/dashboard/
+
+#### formatTimeAgo
+**File:** `src/components/dashboard/ActiveChats.tsx`
+**Lines:** 132
+**Last Modified:** 2025-07-09T02:09:47.952Z
+
+**Key Elements:**
+- **Card** (line 40) - `card`
+  - Context: `<Card>`
+- **CardHeader** (line 41) - `cardheader`
+  - Context: `<CardHeader>`
+- **CardTitle** (line 42) - `cardtitle`
+  - Context: `<CardTitle>Recent Community Activity</CardTitle>`
+- **CardContent** (line 44) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 68) - `card`
+  - Context: `<Card>`
+- **CardHeader** (line 69) - `cardheader`
+  - Context: `<CardHeader>`
+- **CardTitle** (line 70) - `cardtitle`
+  - Context: `<CardTitle>Recent Community Activity</CardTitle>`
+- **CardContent** (line 72) - `cardcontent`
+  - Context: `<CardContent>`
+- **Link** (line 78) - `link`
+  - Context: `<Link`
+- **Icon** (line 85) - `icon`
+  - Context: `<Icon className="h-5 w-5 text-green-600" />`
+- **MessageSquare** (line 91) - `messagesquare`
+  - Context: `<MessageSquare className="h-3 w-3 mr-1" />`
+- **Badge** (line 106) - `badge`
+  - Context: `<Badge variant="secondary" className="text-xs capitalize">`
+- **ArrowRight** (line 109) - `arrowright`
+  - Context: `<ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />`
+- **MessageSquare** (line 116) - `messagesquare`
+  - Context: `<MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
+- **Button** (line 119) - `button`
+  - Context: `<Button variant="outline" size="sm" asChild>`
+- **Link** (line 120) - `link`
+  - Context: `<Link to="/club-talk">Start Club Discussion</Link>`
+- **Button** (line 122) - `button`
+  - Context: `<Button variant="outline" size="sm" asChild>`
+- **Link** (line 123) - `link`
+  - Context: `<Link to="/events">Join Event Chat</Link>`
+
+#### StatsGrid
+**File:** `src/components/dashboard/StatsGrid.tsx`
+**Lines:** 85
+**Last Modified:** 2025-07-09T02:09:47.957Z
+
+**Key Elements:**
+- **Card** (line 15) - `card`
+  - Context: `<Card key={i} className="desktop-card-hover animate-pulse">`
+- **CardHeader** (line 16) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardContent** (line 20) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 32) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 33) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 34) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Total Events</CardTitle>`
+- **Calendar** (line 35) - `calendar`
+  - Context: `<Calendar className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 37) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 45) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 46) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 47) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Active Groups</CardTitle>`
+- **Users** (line 48) - `users`
+  - Context: `<Users className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 50) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 58) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 59) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 60) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Messages</CardTitle>`
+- **MessageSquare** (line 61) - `messagesquare`
+  - Context: `<MessageSquare className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 63) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 71) - `card`
+  - Context: `<Card className="desktop-card-hover">`
+- **CardHeader** (line 72) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
+- **CardTitle** (line 73) - `cardtitle`
+  - Context: `<CardTitle className="text-sm font-medium">Community Members</CardTitle>`
+- **TrendingUp** (line 74) - `trendingup`
+  - Context: `<TrendingUp className="h-4 w-4 text-muted-foreground" />`
+- **CardContent** (line 76) - `cardcontent`
+  - Context: `<CardContent>`
+
+#### formatDate
+**File:** `src/components/dashboard/UpcomingEvents.tsx`
+**Lines:** 147
+**Last Modified:** 2025-07-09T02:09:47.961Z
+
+**Key Elements:**
+- **Card** (line 38) - `card`
+  - Context: `<Card>`
+- **CardHeader** (line 39) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between">`
+- **CardTitle** (line 41) - `cardtitle`
+  - Context: `<CardTitle>Upcoming Events</CardTitle>`
+- **CardContent** (line 45) - `cardcontent`
+  - Context: `<CardContent>`
+- **Card** (line 64) - `card`
+  - Context: `<Card>`
+- **CardHeader** (line 65) - `cardheader`
+  - Context: `<CardHeader className="flex flex-row items-center justify-between">`
+- **CardTitle** (line 67) - `cardtitle`
+  - Context: `<CardTitle>Upcoming Events</CardTitle>`
+- **Select** (line 69) - `select`
+  - Context: `<Select value={eventFilter} onValueChange={onFilterChange}>`
+- **SelectTrigger** (line 70) - `selecttrigger`
+  - Context: `<SelectTrigger className="w-32">`
+- **SelectValue** (line 71) - `selectvalue`
+  - Context: `<SelectValue />`
+- **SelectContent** (line 73) - `selectcontent`
+  - Context: `<SelectContent>`
+- **SelectItem** (line 74) - `selectitem`
+  - Context: `<SelectItem value="all">All</SelectItem>`
+- **SelectItem** (line 75) - `selectitem`
+  - Context: `<SelectItem value="joined">Joined</SelectItem>`
+- **CardContent** (line 79) - `cardcontent`
+  - Context: `<CardContent>`
+- **Link** (line 89) - `link`
+  - Context: `<Link`
+- **Calendar** (line 99) - `calendar`
+  - Context: `<Calendar className="h-8 w-8 text-green-600" />`
+- **Clock** (line 105) - `clock`
+  - Context: `<Clock className="h-3 w-3 mr-1" />`
+- **MapPin** (line 109) - `mappin`
+  - Context: `<MapPin className="h-3 w-3 mr-1 flex-shrink-0" />`
+- **Users** (line 113) - `users`
+  - Context: `<Users className="h-3 w-3 mr-1" />`
+- **ArrowRight** (line 121) - `arrowright`
+  - Context: `<ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />`
+- **Calendar** (line 126) - `calendar`
+  - Context: `<Calendar className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
+- **Button** (line 133) - `button`
+  - Context: `<Button variant="outline" size="sm" className="mt-2" asChild>`
+- **Link** (line 134) - `link`
+  - Context: `<Link to="/events">`
+
 ### 📁 src/components/layout/
 
-#### checkScreenSize
+#### location
 **File:** `src/components/layout/DesktopSidebar.tsx`
-**Lines:** 204
-**Last Modified:** 2025-07-08T22:39:34.050Z
+**Lines:** 127
+**Last Modified:** 2025-07-09T02:09:47.969Z
 
 **Key Elements:**
-- **UserProfile** (line 37) - `userprofile`
-  - Context: `const [userProfile, setUserProfile] = useState<UserProfile | null>(null);`
-- **Record** (line 48) - `record`
+- **Record** (line 27) - `record`
   - Context: `const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});`
-- **Mountain** (line 151) - `mountain`
+- **Mountain** (line 76) - `mountain`
   - Context: `<Mountain className="h-6 w-6 text-green-600" />`
-- **Link** (line 157) - `link`
-  - Context: `<Link to="/profile" className="hover:opacity-80 transition-opacity">`
-- **Avatar** (line 158) - `avatar`
-  - Context: `<Avatar className="h-12 w-12 cursor-pointer">`
-- **AvatarImage** (line 159) - `avatarimage`
-  - Context: `<AvatarImage src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} />`
-- **AvatarFallback** (line 160) - `avatarfallback`
+- **Link** (line 81) - `link`
+  - Context: `<Link to="/profile" className="flex items-center space-x-3 p-3 rounded-lg bg-gre...`
+- **Avatar** (line 82) - `avatar`
+  - Context: `<Avatar className="h-12 w-12">`
+- **AvatarImage** (line 83) - `avatarimage`
+  - Context: `<AvatarImage src={userProfile?.avatar_url} />`
+- **AvatarFallback** (line 84) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Link** (line 177) - `link`
+- **Link** (line 100) - `link`
   - Context: `<Link`
-- **Icon** (line 187) - `icon`
+- **Icon** (line 110) - `icon`
   - Context: `<Icon className="h-5 w-5" />`
-- **Badge** (line 191) - `badge`
+- **Badge** (line 114) - `badge`
   - Context: `<Badge variant="destructive" className="h-5 text-xs">`
 
-#### checkScreenSize
+#### MobileLayout
 **File:** `src/components/layout/Layout.tsx`
-**Lines:** 81
-**Last Modified:** 2025-07-08T22:40:56.868Z
+**Lines:** 63
+**Last Modified:** 2025-07-09T02:09:47.975Z
 
 **Key Elements:**
-- **NavBar** (line 50) - `navbar`
+- **NavBar** (line 27) - `navbar`
   - Context: `<NavBar />`
-- **MultiPanelLayout** (line 68) - `multipanellayout`
+- **MultiPanelLayout** (line 46) - `multipanellayout`
   - Context: `<MultiPanelLayout`
-- **DesktopLayout** (line 79) - `desktoplayout`
-  - Context: `return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;`
-- **MobileLayout** (line 79) - `mobilelayout`
-  - Context: `return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;`
+- **DesktopLayout** (line 59) - `desktoplayout`
+  - Context: `{shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />}`
+- **MobileLayout** (line 59) - `mobilelayout`
+  - Context: `{shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />}`
 
 #### getLayoutClass
 **File:** `src/components/layout/MultiPanelLayout.tsx`
@@ -1390,350 +1677,202 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### scrollToBottom
 **File:** `src/pages/ClubTalk.tsx`
-**Lines:** 457
-**Last Modified:** 2025-07-08T18:51:42.644Z
+**Lines:** 526
+**Last Modified:** 2025-07-09T00:12:06.810Z
 
 **Key Elements:**
-- **ClubMessage** (line 26) - `clubmessage`
+- **ClubMessage** (line 27) - `clubmessage`
   - Context: `const [messages, setMessages] = useState<ClubMessage[]>([]);`
-- **HTMLDivElement** (line 34) - `htmldivelement`
+- **Set** (line 36) - `set`
+  - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
+- **HTMLDivElement** (line 37) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 267) - `card`
+- **Card** (line 289) - `card`
   - Context: `<Card className="p-8 text-center">`
-- **Input** (line 323) - `input`
+- **Input** (line 345) - `input`
   - Context: `<Input`
-- **Button** (line 330) - `button`
+- **Button** (line 352) - `button`
   - Context: `<Button`
-- **Search** (line 335) - `search`
+- **Search** (line 357) - `search`
   - Context: `<Search className="h-4 w-4" />`
-- **Avatar** (line 374) - `avatar`
+- **Avatar** (line 405) - `avatar`
   - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
-- **AvatarImage** (line 375) - `avatarimage`
+- **AvatarImage** (line 406) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 376) - `avatarfallback`
+- **AvatarFallback** (line 407) - `avatarfallback`
   - Context: `<AvatarFallback>`
-- **Button** (line 390) - `button`
+- **Button** (line 473) - `button`
   - Context: `<Button`
-- **X** (line 397) - `x`
-  - Context: `<X className="h-3 w-3" />`
-- **ChatActionsMenu** (line 422) - `chatactionsmenu`
-  - Context: `<ChatActionsMenu onCreateEvent={handleCreateEvent} />`
-- **Input** (line 424) - `input`
+- **Trash2** (line 479) - `trash2`
+  - Context: `<Trash2 className="h-4 w-4" />`
+- **ChatActionsMenu** (line 485) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu`
+- **Input** (line 492) - `input`
   - Context: `<Input`
-- **EmojiPickerComponent** (line 437) - `emojipickercomponent`
+- **EmojiPickerComponent** (line 506) - `emojipickercomponent`
   - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
-- **Button** (line 440) - `button`
+- **Button** (line 509) - `button`
   - Context: `<Button`
-- **Send** (line 445) - `send`
+- **Send** (line 514) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 450) - `createeventmodal`
+- **CreateEventModal** (line 519) - `createeventmodal`
   - Context: `<CreateEventModal`
 
 #### navigate
 **File:** `src/pages/Community.tsx`
-**Lines:** 303
-**Last Modified:** 2025-07-08T20:43:23.142Z
+**Lines:** 354
+**Last Modified:** 2025-07-09T02:09:48.028Z
 
 **Key Elements:**
-- **TopicChat** (line 48) - `topicchat`
+- **TopicChat** (line 46) - `topicchat`
   - Context: `const [chats, setChats] = useState<TopicChat[]>([]);`
-- **Card** (line 232) - `card`
-  - Context: `<Card`
-- **CardHeader** (line 240) - `cardheader`
-  - Context: `<CardHeader>`
-- **Avatar** (line 243) - `avatar`
-  - Context: `<Avatar className="h-12 w-12">`
-- **AvatarImage** (line 245) - `avatarimage`
+- **Avatar** (line 250) - `avatar`
+  - Context: `<Avatar className="h-16 w-16">`
+- **AvatarImage** (line 252) - `avatarimage`
   - Context: `<AvatarImage src={chat.avatar_url} />`
-- **AvatarFallback** (line 247) - `avatarfallback`
+- **AvatarFallback** (line 254) - `avatarfallback`
   - Context: `<AvatarFallback className="bg-green-100">`
-- **IconComponent** (line 248) - `iconcomponent`
-  - Context: `<IconComponent className="h-6 w-6 text-green-600" />`
-- **CardTitle** (line 253) - `cardtitle`
-  - Context: `<CardTitle className="text-lg flex items-center gap-2">`
-- **Badge** (line 260) - `badge`
-  - Context: `<Badge variant="secondary" className="mt-1">`
-- **CardContent** (line 268) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **CardDescription** (line 269) - `carddescription`
-  - Context: `<CardDescription>{chat.description}</CardDescription>`
-- **Users** (line 273) - `users`
+- **IconComponent** (line 255) - `iconcomponent`
+  - Context: `<IconComponent className="h-8 w-8 text-green-600" />`
+- **Users** (line 268) - `users`
   - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 280) - `button`
-  - Context: `<Button`
-- **MessageCircle** (line 284) - `messagecircle`
-  - Context: `<MessageCircle className="h-4 w-4 mr-2" />`
-- **Button** (line 288) - `button`
-  - Context: `<Button`
+- **Avatar** (line 314) - `avatar`
+  - Context: `<Avatar className="h-12 w-12">`
+- **AvatarImage** (line 316) - `avatarimage`
+  - Context: `<AvatarImage src={chat.avatar_url} />`
+- **AvatarFallback** (line 318) - `avatarfallback`
+  - Context: `<AvatarFallback className="bg-green-100">`
+- **IconComponent** (line 319) - `iconcomponent`
+  - Context: `<IconComponent className="h-6 w-6 text-green-600" />`
+- **Users** (line 335) - `users`
+  - Context: `<Users className="h-4 w-4" />`
 
 #### checkAdminStatus
 **File:** `src/pages/Dashboard.tsx`
-**Lines:** 386
-**Last Modified:** 2025-07-08T21:22:22.630Z
+**Lines:** 75
+**Last Modified:** 2025-07-09T02:09:48.034Z
 
 **Key Elements:**
-- **DashboardStats** (line 48) - `dashboardstats`
-  - Context: `const [stats, setStats] = useState<DashboardStats>({`
-- **UpcomingEvent** (line 54) - `upcomingevent`
-  - Context: `const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);`
-- **RecentMessage** (line 55) - `recentmessage`
-  - Context: `const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);`
-- **Button** (line 189) - `button`
-  - Context: `<Button asChild>`
-- **Link** (line 190) - `link`
-  - Context: `<Link to="/events">`
-- **Plus** (line 191) - `plus`
-  - Context: `<Plus className="h-4 w-4 mr-2" />`
-- **Shield** (line 201) - `shield`
+- **Shield** (line 53) - `shield`
   - Context: `<Shield className="h-6 w-6 text-red-600" />`
-- **Card** (line 205) - `card`
-  - Context: `<Card className="desktop-card-hover">`
-- **CardHeader** (line 206) - `cardheader`
-  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 207) - `cardtitle`
-  - Context: `<CardTitle className="text-sm font-medium">Total Events</CardTitle>`
-- **Calendar** (line 208) - `calendar`
-  - Context: `<Calendar className="h-4 w-4 text-muted-foreground" />`
-- **CardContent** (line 210) - `cardcontent`
-  - Context: `<CardContent>`
-- **Card** (line 218) - `card`
-  - Context: `<Card className="desktop-card-hover">`
-- **CardHeader** (line 219) - `cardheader`
-  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 220) - `cardtitle`
-  - Context: `<CardTitle className="text-sm font-medium">Active Groups</CardTitle>`
-- **Users** (line 221) - `users`
-  - Context: `<Users className="h-4 w-4 text-muted-foreground" />`
-- **CardContent** (line 223) - `cardcontent`
-  - Context: `<CardContent>`
-- **Card** (line 231) - `card`
-  - Context: `<Card className="desktop-card-hover">`
-- **CardHeader** (line 232) - `cardheader`
-  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 233) - `cardtitle`
-  - Context: `<CardTitle className="text-sm font-medium">Messages</CardTitle>`
-- **MessageSquare** (line 234) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 text-muted-foreground" />`
-- **CardContent** (line 236) - `cardcontent`
-  - Context: `<CardContent>`
-- **Card** (line 244) - `card`
-  - Context: `<Card className="desktop-card-hover">`
-- **CardHeader** (line 245) - `cardheader`
-  - Context: `<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2...`
-- **CardTitle** (line 246) - `cardtitle`
-  - Context: `<CardTitle className="text-sm font-medium">Community Members</CardTitle>`
-- **TrendingUp** (line 247) - `trendingup`
-  - Context: `<TrendingUp className="h-4 w-4 text-muted-foreground" />`
-- **CardContent** (line 249) - `cardcontent`
-  - Context: `<CardContent>`
-- **Card** (line 261) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 262) - `cardheader`
-  - Context: `<CardHeader className="flex flex-row items-center justify-between">`
-- **CardTitle** (line 264) - `cardtitle`
-  - Context: `<CardTitle>Upcoming Events</CardTitle>`
-- **CardDescription** (line 265) - `carddescription`
-  - Context: `<CardDescription>`
-- **Button** (line 269) - `button`
-  - Context: `<Button variant="outline" asChild>`
-- **Link** (line 270) - `link`
-  - Context: `<Link to="/events">`
-- **ArrowRight** (line 272) - `arrowright`
-  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
-- **CardContent** (line 276) - `cardcontent`
-  - Context: `<CardContent>`
-- **Calendar** (line 286) - `calendar`
-  - Context: `<Calendar className="h-8 w-8 text-green-600" />`
-- **Clock** (line 292) - `clock`
-  - Context: `<Clock className="h-3 w-3 mr-1" />`
-- **MapPin** (line 296) - `mappin`
-  - Context: `<MapPin className="h-3 w-3 mr-1" />`
-- **Users** (line 300) - `users`
-  - Context: `<Users className="h-3 w-3 mr-1" />`
-- **Button** (line 307) - `button`
-  - Context: `<Button variant="outline" size="sm" asChild>`
-- **Link** (line 308) - `link`
-  - Context: `<Link to={`/events/${event.id}`}>View</Link>`
-- **Calendar** (line 314) - `calendar`
-  - Context: `<Calendar className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
-- **Button** (line 316) - `button`
-  - Context: `<Button variant="outline" size="sm" className="mt-2" asChild>`
-- **Link** (line 317) - `link`
-  - Context: `<Link to="/events">Create the first one!</Link>`
-- **Card** (line 326) - `card`
-  - Context: `<Card>`
-- **CardHeader** (line 327) - `cardheader`
-  - Context: `<CardHeader className="flex flex-row items-center justify-between">`
-- **CardTitle** (line 329) - `cardtitle`
-  - Context: `<CardTitle>Recent Community Activity</CardTitle>`
-- **CardDescription** (line 330) - `carddescription`
-  - Context: `<CardDescription>`
-- **Button** (line 334) - `button`
-  - Context: `<Button variant="outline" asChild>`
-- **Link** (line 335) - `link`
-  - Context: `<Link to="/club-talk">`
-- **ArrowRight** (line 337) - `arrowright`
-  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
-- **CardContent** (line 341) - `cardcontent`
-  - Context: `<CardContent>`
-- **Avatar** (line 349) - `avatar`
-  - Context: `<Avatar className="h-8 w-8">`
-- **AvatarFallback** (line 350) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **Badge** (line 359) - `badge`
-  - Context: `<Badge variant="secondary" className="text-xs">`
-- **MessageSquare** (line 374) - `messagesquare`
-  - Context: `<MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />`
-- **Button** (line 376) - `button`
-  - Context: `<Button variant="outline" size="sm" className="mt-2" asChild>`
-- **Link** (line 377) - `link`
-  - Context: `<Link to="/club-talk">Start a conversation!</Link>`
+- **StatsGrid** (line 56) - `statsgrid`
+  - Context: `<StatsGrid stats={stats} isLoading={isLoading} />`
+- **UpcomingEvents** (line 61) - `upcomingevents`
+  - Context: `<UpcomingEvents`
+- **ActiveChats** (line 69) - `activechats`
+  - Context: `<ActiveChats`
 
 #### navigate
 **File:** `src/pages/EventChat.tsx`
-**Lines:** 561
-**Last Modified:** 2025-07-08T18:54:22.720Z
+**Lines:** 838
+**Last Modified:** 2025-07-09T02:41:45.031Z
 
 **Key Elements:**
-- **Event** (line 45) - `event`
+- **Event** (line 47) - `event`
   - Context: `const [event, setEvent] = useState<Event | null>(null);`
-- **EventMessage** (line 46) - `eventmessage`
+- **EventMessage** (line 48) - `eventmessage`
   - Context: `const [messages, setMessages] = useState<EventMessage[]>([]);`
-- **HTMLDivElement** (line 53) - `htmldivelement`
+- **Set** (line 58) - `set`
+  - Context: `const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())...`
+- **HTMLDivElement** (line 60) - `htmldivelement`
   - Context: `const viewportRef = useRef<HTMLDivElement>(null);`
-- **Card** (line 330) - `card`
+- **Card** (line 444) - `card`
   - Context: `<Card className="p-8">`
-- **Card** (line 389) - `card`
+- **Card** (line 503) - `card`
   - Context: `<Card className="p-8 text-center">`
-- **Button** (line 392) - `button`
-  - Context: `<Button onClick={() => navigate('/events')}>Back to Events</Button>`
-- **Button** (line 404) - `button`
+- **Button** (line 507) - `button`
   - Context: `<Button`
-- **ArrowLeft** (line 412) - `arrowleft`
+- **Button** (line 514) - `button`
+  - Context: `<Button`
+- **Button** (line 533) - `button`
+  - Context: `<Button`
+- **ArrowLeft** (line 541) - `arrowleft`
   - Context: `<ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />`
-- **CalendarDays** (line 418) - `calendardays`
+- **CalendarDays** (line 547) - `calendardays`
   - Context: `<CalendarDays className="h-4 w-4 mr-1" />`
-- **MapPin** (line 422) - `mappin`
+- **MapPin** (line 551) - `mappin`
   - Context: `<MapPin className="h-4 w-4 mr-1" />`
-- **Users** (line 426) - `users`
+- **Users** (line 555) - `users`
   - Context: `<Users className="h-4 w-4 mr-1" />`
-- **Users** (line 433) - `users`
+- **Users** (line 563) - `users`
   - Context: `<Users className="h-3 w-3 mr-1" />`
-- **Avatar** (line 474) - `avatar`
-  - Context: `<Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">`
-- **AvatarImage** (line 475) - `avatarimage`
+- **Button** (line 566) - `button`
+  - Context: `<Button`
+- **ChevronUp** (line 573) - `chevronup`
+  - Context: `<ChevronUp className="h-3 w-3" />`
+- **ChevronDown** (line 575) - `chevrondown`
+  - Context: `<ChevronDown className="h-3 w-3" />`
+- **CalendarDays** (line 610) - `calendardays`
+  - Context: `<CalendarDays className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />`
+- **MapPin** (line 619) - `mappin`
+  - Context: `<MapPin className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />`
+- **Users** (line 625) - `users`
+  - Context: `<Users className="h-4 w-4 text-purple-600 flex-shrink-0" />`
+- **Avatar** (line 691) - `avatar`
+  - Context: `<Avatar className="h-8 w-8 flex-shrink-0">`
+- **AvatarImage** (line 692) - `avatarimage`
   - Context: `<AvatarImage src={message.profiles?.avatar_url} />`
-- **AvatarFallback** (line 476) - `avatarfallback`
+- **AvatarFallback** (line 693) - `avatarfallback`
   - Context: `<AvatarFallback className="text-xs">`
-- **Button** (line 493) - `button`
+- **Button** (line 761) - `button`
   - Context: `<Button`
-- **X** (line 500) - `x`
-  - Context: `<X className="h-3 w-3" />`
-- **ChatActionsMenu** (line 530) - `chatactionsmenu`
-  - Context: `<ChatActionsMenu onCreateEvent={handleCreateEvent} />`
-- **Input** (line 532) - `input`
+- **Trash2** (line 767) - `trash2`
+  - Context: `<Trash2 className="h-4 w-4" />`
+- **ChatActionsMenu** (line 779) - `chatactionsmenu`
+  - Context: `<ChatActionsMenu`
+- **Input** (line 788) - `input`
   - Context: `<Input`
-- **EmojiPickerComponent** (line 540) - `emojipickercomponent`
+- **EmojiPickerComponent** (line 797) - `emojipickercomponent`
   - Context: `<EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />`
-- **Button** (line 543) - `button`
+- **Button** (line 800) - `button`
   - Context: `<Button`
-- **Send** (line 549) - `send`
+- **Send** (line 806) - `send`
   - Context: `<Send className="h-4 w-4" />`
-- **CreateEventModal** (line 554) - `createeventmodal`
+- **CreateEventModal** (line 811) - `createeventmodal`
   - Context: `<CreateEventModal`
+- **Dialog** (line 818) - `dialog`
+  - Context: `<Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>`
+- **DialogContent** (line 819) - `dialogcontent`
+  - Context: `<DialogContent className="sm:max-w-[425px]">`
+- **DialogHeader** (line 820) - `dialogheader`
+  - Context: `<DialogHeader>`
+- **DialogTitle** (line 821) - `dialogtitle`
+  - Context: `<DialogTitle>Leave Event</DialogTitle>`
+- **DialogDescription** (line 822) - `dialogdescription`
+  - Context: `<DialogDescription>`
+- **DialogFooter** (line 826) - `dialogfooter`
+  - Context: `<DialogFooter>`
+- **Button** (line 827) - `button`
+  - Context: `<Button variant="outline" onClick={cancelLeave}>`
+- **Button** (line 830) - `button`
+  - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
 #### navigate
 **File:** `src/pages/Events.tsx`
-**Lines:** 496
-**Last Modified:** 2025-07-08T20:57:20.869Z
+**Lines:** 150
+**Last Modified:** 2025-07-09T02:09:48.039Z
 
 **Key Elements:**
-- **Event** (line 34) - `event`
-  - Context: `const [events, setEvents] = useState<Event[]>([]);`
-- **Card** (line 268) - `card`
+- **Card** (line 31) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 269) - `cardcontent`
+- **CardContent** (line 32) - `cardcontent`
   - Context: `<CardContent>`
-- **CalendarDays** (line 270) - `calendardays`
+- **CalendarDays** (line 33) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 313) - `card`
-  - Context: `<Card`
-- **CardHeader** (line 317) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 319) - `cardtitle`
-  - Context: `<CardTitle className="text-lg">`
-- **Badge** (line 322) - `badge`
-  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 326) - `carddescription`
-  - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 328) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 331) - `calendardays`
-  - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 335) - `mappin`
-  - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 339) - `users`
-  - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 344) - `button`
-  - Context: `<Button`
-- **Link** (line 350) - `link`
-  - Context: `<Link`
-- **MessageSquare** (line 354) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 358) - `button`
-  - Context: `<Button`
-- **Card** (line 378) - `card`
+- **EventCard** (line 78) - `eventcard`
+  - Context: `<EventCard`
+- **EventCard** (line 92) - `eventcard`
+  - Context: `<EventCard`
+- **Card** (line 109) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 379) - `cardcontent`
+- **CardContent** (line 110) - `cardcontent`
   - Context: `<CardContent>`
-- **CalendarDays** (line 380) - `calendardays`
+- **CalendarDays** (line 111) - `calendardays`
   - Context: `<CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 388) - `card`
-  - Context: `<Card`
-- **CardHeader** (line 392) - `cardheader`
-  - Context: `<CardHeader>`
-- **CardTitle** (line 394) - `cardtitle`
-  - Context: `<CardTitle className="text-lg flex items-center gap-2">`
-- **Badge** (line 401) - `badge`
-  - Context: `<Badge variant="secondary" className="bg-green-100 text-green-800">`
-- **CardDescription** (line 406) - `carddescription`
-  - Context: `<CardDescription>{event.description}</CardDescription>`
-- **CardContent** (line 408) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **CalendarDays** (line 411) - `calendardays`
-  - Context: `<CalendarDays className="h-4 w-4 mr-2" />`
-- **MapPin** (line 415) - `mappin`
-  - Context: `<MapPin className="h-4 w-4 mr-2" />`
-- **Users** (line 419) - `users`
-  - Context: `<Users className="h-4 w-4 mr-2" />`
-- **Button** (line 425) - `button`
-  - Context: `<Button`
-- **Link** (line 431) - `link`
-  - Context: `<Link`
-- **MessageSquare** (line 435) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 439) - `button`
-  - Context: `<Button`
-- **Button** (line 448) - `button`
-  - Context: `<Button`
-- **Loader2** (line 460) - `loader2`
-  - Context: `<Loader2 className="h-4 w-4 mr-2 animate-spin" />`
-- **Dialog** (line 475) - `dialog`
-  - Context: `<Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>`
-- **DialogContent** (line 476) - `dialogcontent`
-  - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 477) - `dialogheader`
-  - Context: `<DialogHeader>`
-- **DialogTitle** (line 478) - `dialogtitle`
-  - Context: `<DialogTitle>Leave Event</DialogTitle>`
-- **DialogDescription** (line 479) - `dialogdescription`
-  - Context: `<DialogDescription>`
-- **DialogFooter** (line 483) - `dialogfooter`
-  - Context: `<DialogFooter>`
-- **Button** (line 484) - `button`
-  - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 487) - `button`
-  - Context: `<Button variant="destructive" onClick={confirmLeave}>`
+- **EventCard** (line 125) - `eventcard`
+  - Context: `<EventCard`
+- **EventCard** (line 138) - `eventcard`
+  - Context: `<EventCard`
 
 #### location
 **File:** `src/pages/GroupChat.tsx`
@@ -1746,95 +1885,49 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### navigate
 **File:** `src/pages/Groups.tsx`
-**Lines:** 494
-**Last Modified:** 2025-07-08T21:56:15.459Z
+**Lines:** 246
+**Last Modified:** 2025-07-09T02:09:48.044Z
 
 **Key Elements:**
-- **Group** (line 26) - `group`
-  - Context: `const [groups, setGroups] = useState<Group[]>([]);`
-- **ContextPanel** (line 267) - `contextpanel`
-  - Context: `<ContextPanel title="Group Stats">`
-- **ActivityFeed** (line 284) - `activityfeed`
-  - Context: `<ActivityFeed activities={recentActivities} />`
-- **Search** (line 299) - `search`
+- **Search** (line 104) - `search`
   - Context: `<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 te...`
-- **Input** (line 300) - `input`
+- **Input** (line 105) - `input`
   - Context: `<Input`
-- **Card** (line 322) - `card`
+- **Card** (line 127) - `card`
   - Context: `<Card className="text-center p-8">`
-- **CardContent** (line 323) - `cardcontent`
+- **CardContent** (line 128) - `cardcontent`
   - Context: `<CardContent>`
-- **Users** (line 324) - `users`
+- **Users** (line 129) - `users`
   - Context: `<Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 334) - `card`
-  - Context: `<Card key={group.id} className="desktop-card-hover">`
-- **CardContent** (line 335) - `cardcontent`
-  - Context: `<CardContent className="p-6">`
-- **Avatar** (line 339) - `avatar`
-  - Context: `<Avatar className="h-16 w-16">`
-- **AvatarImage** (line 340) - `avatarimage`
-  - Context: `<AvatarImage src={group.avatar_url || undefined} />`
-- **AvatarFallback** (line 341) - `avatarfallback`
-  - Context: `<AvatarFallback className="text-lg">`
-- **Badge** (line 350) - `badge`
-  - Context: `<Badge variant="secondary">Member</Badge>`
-- **Users** (line 359) - `users`
-  - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 369) - `button`
-  - Context: `<Button`
-- **MessageSquare** (line 373) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 376) - `button`
-  - Context: `<Button`
-- **Button** (line 385) - `button`
-  - Context: `<Button`
-- **ArrowRight** (line 390) - `arrowright`
-  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
-- **Card** (line 403) - `card`
-  - Context: `<Card`
-- **CardHeader** (line 407) - `cardheader`
-  - Context: `<CardHeader>`
-- **Avatar** (line 410) - `avatar`
-  - Context: `<Avatar className="h-12 w-12">`
-- **AvatarImage** (line 411) - `avatarimage`
-  - Context: `<AvatarImage src={group.avatar_url || undefined} />`
-- **AvatarFallback** (line 412) - `avatarfallback`
-  - Context: `<AvatarFallback>`
-- **CardTitle** (line 417) - `cardtitle`
-  - Context: `<CardTitle className="text-lg">`
-- **Badge** (line 421) - `badge`
-  - Context: `<Badge variant="secondary" className="mt-1">`
-- **CardContent** (line 429) - `cardcontent`
-  - Context: `<CardContent className="space-y-4">`
-- **CardDescription** (line 430) - `carddescription`
-  - Context: `<CardDescription>{group.description}</CardDescription>`
-- **Users** (line 434) - `users`
-  - Context: `<Users className="h-4 w-4" />`
-- **Button** (line 442) - `button`
-  - Context: `<Button`
-- **MessageSquare** (line 446) - `messagesquare`
-  - Context: `<MessageSquare className="h-4 w-4 mr-2" />`
-- **Button** (line 449) - `button`
-  - Context: `<Button`
-- **Button** (line 457) - `button`
-  - Context: `<Button`
-- **ArrowRight** (line 462) - `arrowright`
-  - Context: `<ArrowRight className="h-4 w-4 ml-2" />`
-- **Dialog** (line 474) - `dialog`
+- **GroupCard** (line 148) - `groupcard`
+  - Context: `<GroupCard`
+- **GroupCard** (line 162) - `groupcard`
+  - Context: `<GroupCard`
+- **GroupCard** (line 188) - `groupcard`
+  - Context: `<GroupCard`
+- **GroupCard** (line 201) - `groupcard`
+  - Context: `<GroupCard`
+- **Card** (line 214) - `card`
+  - Context: `<Card className="text-center p-8">`
+- **CardContent** (line 215) - `cardcontent`
+  - Context: `<CardContent>`
+- **Users** (line 216) - `users`
+  - Context: `<Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
+- **Dialog** (line 226) - `dialog`
   - Context: `<Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>`
-- **DialogContent** (line 475) - `dialogcontent`
+- **DialogContent** (line 227) - `dialogcontent`
   - Context: `<DialogContent className="sm:max-w-[425px]">`
-- **DialogHeader** (line 476) - `dialogheader`
+- **DialogHeader** (line 228) - `dialogheader`
   - Context: `<DialogHeader>`
-- **DialogTitle** (line 477) - `dialogtitle`
+- **DialogTitle** (line 229) - `dialogtitle`
   - Context: `<DialogTitle>Leave Group</DialogTitle>`
-- **DialogDescription** (line 478) - `dialogdescription`
+- **DialogDescription** (line 230) - `dialogdescription`
   - Context: `<DialogDescription>`
-- **DialogFooter** (line 482) - `dialogfooter`
+- **DialogFooter** (line 234) - `dialogfooter`
   - Context: `<DialogFooter>`
-- **Button** (line 483) - `button`
+- **Button** (line 235) - `button`
   - Context: `<Button variant="outline" onClick={cancelLeave}>`
-- **Button** (line 486) - `button`
+- **Button** (line 238) - `button`
   - Context: `<Button variant="destructive" onClick={confirmLeave}>`
 
 #### checkScreenSize
@@ -1925,189 +2018,220 @@ node /mnt/ssd/Projects/claude/tools/ui-editor/enhanced-map-generator.cjs .
 
 #### loadProfile
 **File:** `src/pages/Profile.tsx`
-**Lines:** 886
-**Last Modified:** 2025-07-08T18:09:40.071Z
+**Lines:** 1045
+**Last Modified:** 2025-07-09T02:09:48.050Z
 
 **Key Elements:**
-- **Profile** (line 46) - `profile`
+- **Profile** (line 54) - `profile`
   - Context: `const [profile, setProfile] = useState<Profile | null>(null);`
-- **GroupChat** (line 53) - `groupchat`
+- **GroupChat** (line 61) - `groupchat`
   - Context: `const [groupChats, setGroupChats] = useState<GroupChat[]>([]);`
-- **EventChat** (line 54) - `eventchat`
+- **EventChat** (line 62) - `eventchat`
   - Context: `const [eventChats, setEventChats] = useState<EventChat[]>([]);`
-- **HTMLInputElement** (line 357) - `htmlinputelement`
+- **CommunityGroup** (line 63) - `communitygroup`
+  - Context: `const [communityGroups, setCommunityGroups] = useState<CommunityGroup[]>([]);`
+- **HTMLInputElement** (line 410) - `htmlinputelement`
   - Context: `const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {`
-- **Card** (line 479) - `card`
+- **Card** (line 532) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 480) - `cardheader`
+- **CardHeader** (line 533) - `cardheader`
   - Context: `<CardHeader>`
-- **CardContent** (line 486) - `cardcontent`
+- **CardContent** (line 539) - `cardcontent`
   - Context: `<CardContent>`
-- **Card** (line 501) - `card`
+- **Card** (line 554) - `card`
   - Context: `<Card>`
-- **CardContent** (line 502) - `cardcontent`
+- **CardContent** (line 555) - `cardcontent`
   - Context: `<CardContent className="text-center p-8">`
-- **User** (line 503) - `user`
+- **User** (line 556) - `user`
   - Context: `<User className="h-12 w-12 text-gray-400 mx-auto mb-4" />`
-- **Card** (line 514) - `card`
+- **Card** (line 567) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 515) - `cardheader`
+- **CardHeader** (line 568) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 516) - `cardtitle`
+- **CardTitle** (line 569) - `cardtitle`
   - Context: `<CardTitle className="flex items-center space-x-2">`
-- **Badge** (line 519) - `badge`
+- **Badge** (line 572) - `badge`
   - Context: `<Badge variant="secondary" className="bg-orange-100 text-orange-800">`
-- **CardDescription** (line 524) - `carddescription`
+- **CardDescription** (line 577) - `carddescription`
   - Context: `<CardDescription>`
-- **CardContent** (line 528) - `cardcontent`
+- **CardContent** (line 581) - `cardcontent`
   - Context: `<CardContent className="space-y-6">`
-- **Avatar** (line 530) - `avatar`
+- **Avatar** (line 583) - `avatar`
   - Context: `<Avatar className="w-20 h-20">`
-- **AvatarImage** (line 531) - `avatarimage`
+- **AvatarImage** (line 584) - `avatarimage`
   - Context: `<AvatarImage src={profile.avatar_url} />`
-- **AvatarFallback** (line 532) - `avatarfallback`
+- **AvatarFallback** (line 585) - `avatarfallback`
   - Context: `<AvatarFallback className="text-lg">`
-- **Label** (line 537) - `label`
+- **Label** (line 590) - `label`
   - Context: `<Label htmlFor="avatar-upload" className="cursor-pointer">`
-- **Button** (line 538) - `button`
+- **Button** (line 591) - `button`
   - Context: `<Button variant="outline" size="sm" disabled={uploading} asChild>`
-- **Upload** (line 540) - `upload`
+- **Upload** (line 593) - `upload`
   - Context: `<Upload className="h-4 w-4 mr-2" />`
-- **Label** (line 561) - `label`
+- **Label** (line 614) - `label`
   - Context: `<Label htmlFor="display-name">Display Name</Label>`
-- **Input** (line 562) - `input`
+- **Input** (line 615) - `input`
   - Context: `<Input`
-- **Label** (line 570) - `label`
+- **Label** (line 623) - `label`
   - Context: `<Label>Email</Label>`
-- **Input** (line 571) - `input`
+- **Input** (line 624) - `input`
   - Context: `<Input value={user?.email || ''} disabled />`
-- **Button** (line 576) - `button`
+- **Button** (line 629) - `button`
   - Context: `<Button type="submit" disabled={updating || displayName === profile.display_name...`
-- **Card** (line 584) - `card`
+- **Card** (line 637) - `card`
   - Context: `<Card>`
-- **CardHeader** (line 585) - `cardheader`
+- **CardHeader** (line 638) - `cardheader`
   - Context: `<CardHeader>`
-- **CardTitle** (line 586) - `cardtitle`
+- **CardTitle** (line 639) - `cardtitle`
   - Context: `<CardTitle className="flex items-center space-x-2">`
-- **Shield** (line 587) - `shield`
+- **Shield** (line 640) - `shield`
   - Context: `<Shield className="h-5 w-5 text-blue-600" />`
-- **CardDescription** (line 590) - `carddescription`
+- **CardDescription** (line 643) - `carddescription`
   - Context: `<CardDescription>`
-- **CardContent** (line 594) - `cardcontent`
+- **CardContent** (line 647) - `cardcontent`
   - Context: `<CardContent>`
-- **Tabs** (line 595) - `tabs`
+- **Tabs** (line 648) - `tabs`
   - Context: `<Tabs defaultValue="groups" className="w-full">`
-- **TabsList** (line 596) - `tabslist`
-  - Context: `<TabsList className="grid w-full grid-cols-2">`
-- **TabsTrigger** (line 597) - `tabstrigger`
+- **TabsList** (line 649) - `tabslist`
+  - Context: `<TabsList className="grid w-full grid-cols-3">`
+- **TabsTrigger** (line 650) - `tabstrigger`
   - Context: `<TabsTrigger value="groups" className="flex items-center space-x-2">`
-- **MessageSquare** (line 598) - `messagesquare`
+- **MessageSquare** (line 651) - `messagesquare`
   - Context: `<MessageSquare className="h-4 w-4" />`
-- **TabsTrigger** (line 601) - `tabstrigger`
+- **TabsTrigger** (line 654) - `tabstrigger`
   - Context: `<TabsTrigger value="events" className="flex items-center space-x-2">`
-- **Calendar** (line 602) - `calendar`
+- **Calendar** (line 655) - `calendar`
   - Context: `<Calendar className="h-4 w-4" />`
-- **TabsContent** (line 607) - `tabscontent`
+- **TabsTrigger** (line 658) - `tabstrigger`
+  - Context: `<TabsTrigger value="community" className="flex items-center space-x-2">`
+- **Settings** (line 659) - `settings`
+  - Context: `<Settings className="h-4 w-4" />`
+- **TabsContent** (line 664) - `tabscontent`
   - Context: `<TabsContent value="groups" className="space-y-4">`
-- **Badge** (line 611) - `badge`
+- **Badge** (line 668) - `badge`
   - Context: `<Badge variant="outline">{groupChats.length} groups</Badge>`
-- **MessageSquare** (line 628) - `messagesquare`
+- **MessageSquare** (line 685) - `messagesquare`
   - Context: `<MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />`
-- **Card** (line 634) - `card`
+- **Card** (line 691) - `card`
   - Context: `<Card key={group.id} className="p-4">`
-- **Input** (line 640) - `input`
+- **Input** (line 697) - `input`
   - Context: `<Input`
-- **Textarea** (line 647) - `textarea`
+- **Textarea** (line 704) - `textarea`
   - Context: `<Textarea`
-- **Button** (line 655) - `button`
+- **Button** (line 712) - `button`
   - Context: `<Button`
-- **Save** (line 660) - `save`
+- **Save** (line 717) - `save`
   - Context: `<Save className="h-4 w-4 mr-1" />`
-- **Button** (line 663) - `button`
+- **Button** (line 720) - `button`
   - Context: `<Button`
-- **X** (line 668) - `x`
+- **X** (line 725) - `x`
   - Context: `<X className="h-4 w-4 mr-1" />`
-- **Button** (line 689) - `button`
+- **Button** (line 746) - `button`
   - Context: `<Button`
-- **Edit2** (line 695) - `edit2`
+- **Edit2** (line 752) - `edit2`
   - Context: `<Edit2 className="h-4 w-4" />`
-- **AlertDialog** (line 697) - `alertdialog`
+- **AlertDialog** (line 754) - `alertdialog`
   - Context: `<AlertDialog>`
-- **AlertDialogTrigger** (line 698) - `alertdialogtrigger`
+- **AlertDialogTrigger** (line 755) - `alertdialogtrigger`
   - Context: `<AlertDialogTrigger asChild>`
-- **Button** (line 699) - `button`
+- **Button** (line 756) - `button`
   - Context: `<Button`
-- **Trash2** (line 705) - `trash2`
+- **Trash2** (line 762) - `trash2`
   - Context: `<Trash2 className="h-4 w-4" />`
-- **AlertDialogContent** (line 708) - `alertdialogcontent`
+- **AlertDialogContent** (line 765) - `alertdialogcontent`
   - Context: `<AlertDialogContent>`
-- **AlertDialogHeader** (line 709) - `alertdialogheader`
+- **AlertDialogHeader** (line 766) - `alertdialogheader`
   - Context: `<AlertDialogHeader>`
-- **AlertDialogTitle** (line 710) - `alertdialogtitle`
+- **AlertDialogTitle** (line 767) - `alertdialogtitle`
   - Context: `<AlertDialogTitle>Delete Group</AlertDialogTitle>`
-- **AlertDialogDescription** (line 711) - `alertdialogdescription`
+- **AlertDialogDescription** (line 768) - `alertdialogdescription`
   - Context: `<AlertDialogDescription>`
-- **AlertDialogFooter** (line 715) - `alertdialogfooter`
+- **AlertDialogFooter** (line 772) - `alertdialogfooter`
   - Context: `<AlertDialogFooter>`
-- **AlertDialogCancel** (line 716) - `alertdialogcancel`
+- **AlertDialogCancel** (line 773) - `alertdialogcancel`
   - Context: `<AlertDialogCancel>Cancel</AlertDialogCancel>`
-- **AlertDialogAction** (line 717) - `alertdialogaction`
+- **AlertDialogAction** (line 774) - `alertdialogaction`
   - Context: `<AlertDialogAction`
-- **TabsContent** (line 739) - `tabscontent`
+- **TabsContent** (line 796) - `tabscontent`
   - Context: `<TabsContent value="events" className="space-y-4">`
-- **Badge** (line 743) - `badge`
+- **Badge** (line 800) - `badge`
   - Context: `<Badge variant="outline">{eventChats.length} events</Badge>`
-- **Calendar** (line 760) - `calendar`
+- **Calendar** (line 817) - `calendar`
   - Context: `<Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />`
-- **Card** (line 766) - `card`
+- **Card** (line 823) - `card`
   - Context: `<Card key={event.id} className="p-4">`
-- **Input** (line 771) - `input`
+- **Input** (line 828) - `input`
   - Context: `<Input`
-- **Textarea** (line 776) - `textarea`
+- **Textarea** (line 833) - `textarea`
   - Context: `<Textarea`
-- **Input** (line 783) - `input`
+- **Input** (line 840) - `input`
   - Context: `<Input`
-- **Input** (line 788) - `input`
+- **Input** (line 845) - `input`
   - Context: `<Input`
-- **Button** (line 795) - `button`
+- **Button** (line 852) - `button`
   - Context: `<Button`
-- **Save** (line 800) - `save`
+- **Save** (line 857) - `save`
   - Context: `<Save className="h-4 w-4 mr-1" />`
-- **Button** (line 803) - `button`
+- **Button** (line 860) - `button`
   - Context: `<Button`
-- **X** (line 808) - `x`
+- **X** (line 865) - `x`
   - Context: `<X className="h-4 w-4 mr-1" />`
-- **Button** (line 829) - `button`
+- **Button** (line 886) - `button`
   - Context: `<Button`
-- **Edit2** (line 835) - `edit2`
+- **Edit2** (line 892) - `edit2`
   - Context: `<Edit2 className="h-4 w-4" />`
-- **AlertDialog** (line 837) - `alertdialog`
+- **AlertDialog** (line 894) - `alertdialog`
   - Context: `<AlertDialog>`
-- **AlertDialogTrigger** (line 838) - `alertdialogtrigger`
+- **AlertDialogTrigger** (line 895) - `alertdialogtrigger`
   - Context: `<AlertDialogTrigger asChild>`
-- **Button** (line 839) - `button`
+- **Button** (line 896) - `button`
   - Context: `<Button`
-- **Trash2** (line 845) - `trash2`
+- **Trash2** (line 902) - `trash2`
   - Context: `<Trash2 className="h-4 w-4" />`
-- **AlertDialogContent** (line 848) - `alertdialogcontent`
+- **AlertDialogContent** (line 905) - `alertdialogcontent`
   - Context: `<AlertDialogContent>`
-- **AlertDialogHeader** (line 849) - `alertdialogheader`
+- **AlertDialogHeader** (line 906) - `alertdialogheader`
   - Context: `<AlertDialogHeader>`
-- **AlertDialogTitle** (line 850) - `alertdialogtitle`
+- **AlertDialogTitle** (line 907) - `alertdialogtitle`
   - Context: `<AlertDialogTitle>Delete Event</AlertDialogTitle>`
-- **AlertDialogDescription** (line 851) - `alertdialogdescription`
+- **AlertDialogDescription** (line 908) - `alertdialogdescription`
   - Context: `<AlertDialogDescription>`
-- **AlertDialogFooter** (line 855) - `alertdialogfooter`
+- **AlertDialogFooter** (line 912) - `alertdialogfooter`
   - Context: `<AlertDialogFooter>`
-- **AlertDialogCancel** (line 856) - `alertdialogcancel`
+- **AlertDialogCancel** (line 913) - `alertdialogcancel`
   - Context: `<AlertDialogCancel>Cancel</AlertDialogCancel>`
-- **AlertDialogAction** (line 857) - `alertdialogaction`
+- **AlertDialogAction** (line 914) - `alertdialogaction`
   - Context: `<AlertDialogAction`
+- **TabsContent** (line 936) - `tabscontent`
+  - Context: `<TabsContent value="community" className="space-y-4">`
+- **Badge** (line 940) - `badge`
+  - Context: `<Badge variant="outline">{communityGroups.length} communities</Badge>`
+- **Settings** (line 957) - `settings`
+  - Context: `<Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />`
+- **Card** (line 963) - `card`
+  - Context: `<Card key={community.id} className="p-4">`
+- **Input** (line 969) - `input`
+  - Context: `<Input`
+- **Textarea** (line 976) - `textarea`
+  - Context: `<Textarea`
+- **Button** (line 984) - `button`
+  - Context: `<Button`
+- **Save** (line 989) - `save`
+  - Context: `<Save className="h-4 w-4 mr-1" />`
+- **Button** (line 992) - `button`
+  - Context: `<Button`
+- **X** (line 997) - `x`
+  - Context: `<X className="h-4 w-4 mr-1" />`
+- **Button** (line 1018) - `button`
+  - Context: `<Button`
+- **Edit2** (line 1024) - `edit2`
+  - Context: `<Edit2 className="h-4 w-4" />`
 
 ## 🎯 QUICK REFERENCE
 
 ### Main Components
 - **getLayoutClass**: `src/components/layout/MultiPanelLayout.tsx`
+- **MobileLayout**: `src/components/layout/Layout.tsx`
 
 ## 🔄 UPDATE INSTRUCTIONS
 **Before every UI editing session:**
