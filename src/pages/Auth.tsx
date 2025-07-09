@@ -11,7 +11,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Mountain } from 'lucide-react';
 
 export default function Auth() {
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,11 +26,13 @@ export default function Auth() {
     setLoading(true);
     
     try {
-      const { error } = await signIn(email, password);
+      // Convert displayName to dummy email format for login
+      const dummyEmail = `${displayName.toLowerCase().replace(/\s+/g, '')}@climber.local`;
+      const { error } = await signIn(dummyEmail, password);
       if (error) {
         toast({
           title: "Sign in failed",
-          description: error.message,
+          description: "Invalid username or password.",
           variant: "destructive",
         });
       } else {
@@ -56,7 +57,9 @@ export default function Auth() {
     setLoading(true);
     
     try {
-      const { error } = await signUp(email, password, displayName);
+      // Use displayName as email with a dummy domain for simplified auth
+      const dummyEmail = `${displayName.toLowerCase().replace(/\s+/g, '')}@climber.local`;
+      const { error } = await signUp(dummyEmail, password, displayName);
       if (error) {
         toast({
           title: "Sign up failed",
@@ -66,7 +69,7 @@ export default function Auth() {
       } else {
         toast({
           title: "Account created!",
-          description: "Your account has been created. Please wait for admin approval to start chatting.",
+          description: "You can now access the app. Wait for admin approval to start chatting.",
         });
       }
     } catch (error) {
@@ -102,13 +105,13 @@ export default function Auth() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="username">Username</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    type="text"
+                    placeholder="Your username"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
                     required
                   />
                 </div>
@@ -131,38 +134,26 @@ export default function Auth() {
             <TabsContent value="signup">
               <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
                 <p className="text-sm text-orange-800">
-                  <strong>Security Notice:</strong> This platform uses simplified authentication. 
-                  Your account will be created with minimal security verification. All new users 
-                  require admin approval before participating in chats.
+                  <strong>Security Notice:</strong> This platform uses simplified username/password authentication. 
+                  All new users require admin approval before participating in chats.
                 </p>
               </div>
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="displayName">Display Name</Label>
+                  <Label htmlFor="newUsername">Username</Label>
                   <Input
-                    id="displayName"
+                    id="newUsername"
                     type="text"
-                    placeholder="Your climbing name"
+                    placeholder="Choose a username"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="newPassword">Password</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
+                    id="newPassword"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -170,7 +161,7 @@ export default function Auth() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating account..." : "Sign Up"}
+                  {loading ? "Creating account..." : "Create Account"}
                 </Button>
               </form>
             </TabsContent>
