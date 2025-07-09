@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Send, ArrowLeft, Users, MapPin, Clock, UserMinus, Loader2 } from 'lucide-react';
+import { Users, MapPin, Clock, UserMinus, Loader2 } from 'lucide-react';
 import { BelayGroup, BelayGroupMessage, CLIMBING_TYPE_ICONS } from '@/types/belayGroup';
 import { formatSessionDate, getTimeUntilSession } from '@/utils/belayGroupUtils';
-import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
-import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
+import { ChatContainer } from '@/components/chat/ChatContainer';
+import { ChatHeader } from '@/components/chat/ChatHeader';
+import { ChatMessages } from '@/components/chat/ChatMessages';
+import { ChatInput } from '@/components/chat/ChatInput';
 
 export default function BelayChat() {
   const { id: belayGroupId } = useParams<{ id: string }>();
@@ -23,17 +22,9 @@ export default function BelayChat() {
   const [isLoading, setIsLoading] = useState(true);
   const [isParticipant, setIsParticipant] = useState(false);
   const [participantCount, setParticipantCount] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatInputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isMobile, isChrome } = useSimpleMobileDetection();
-
-  // Apply mobile chat input spacing
-  useEffect(() => {
-    addMobileChatInputSpacing();
-  }, [isMobile, isChrome]);
 
   useEffect(() => {
     if (!belayGroupId || !user) return;
@@ -143,13 +134,8 @@ export default function BelayChat() {
     };
   }, [belayGroupId, user, toast, navigate]);
 
-  // Auto scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !user || !belayGroupId || !isParticipant) return;
 
     try {
@@ -204,9 +190,6 @@ export default function BelayChat() {
     }
   };
 
-  const handleEmojiSelect = (emoji: string) => {
-    setNewMessage(prev => prev + emoji);
-  };
 
   const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
@@ -266,28 +249,14 @@ export default function BelayChat() {
   const isExpired = new Date(belayGroup.session_date) < new Date();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/belay-groups')}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{CLIMBING_TYPE_ICONS[belayGroup.climbing_type]}</span>
-              <div>
-                <h1 className="font-semibold">{belayGroup.name}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {belayGroup.gym?.name} • {participantCount} climbers
-                </p>
-              </div>
-            </div>
-          </div>
+    <ChatContainer>
+      <ChatHeader
+        title={belayGroup.name}
+        subtitle={`${belayGroup.gym?.name} • ${participantCount} climbers`}
+        onBack={() => navigate('/belay-groups')}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{CLIMBING_TYPE_ICONS[belayGroup.climbing_type]}</span>
           <Button
             variant="outline"
             size="sm"
@@ -298,7 +267,7 @@ export default function BelayChat() {
             Leave
           </Button>
         </div>
-      </div>
+      </ChatHeader>
 
       {/* Session Info */}
       <div className="bg-blue-50 border-b px-4 py-2">
@@ -319,115 +288,20 @@ export default function BelayChat() {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scrollbar">
-        {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            <Users className="h-8 w-8 mx-auto mb-2" />
-            <p>Start the conversation! Say hello to your climbing partners.</p>
-          </div>
-        ) : (
-          messages.map((message, index) => {
-            const isOwnMessage = message.user_id === user?.id;
-            const prevMessage = index > 0 ? messages[index - 1] : null;
-            const isThreaded = prevMessage && 
-              prevMessage.user_id === message.user_id &&
-              new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime() < 300000; // 5 minutes
+      <ChatMessages
+        messages={messages}
+        currentUserId={user?.id}
+        isLoading={false}
+        emptyMessage="Start the conversation! Say hello to your climbing partners."
+        formatTimestamp={formatTimestamp}
+      />
 
-            return (
-              <div key={message.id} className={`flex gap-3 ${isThreaded ? 'mt-0.5' : 'mt-4'}`}>
-                <div className="flex-shrink-0">
-                  {!isOwnMessage && !isThreaded ? (
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={message.profiles?.avatar_url} />
-                      <AvatarFallback>
-                        {message.profiles?.display_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div className="w-8" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  {!isOwnMessage && !isThreaded && (
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="font-medium text-sm">
-                        {message.profiles?.display_name || 'Unknown User'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTimestamp(message.created_at)}
-                      </span>
-                    </div>
-                  )}
-
-                  {shouldDisplayWithoutBubble(message.content) ? (
-                    <div className="text-2xl sm:text-3xl">
-                      {message.content}
-                    </div>
-                  ) : (
-                    <div
-                      className={`px-3 py-2 rounded-2xl break-words max-w-[75%] ${
-                        isOwnMessage
-                          ? 'bg-blue-500 text-white rounded-br-md ml-auto'
-                          : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                  )}
-
-                  {isOwnMessage && !isThreaded && (
-                    <div className="text-xs text-muted-foreground mt-1 text-right">
-                      {formatTimestamp(message.created_at)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Message Input */}
-      <div 
-        ref={chatInputRef}
-        className="bg-white border-t p-4 chat-input-mobile"
-        data-mobile-enhanced={isMobile}
-        data-browser-chrome={isChrome}
-        style={isMobile ? {
-          position: 'sticky',
-          bottom: '0',
-          paddingBottom: '25px',
-          marginBottom: '0',
-          zIndex: 1000,
-          backgroundColor: 'white',
-          borderTop: '1px solid #e5e7eb'
-        } : {}}
-      >
-        <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
-          <div className="flex-1 relative">
-            <Input
-              placeholder={`Message ${belayGroup.name}...`}
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              className="pr-12"
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
-            </div>
-          </div>
-          <Button type="submit" disabled={!newMessage.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
-      </div>
-      
-      {/* Mobile spacer to ensure input is visible above browser navigation */}
-      {isMobile && (
-        <div style={{ height: '25px', flexShrink: 0 }} />
-      )}
-    </div>
+      <ChatInput
+        value={newMessage}
+        onChange={setNewMessage}
+        onSend={handleSendMessage}
+        placeholder={`Message ${belayGroup.name}...`}
+      />
+    </ChatContainer>
   );
 }

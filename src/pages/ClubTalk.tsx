@@ -38,20 +38,10 @@ export default function ClubTalk() {
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const chatInputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const viewportState = useMobileViewport();
 
-  // Function to scroll to bottom
-  const scrollToBottom = () => {
-    if (viewportRef.current) {
-      const scrollContainer = viewportRef.current;
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
-  };
 
   // Check if user is admin
   const checkAdminStatus = useCallback(async () => {
@@ -163,13 +153,6 @@ export default function ClubTalk() {
 
       setMessages(data || []);
       setMessagesLoaded(true);
-      
-      // Smooth scroll after data loads
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
-      });
     } catch (error) {
       console.error('Error in loadMessages:', error);
     }
@@ -278,17 +261,7 @@ export default function ClubTalk() {
 
 
 
-  // Auto scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
-  // Apply mobile chat input positioning
-  useEffect(() => {
-    if (chatInputRef.current && viewportState.isMobile) {
-      applyChatInputPosition(chatInputRef.current, viewportState);
-    }
-  }, [viewportState]);
 
   // Filter messages based on search
   const filteredMessages = messages.filter(message =>
@@ -346,161 +319,97 @@ export default function ClubTalk() {
     );
   }
 
-  return (
-    <div className={`w-full flex flex-col bg-white ${viewportState.isMobile ? 'chat-container' : 'h-full'}`}>
-      {/* Chat Header */}
-      <div className="p-4 border-b flex items-center justify-between flex-shrink-0 bg-white">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="p-1"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h3 className="font-semibold">Club Talk</h3>
-            <p className="text-sm text-gray-500">Toronto Climbing Club discussion • {messages.length} messages</p>
+  const customRenderMessage = (message: ClubMessage, isOwnMessage: boolean) => (
+    <div
+      key={message.id}
+      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${
+        isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
+      } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
+      onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
+    >
+      <div className="flex items-center gap-2">
+        {isDeleteMode && (
+          <input
+            type="checkbox"
+            checked={selectedMessages.has(message.id)}
+            onChange={() => toggleMessageSelection(message.id)}
+            className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+        
+        {isEventCreationMessage(message.content) ? (
+          <EventMessageButton 
+            content={message.content}
+            isOwnMessage={isOwnMessage}
+          />
+        ) : shouldDisplayWithoutBubble(message.content) ? (
+          <div className="text-2xl sm:text-3xl">
+            {message.content}
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {showSearch && (
-            <Input
-              placeholder="Search messages..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-48"
-            />
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowSearch(!showSearch)}
+        ) : (
+          <div
+            className={`px-3 py-2 rounded-2xl break-words ${
+              isOwnMessage
+                ? 'bg-blue-500 text-white rounded-br-md'
+                : 'bg-gray-100 text-gray-900 rounded-bl-md'
+            }`}
           >
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
+            {message.content}
+          </div>
+        )}
       </div>
+    </div>
+  );
 
-      {/* Messages Area */}
-      <div 
-        className="flex-1 overflow-y-auto p-4 min-h-0 chat-scrollbar"
-        ref={viewportRef}
+  return (
+    <ChatContainer>
+      <ChatHeader 
+        title="Club Talk"
+        subtitle={`Toronto Climbing Club discussion • ${messages.length} messages`}
+        onBack={() => navigate('/')}
       >
-        <div className="space-y-4">
-          {!messagesLoaded ? (
-            // Loading state for messages
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                    <div className={`h-8 bg-gray-200 rounded animate-pulse ${
-                      i % 2 === 0 ? 'w-3/4' : 'w-1/2'
-                    }`}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredMessages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              No messages yet. Start the conversation!
-            </div>
-          ) : (
-            filteredMessages.map((message, index) => {
-              const isOwnMessage = message.user_id === user?.id;
-              const prevMessage = filteredMessages[index - 1];
-              const isThreaded = prevMessage && prevMessage.user_id === message.user_id;
-              
-              return (
-                <div
-                  key={message.id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${isThreaded ? 'mt-0.5' : 'mt-4'} ${
-                    isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
-                  } ${selectedMessages.has(message.id) ? 'bg-red-50' : ''}`}
-                  onClick={() => isDeleteMode && toggleMessageSelection(message.id)}
-                >
-                  {/* Avatar - only show for other users' messages */}
-                  {!isOwnMessage && (
-                    <div className="flex flex-col items-center mr-3">
-                      {!isThreaded ? (
-                        <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarImage src={message.profiles?.avatar_url} />
-                          <AvatarFallback>
-                            {message.profiles?.display_name?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="h-8 w-8" />
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
-                    {/* Show name and timestamp only for first message in sequence */}
-                    {!isThreaded && (
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium">
-                          {message.profiles?.display_name || 'Unknown User'}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {formatTimestamp(message.created_at)}
-                        </span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2">
-                      {/* Show checkbox in delete mode */}
-                      {isDeleteMode && (
-                        <input
-                          type="checkbox"
-                          checked={selectedMessages.has(message.id)}
-                          onChange={() => toggleMessageSelection(message.id)}
-                          className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      )}
-                      
-                      {isEventCreationMessage(message.content) ? (
-                        <EventMessageButton 
-                          content={message.content}
-                          isOwnMessage={isOwnMessage}
-                        />
-                      ) : shouldDisplayWithoutBubble(message.content) ? (
-                        <div className="text-2xl sm:text-3xl">
-                          {message.content}
-                        </div>
-                      ) : (
-                        <div
-                          className={`px-3 py-2 rounded-2xl break-words ${
-                            isOwnMessage
-                              ? 'bg-blue-500 text-white rounded-br-md'
-                              : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                          }`}
-                        >
-                          {message.content}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
+        {showSearch && (
+          <Input
+            placeholder="Search messages..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-48"
+          />
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            if (showSearch) {
+              setSearchTerm('');
+              setShowSearch(false);
+            } else {
+              setShowSearch(true);
+            }
+          }}
+        >
+          {showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+        </Button>
+      </ChatHeader>
 
-      {/* Message Input */}
-      <div 
-        ref={chatInputRef}
-        className={`p-4 border-t bg-white flex-shrink-0 z-50 ${
-          viewportState.isMobile ? '' : 'sticky bottom-0'
-        }`}
+      <ChatMessages
+        messages={filteredMessages}
+        currentUserId={user?.id}
+        isLoading={!messagesLoaded}
+        renderMessage={customRenderMessage}
+        formatTimestamp={formatTimestamp}
+      />
+
+      <ChatInput
+        value={newMessage}
+        onChange={setNewMessage}
+        onSend={handleSendMessage}
+        placeholder="Type a message..."
+        disabled={isDeleteMode}
       >
         {isDeleteMode && selectedMessages.size > 0 && (
-          <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between max-w-4xl mx-auto">
+          <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
             <span className="text-sm text-red-700">
               {selectedMessages.size} message{selectedMessages.size === 1 ? '' : 's'} selected
             </span>
@@ -515,40 +424,13 @@ export default function ClubTalk() {
             </Button>
           </div>
         )}
-        <div className="flex gap-2 max-w-4xl mx-auto">
-          <ChatActionsMenu 
-            onCreateEvent={handleCreateEvent} 
-            isAdmin={isAdmin}
-            onDeleteMessages={toggleDeleteMode}
-            isDeleteMode={isDeleteMode}
-          />
-          <div className="flex-1 relative">
-            <Input
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              className="pr-12"
-              disabled={isDeleteMode}
-            />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
-            </div>
-          </div>
-          <Button 
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim() || isDeleteMode}
-            size="icon"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+        <ChatActionsMenu 
+          onCreateEvent={handleCreateEvent} 
+          isAdmin={isAdmin}
+          onDeleteMessages={toggleDeleteMode}
+          isDeleteMode={isDeleteMode}
+        />
+      </ChatInput>
       
       <CreateEventModal 
         open={showCreateEventModal} 
@@ -557,6 +439,14 @@ export default function ClubTalk() {
         chatType="club"
         chatId="club"
       />
-    </div>
+      
+      <CreateEventModal 
+        open={showCreateEventModal} 
+        onClose={() => setShowCreateEventModal(false)}
+        groupName="Club Talk"
+        chatType="club"
+        chatId="club"
+      />
+    </ChatContainer>
   );
 }

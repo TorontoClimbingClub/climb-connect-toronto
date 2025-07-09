@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSimpleMobileDetection, addMobileChatInputSpacing } from '@/utils/simpleMobileDetection';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -62,15 +61,7 @@ export default function EventChat() {
   const [isEventDetailsExpanded, setIsEventDetailsExpanded] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLDivElement>(null);
-  const { isMobile, isChrome } = useSimpleMobileDetection();
 
-  // Function to scroll to bottom
-  const scrollToBottom = useCallback(() => {
-    if (viewportRef.current) {
-      const scrollContainer = viewportRef.current;
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
-  }, []);
 
   // Check if user is admin
   const checkAdminStatus = useCallback(async () => {
@@ -265,9 +256,6 @@ export default function EventChat() {
       setMessages(data || []);
       setMessagesLoaded(true);
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
       });
     } catch (error) {
       console.error('Error loading messages:', error);
@@ -363,10 +351,6 @@ export default function EventChat() {
     }
   }, [user, checkAdminStatus]);
 
-  // Apply mobile chat input spacing
-  useEffect(() => {
-    addMobileChatInputSpacing();
-  }, [isMobile, isChrome]);
 
   // Initialize component data
   const initializeChat = async () => {
@@ -425,7 +409,7 @@ export default function EventChat() {
             }
             return [...current, newMsg];
           });
-          scrollToBottom();
+          
         }
       )
       .on(
@@ -446,7 +430,7 @@ export default function EventChat() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [eventId, user, scrollToBottom]);
+  }, [eventId, user]);
 
   if (!user) {
     return (
@@ -656,7 +640,7 @@ export default function EventChat() {
         )}
       </div>
 
-      {/* Messages */}
+      {/* Messages - now uses the viewport ref for proper scrolling */}
       <div ref={viewportRef} className="flex-1 overflow-y-auto p-3 sm:p-4 chat-scrollbar">
         <div className="space-y-3 sm:space-y-4">
           {!messagesLoaded ? (
@@ -766,21 +750,10 @@ export default function EventChat() {
         </div>
       </div>
 
-      {/* Input */}
+      {/* Input - Using mobile viewport utilities directly */}
       <div 
         ref={chatInputRef}
-        className="border-t p-3 sm:p-4 bg-white flex-shrink-0 chat-input-mobile"
-        data-mobile-enhanced={isMobile}
-        data-browser-chrome={isChrome}
-        style={isMobile ? {
-          position: 'sticky',
-          bottom: '0',
-          paddingBottom: '25px',
-          marginBottom: '0',
-          zIndex: 1000,
-          backgroundColor: 'white',
-          borderTop: '1px solid #e5e7eb'
-        } : {}}
+        className="border-t p-3 sm:p-4 bg-white flex-shrink-0 z-50 chat-input-mobile"
       >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
@@ -798,13 +771,7 @@ export default function EventChat() {
             </Button>
           </div>
         )}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSendMessage();
-          }}
-          className="flex space-x-2"
-        >
+        <div className="flex gap-2 items-end">
           <ChatActionsMenu 
             onCreateEvent={handleCreateEvent}
             onLeave={isParticipant ? handleLeaveClick : undefined}
@@ -821,26 +788,27 @@ export default function EventChat() {
               className="pr-12"
               autoComplete="off"
               disabled={isDeleteMode}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
               <EmojiPickerComponent onEmojiSelect={handleEmojiSelect} />
             </div>
           </div>
           <Button 
-            type="submit" 
+            onClick={handleSendMessage}
             size="icon" 
             className="bg-green-600 hover:bg-green-700 flex-shrink-0"
             disabled={!newMessage.trim() || isDeleteMode}
           >
             <Send className="h-4 w-4" />
           </Button>
-        </form>
+        </div>
       </div>
-      
-      {/* Mobile spacer to ensure input is visible above browser navigation */}
-      {isMobile && (
-        <div style={{ height: '25px', flexShrink: 0 }} />
-      )}
       
       <CreateEventModal 
         open={showCreateEventModal} 
