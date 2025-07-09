@@ -21,18 +21,6 @@ export function Layout({
 }: LayoutProps) {
   const shouldUseDesktopLayout = useShouldUseDesktopLayout(useDesktopLayout);
   
-  // Show loading skeleton during hydration
-  if (!shouldUseDesktopLayout && typeof window === 'undefined') {
-    return (
-      <div className={`layout-container ${fullscreen ? 'layout-fullscreen' : 'layout-default'} layout-loading`}>
-        <div className="layout-skeleton">
-          <div className="skeleton-nav"></div>
-          <div className="skeleton-content"></div>
-        </div>
-      </div>
-    );
-  }
-
   // Mobile-first layout with CSS-first responsive classes
   const MobileLayout = () => (
     <div className={`layout-container layout-mobile ${fullscreen ? 'layout-fullscreen' : 'layout-default'}`}>

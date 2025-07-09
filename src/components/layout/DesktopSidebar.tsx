@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { supabase } from '@/integrations/supabase/client';
 import { 
   Mountain, 
   Hash, 
@@ -23,19 +23,11 @@ interface NavigationItem {
   active?: boolean;
 }
 
-interface UserProfile {
-  id: string;
-  display_name: string;
-  avatar_url?: string;
-}
-
-
-
 export function DesktopSidebar() {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   
   const { user } = useAuth();
+  const { userProfile } = useUserProfile();
   const location = useLocation();
   
   // Initialize keyboard shortcuts
@@ -75,56 +67,6 @@ export function DesktopSidebar() {
     setUnreadCounts({});
   };
 
-  const loadUserProfile = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, display_name, avatar_url')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error loading user profile:', error);
-        return;
-      }
-
-      setUserProfile(data);
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-    }
-  };
-
-  // Load user profile and set up real-time subscription
-  useEffect(() => {
-    if (user) {
-      loadUserProfile();
-
-      // Set up real-time subscription for profile changes
-      const subscription = supabase
-        .channel('profile_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log('Profile updated:', payload);
-            // Update local state with new profile data
-            setUserProfile(payload.new as UserProfile);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
-  }, [user]);
 
 
   return (
@@ -139,15 +81,15 @@ export function DesktopSidebar() {
       <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 mb-6">
         <Link to="/profile" className="hover:opacity-80 transition-opacity">
           <Avatar className="h-12 w-12 cursor-pointer">
-            <AvatarImage src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} />
+            <AvatarImage src={userProfile?.avatar_url} />
             <AvatarFallback>
-              {userProfile?.display_name?.[0] || user?.user_metadata?.display_name?.[0] || user?.email?.[0] || 'U'}
+              {userProfile?.initials}
             </AvatarFallback>
           </Avatar>
         </Link>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-900 truncate">
-            {userProfile?.display_name || user?.user_metadata?.display_name || user?.email}
+            {userProfile?.display_name}
           </p>
         </div>
       </div>

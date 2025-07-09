@@ -1,8 +1,8 @@
 /**
- * Optimized Layout State Hook
+ * SSR-Safe Layout State Hook
  * 
- * Provides SSR-safe layout state management with minimal re-renders
- * and smooth transitions between mobile and desktop layouts.
+ * Prevents layout shift by using CSS-first responsive design
+ * and stable hydration patterns.
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -17,28 +17,30 @@ interface LayoutState {
 
 /**
  * Main hook for layout state management
- * Handles SSR hydration and provides stable layout detection
+ * Uses CSS-first approach to prevent hydration mismatches
  */
 export const useLayoutState = (): LayoutState => {
+  // Start with mobile-first assumption (SSR-safe)
   const [isHydrated, setIsHydrated] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
 
   useEffect(() => {
-    // Single effect for hydration and initial state
-    setScreenWidth(window.innerWidth);
-    setIsHydrated(true);
-
+    // Only run on client side
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };
+
+    // Set initial state and mark as hydrated
+    setScreenWidth(window.innerWidth);
+    setIsHydrated(true);
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return useMemo(() => ({
-    isDesktop: screenWidth >= BREAKPOINTS.DESKTOP,
-    isMobile: screenWidth < BREAKPOINTS.DESKTOP,
+    isDesktop: isHydrated && screenWidth >= BREAKPOINTS.DESKTOP,
+    isMobile: !isHydrated || screenWidth < BREAKPOINTS.DESKTOP,
     isHydrated,
     screenWidth,
   }), [screenWidth, isHydrated]);
@@ -46,12 +48,13 @@ export const useLayoutState = (): LayoutState => {
 
 /**
  * Hook for determining if desktop layout should be used
- * Combines screen size with explicit desktop layout preference
+ * Always returns false during SSR to prevent hydration mismatches
  */
 export const useShouldUseDesktopLayout = (useDesktopLayout: boolean = false): boolean => {
   const { isDesktop, isHydrated } = useLayoutState();
   
   return useMemo(() => {
+    // Always return false during SSR/before hydration
     if (!isHydrated) return false;
     return useDesktopLayout && isDesktop;
   }, [useDesktopLayout, isDesktop, isHydrated]);
