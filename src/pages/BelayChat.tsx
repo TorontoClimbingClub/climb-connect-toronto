@@ -269,15 +269,6 @@ export default function BelayChat() {
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">{CLIMBING_TYPE_ICONS[belayGroup.climbing_type]}</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLeaveGroup}
-            className="text-red-600 hover:text-red-700"
-          >
-            <UserMinus className="h-4 w-4 mr-2" />
-            Leave
-          </Button>
         </div>
       </ChatHeader>
 
@@ -313,6 +304,16 @@ export default function BelayChat() {
         onChange={setNewMessage}
         onSend={handleSendMessage}
         placeholder={`Message ${belayGroup.name}...`}
+        leftButton={
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleLeaveGroup}
+            className="text-red-600 hover:text-red-700"
+          >
+            <UserMinus className="h-4 w-4" />
+          </Button>
+        }
       />
     </ChatContainer>
   );

@@ -408,6 +408,14 @@ export default function ClubTalk() {
         onSend={handleSendMessage}
         placeholder="Type a message..."
         disabled={isDeleteMode}
+        leftButton={
+          <ChatActionsMenu 
+            onCreateEvent={handleCreateEvent} 
+            isAdmin={isAdmin}
+            onDeleteMessages={toggleDeleteMode}
+            isDeleteMode={isDeleteMode}
+          />
+        }
       >
         {isDeleteMode && selectedMessages.size > 0 && (
           <div className="mb-3 p-2 bg-red-50 rounded-lg flex items-center justify-between">
@@ -425,12 +433,6 @@ export default function ClubTalk() {
             </Button>
           </div>
         )}
-        <ChatActionsMenu 
-          onCreateEvent={handleCreateEvent} 
-          isAdmin={isAdmin}
-          onDeleteMessages={toggleDeleteMode}
-          isDeleteMode={isDeleteMode}
-        />
       </ChatInput>
       
       <CreateEventModal 
