@@ -437,6 +437,7 @@ export type Database = {
           display_name: string
           id: string
           is_admin: boolean | null
+          is_approved: boolean | null
         }
         Insert: {
           avatar_url?: string | null
@@ -444,6 +445,7 @@ export type Database = {
           display_name: string
           id: string
           is_admin?: boolean | null
+          is_approved?: boolean | null
         }
         Update: {
           avatar_url?: string | null
@@ -451,6 +453,7 @@ export type Database = {
           display_name?: string
           id?: string
           is_admin?: boolean | null
+          is_approved?: boolean | null
         }
         Relationships: []
       }

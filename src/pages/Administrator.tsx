@@ -13,6 +13,7 @@ interface User {
   display_name: string;
   avatar_url?: string;
   is_admin: boolean;
+  is_approved: boolean;
   created_at: string;
 }
 
@@ -75,7 +76,7 @@ export default function Administrator() {
       // Load users
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
-        .select('id, display_name, avatar_url, is_admin, created_at')
+        .select('id, display_name, avatar_url, is_admin, is_approved, created_at')
         .order('created_at', { ascending: false });
 
       if (usersError) throw usersError;
@@ -125,6 +126,35 @@ export default function Administrator() {
       loadAdminData();
     } catch (error) {
       console.error('Error updating user:', error);
+      toast({
+        title: 'Error updating user',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const toggleUserApproval = async (userId: string, currentApprovalStatus: boolean) => {
+    setUserLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_approved: !currentApprovalStatus })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'User updated',
+        description: `User ${!currentApprovalStatus ? 'approved' : 'unapproved'} for chat participation.`
+      });
+
+      // Reload users
+      loadAdminData();
+    } catch (error) {
+      console.error('Error updating user approval:', error);
       toast({
         title: 'Error updating user',
         description: 'Please try again later.',
@@ -317,7 +347,7 @@ export default function Administrator() {
             User Management
           </CardTitle>
           <CardDescription>
-            Manage user accounts and administrator privileges
+            Manage user accounts, administrator privileges, and chat approval
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -340,6 +370,15 @@ export default function Administrator() {
                           Admin
                         </Badge>
                       )}
+                      {userData.is_approved ? (
+                        <Badge variant="default" className="text-xs bg-green-100 text-green-800">
+                          Approved
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs border-orange-300 text-orange-600">
+                          Pending Approval
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-gray-500">
                       Joined {new Date(userData.created_at).toLocaleDateString()}
@@ -348,6 +387,15 @@ export default function Administrator() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant={userData.is_approved ? "outline" : "default"}
+                    size="sm"
+                    onClick={() => toggleUserApproval(userData.id, userData.is_approved)}
+                    disabled={userLoading}
+                    className={userData.is_approved ? "" : "bg-green-600 hover:bg-green-700"}
+                  >
+                    {userData.is_approved ? 'Unapprove' : 'Approve'}
+                  </Button>
                   <Button
                     variant={userData.is_admin ? "outline" : "default"}
                     size="sm"

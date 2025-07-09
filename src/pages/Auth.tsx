@@ -66,7 +66,7 @@ export default function Auth() {
       } else {
         toast({
           title: "Account created!",
-          description: "Please check your email to verify your account.",
+          description: "Your account has been created. Please wait for admin approval to start chatting.",
         });
       }
     } catch (error) {
@@ -129,6 +129,13 @@ export default function Auth() {
             </TabsContent>
             
             <TabsContent value="signup">
+              <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                <p className="text-sm text-orange-800">
+                  <strong>Security Notice:</strong> This platform uses simplified authentication. 
+                  Your account will be created with minimal security verification. All new users 
+                  require admin approval before participating in chats.
+                </p>
+              </div>
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="displayName">Display Name</Label>
