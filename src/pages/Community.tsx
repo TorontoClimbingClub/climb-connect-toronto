@@ -232,7 +232,7 @@ export default function Community() {
               key={chat.id}
               className={`border rounded-lg cursor-pointer transition-colors ${
                 chat.is_member 
-                  ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
+                  ? 'border-orange-400 hover:border-orange-500 hover:bg-gray-50' 
                   : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
               }`}
               onClick={() => {
@@ -259,11 +259,8 @@ export default function Community() {
                     
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <h3 className="text-xl font-semibold text-gray-900">
                           {chat.name}
-                          {chat.has_unread && (
-                            <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                          )}
                         </h3>
                       </div>
                       <p className="text-gray-600 mb-2">{chat.description}</p>
@@ -278,7 +275,7 @@ export default function Community() {
                   <div className="flex items-center gap-3 ml-6">
                     <div className={`px-4 py-2 rounded-md text-sm font-medium pointer-events-none ${
                       chat.is_member 
-                        ? 'bg-orange-100 text-orange-800'
+                        ? 'bg-gray-100 text-gray-800'
                         : 'bg-green-100 text-green-800'
                     }`}>
                       {chat.is_member ? 'Open Chat' : 'Join Chat'}
@@ -300,7 +297,7 @@ export default function Community() {
               key={chat.id}
               className={`border rounded-lg cursor-pointer transition-colors ${
                 chat.is_member 
-                  ? 'border-orange-400 hover:border-orange-500 hover:bg-orange-50' 
+                  ? 'border-orange-400 hover:border-orange-500 hover:bg-gray-50' 
                   : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
               }`}
               onClick={() => {
@@ -324,11 +321,8 @@ export default function Community() {
                       )}
                     </Avatar>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         {chat.name}
-                        {chat.has_unread && (
-                          <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                        )}
                       </h3>
                     </div>
                   </div>
@@ -344,7 +338,7 @@ export default function Community() {
                   
                   <div className={`px-3 py-1 rounded-md text-sm font-medium pointer-events-none ${
                     chat.is_member 
-                      ? 'bg-orange-100 text-orange-800'
+                      ? 'bg-gray-100 text-gray-800'
                       : 'bg-green-100 text-green-800'
                   }`}>
                     {chat.is_member ? 'Open Chat' : 'Join Chat'}
