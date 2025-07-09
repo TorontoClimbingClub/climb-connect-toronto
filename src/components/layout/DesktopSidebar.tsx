@@ -32,19 +32,7 @@ interface UserProfile {
 
 
 export function DesktopSidebar() {
-  // Hide completely on mobile - should never show below 768px
-  const [isMobile, setIsMobile] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   
   const { user } = useAuth();
@@ -138,11 +126,6 @@ export function DesktopSidebar() {
     }
   }, [user]);
 
-
-  // Don't render anything on mobile
-  if (isMobile) {
-    return null;
-  }
 
   return (
     <div className="sidebar-panel p-4 flex flex-col h-full">

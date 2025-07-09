@@ -521,3 +521,78 @@ All colors MUST be HSL.
     }
   }
 
+/* Chat Transitions */
+@import url('./styles/chat-transitions.css');
+
+/* Layout System - CSS-First Responsive Design */
+.layout-container {
+  @apply w-full max-w-full overflow-x-hidden;
+}
+
+.layout-fullscreen {
+  @apply h-screen;
+}
+
+.layout-default {
+  @apply min-h-screen;
+}
+
+.layout-mobile {
+  @apply bg-gray-50 flex flex-col;
+}
+
+.layout-desktop {
+  @apply h-screen bg-gray-50 flex flex-col;
+}
+
+.layout-main {
+  @apply w-full relative;
+}
+
+.layout-main-fullscreen {
+  @apply flex-1 overflow-hidden;
+}
+
+.layout-main-default {
+  @apply overflow-x-hidden overflow-y-auto;
+}
+
+.layout-content {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.layout-panels {
+  @apply flex-1 overflow-hidden;
+}
+
+/* Hydration Loading States */
+.layout-loading {
+  @apply bg-gray-50 h-screen flex flex-col;
+}
+
+.layout-skeleton {
+  @apply w-full h-full flex flex-col;
+}
+
+.skeleton-nav {
+  @apply h-16 bg-white border-b border-gray-200 animate-pulse;
+}
+
+.skeleton-content {
+  @apply flex-1 bg-gray-100 animate-pulse;
+}
+
+/* Smooth Layout Transitions */
+.layout-transition {
+  @apply transition-opacity duration-200 ease-out;
+}
+
+/* Prevent Layout Flash */
+.layout-container {
+  opacity: 1;
+}
+
+.layout-loading .layout-container {
+  opacity: 0.8;
+}
+

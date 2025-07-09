@@ -1,7 +1,8 @@
 
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { NavBar } from './NavBar';
 import { MultiPanelLayout } from './MultiPanelLayout';
+import { useShouldUseDesktopLayout } from '@/hooks/useLayoutState';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,53 +19,42 @@ export function Layout({
   contextPanel,
   layoutType = 'two-panel'
 }: LayoutProps) {
-  // Better initial state to reduce flash - assume desktop if window is wide enough initially
-  const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth >= 768;
-    }
-    return false; // SSR fallback
-  });
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsDesktop(window.innerWidth >= 768); // md breakpoint
-    };
-
-    // Only set up listener if initial check differs
-    const currentIsDesktop = window.innerWidth >= 768;
-    if (currentIsDesktop !== isDesktop) {
-      setIsDesktop(currentIsDesktop);
-    }
-
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, [isDesktop]);
-
-  // Auto-detect layout: use desktop layout only if requested AND on desktop screen
-  const shouldUseDesktopLayout = useDesktopLayout && isDesktop;
+  const shouldUseDesktopLayout = useShouldUseDesktopLayout(useDesktopLayout);
   
-  // Mobile-first layout (original behavior)
+  // Show loading skeleton during hydration
+  if (!shouldUseDesktopLayout && typeof window === 'undefined') {
+    return (
+      <div className={`layout-container ${fullscreen ? 'layout-fullscreen' : 'layout-default'} layout-loading`}>
+        <div className="layout-skeleton">
+          <div className="skeleton-nav"></div>
+          <div className="skeleton-content"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile-first layout with CSS-first responsive classes
   const MobileLayout = () => (
-    <div className={`${fullscreen ? 'h-screen' : 'min-h-screen'} bg-gray-50 flex flex-col overflow-x-hidden w-full max-w-full`}>
+    <div className={`layout-container layout-mobile ${fullscreen ? 'layout-fullscreen' : 'layout-default'}`}>
       <NavBar />
       {fullscreen ? (
-        <main className="flex-1 overflow-hidden w-full relative">
+        <main className="layout-main layout-main-fullscreen">
           {children}
         </main>
       ) : (
-        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden overflow-y-auto">
-          {children}
+        <main className="layout-main layout-main-default">
+          <div className="layout-content">
+            {children}
+          </div>
         </main>
       )}
     </div>
   );
 
-  // Desktop-centric layout (only used on desktop screens)
+  // Desktop layout with CSS-first responsive classes
   const DesktopLayout = () => (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-x-hidden w-full max-w-full">
-      {/* Desktop multi-panel layout */}
-      <div className="flex-1 overflow-hidden">
+    <div className="layout-container layout-desktop">
+      <div className="layout-panels">
         <MultiPanelLayout 
           contextPanel={contextPanel}
           layoutType={layoutType}
@@ -75,6 +65,10 @@ export function Layout({
     </div>
   );
 
-  // Return appropriate layout based on screen size detection
-  return shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />;
+  // Return appropriate layout with smooth transition
+  return (
+    <div className="layout-transition">
+      {shouldUseDesktopLayout ? <DesktopLayout /> : <MobileLayout />}
+    </div>
+  );
 }
