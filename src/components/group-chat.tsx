@@ -20,6 +20,7 @@ import { CreateBelayGroupModal } from '@/components/chat/CreateBelayGroupModal';
 import { shouldDisplayWithoutBubble } from '@/utils/emojiUtils';
 import { isEventCreationMessage } from '@/utils/eventMessageUtils';
 import { isBelayGroupMessage } from '@/utils/belayGroupUtils';
+import { MessageReactions } from '@/components/ui/message-reactions';
 
 interface GroupMessage {
   id: string;
@@ -400,7 +401,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     return (
       <div
         key={message.id}
-        className={`flex items-start ${
+        className={`group flex items-start ${
           isOwnMessage ? 'justify-end' : 'justify-start'
         } ${isThreaded ? 'mt-0.5' : 'mt-4'} ${
           isDeleteMode ? 'cursor-pointer hover:bg-gray-50' : ''
@@ -438,43 +439,54 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             </div>
           )}
           
-          <div className="flex items-center space-x-2">
-            {/* Show checkbox in delete mode */}
-            {isDeleteMode && (
-              <input
-                type="checkbox"
-                id={`message-select-${message.id}`}
-                checked={selectedMessages.has(message.id)}
-                onChange={() => toggleMessageSelection(message.id)}
-                className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
+          <div className="flex flex-col space-y-1">
+            <div className="flex items-center space-x-2">
+              {/* Show checkbox in delete mode */}
+              {isDeleteMode && (
+                <input
+                  type="checkbox"
+                  id={`message-select-${message.id}`}
+                  checked={selectedMessages.has(message.id)}
+                  onChange={() => toggleMessageSelection(message.id)}
+                  className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+              
+              {isEventCreationMessage(message.content) ? (
+                <EventMessageButton 
+                  content={message.content}
+                  isOwnMessage={isOwnMessage}
+                />
+              ) : isBelayGroupMessage(message.content) ? (
+                <BelayGroupMessageButton 
+                  message={message.content}
+                  isOwnMessage={isOwnMessage}
+                />
+              ) : shouldDisplayWithoutBubble(message.content) ? (
+                <div className="text-2xl sm:text-3xl">
+                  {message.content}
+                </div>
+              ) : (
+                <div
+                  className={`px-3 py-2 rounded-2xl break-words ${
+                    isOwnMessage
+                      ? 'bg-blue-500 text-white rounded-br-md'
+                      : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                  }`}
+                >
+                  {message.content}
+                </div>
+              )}
+            </div>
             
-            {isEventCreationMessage(message.content) ? (
-              <EventMessageButton 
-                content={message.content}
-                isOwnMessage={isOwnMessage}
+            {/* Reactions component - only show if not in delete mode */}
+            {!isDeleteMode && (
+              <MessageReactions
+                messageId={message.id}
+                messageType="group"
+                className="mt-1"
               />
-            ) : isBelayGroupMessage(message.content) ? (
-              <BelayGroupMessageButton 
-                message={message.content}
-                isOwnMessage={isOwnMessage}
-              />
-            ) : shouldDisplayWithoutBubble(message.content) ? (
-              <div className="text-2xl sm:text-3xl">
-                {message.content}
-              </div>
-            ) : (
-              <div
-                className={`px-3 py-2 rounded-2xl break-words ${
-                  isOwnMessage
-                    ? 'bg-blue-500 text-white rounded-br-md'
-                    : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                }`}
-              >
-                {message.content}
-              </div>
             )}
           </div>
         </div>
