@@ -401,6 +401,41 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string | null
+          emoji: string
+          id: string
+          message_id: string
+          message_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          emoji: string
+          id?: string
+          message_id: string
+          message_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          emoji?: string
+          id?: string
+          message_id?: string
+          message_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -462,7 +497,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_message_reaction_counts: {
+        Args: { p_message_type: string; p_message_id: string }
+        Returns: {
+          emoji: string
+          count: number
+          user_has_reacted: boolean
+        }[]
+      }
+      toggle_message_reaction: {
+        Args: { p_message_type: string; p_message_id: string; p_emoji: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
