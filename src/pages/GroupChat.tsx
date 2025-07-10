@@ -1,5 +1,5 @@
 import { useParams, useLocation } from 'react-router-dom';
-import { GroupChat as GroupChatComponent } from '@/components/group-chat';
+import { GroupChat as GroupChatComponent } from '@/components/chat';
 
 export default function GroupChat() {
   const { groupId } = useParams<{ groupId: string }>();

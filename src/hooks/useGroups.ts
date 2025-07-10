@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiService } from '@/services/api';
+import { GroupService } from '@/services';
 import { useAuth } from './useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,7 +30,7 @@ export function useGroups() {
   } = useQuery({
     queryKey: ['groups', user?.id],
     queryFn: async () => {
-      const data = await ApiService.getGroups();
+      const data = await GroupService.getGroups();
       
       // Filter to only include gym-related groups (exclude general community topic chats)
       const gymGroups = (data || []).filter(group => {
@@ -75,7 +75,7 @@ export function useGroups() {
 
   const joinGroupMutation = useMutation({
     mutationFn: ({ groupId, userId }: { groupId: string; userId: string }) =>
-      ApiService.joinGroup(groupId, userId),
+      GroupService.joinGroup(groupId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       toast({ title: "Joined group successfully!" });
@@ -91,7 +91,7 @@ export function useGroups() {
 
   const leaveGroupMutation = useMutation({
     mutationFn: ({ groupId, userId }: { groupId: string; userId: string }) =>
-      ApiService.leaveGroup(groupId, userId),
+      GroupService.leaveGroup(groupId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       toast({ title: "Left group successfully" });

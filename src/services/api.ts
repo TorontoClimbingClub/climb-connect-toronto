@@ -1,224 +1,66 @@
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+// Legacy ApiService - use individual services instead
+// This file is kept for backward compatibility during transition
+// TODO: Remove once all imports are updated to use individual services
 
-type Tables = Database['public']['Tables'];
-type Event = Tables['events']['Row'];
-type Group = Tables['groups']['Row'];
-type Profile = Tables['profiles']['Row'];
+import { EventService } from './EventService';
+import { GroupService } from './GroupService';
+import { MessageService } from './MessageService';
+import { DashboardService } from './DashboardService';
 
 export class ApiService {
-  // Events
+  // Events - delegate to EventService
   static async getEvents() {
-    const { data, error } = await supabase
-      .from('events')
-      .select(`
-        id,
-        title,
-        description,
-        location,
-        event_date,
-        max_participants,
-        created_by,
-        created_at,
-        profiles!created_by (display_name)
-      `)
-      .order('event_date', { ascending: true });
-
-    if (error) throw error;
-    return data;
+    return EventService.getEvents();
   }
 
   static async getEventParticipants(eventId: string) {
-    const { data, error } = await supabase
-      .from('event_participants')
-      .select('user_id, profiles(display_name, avatar_url)')
-      .eq('event_id', eventId);
-
-    if (error) throw error;
-    return data;
+    return EventService.getEventParticipants(eventId);
   }
 
   static async joinEvent(eventId: string, userId: string) {
-    const { error } = await supabase
-      .from('event_participants')
-      .insert({ event_id: eventId, user_id: userId });
-
-    if (error) throw error;
+    return EventService.joinEvent(eventId, userId);
   }
 
   static async leaveEvent(eventId: string, userId: string) {
-    const { error } = await supabase
-      .from('event_participants')
-      .delete()
-      .eq('event_id', eventId)
-      .eq('user_id', userId);
-
-    if (error) throw error;
+    return EventService.leaveEvent(eventId, userId);
   }
 
   static async deleteEvent(eventId: string, userId: string) {
-    // First, verify the user is the creator
-    const { data: event, error: fetchError } = await supabase
-      .from('events')
-      .select('created_by')
-      .eq('id', eventId)
-      .single();
-
-    if (fetchError) throw fetchError;
-    
-    if (event.created_by !== userId) {
-      throw new Error('Only the event creator can delete the event');
-    }
-
-    // Check if there's only one participant (should be the creator)
-    const { count, error: countError } = await supabase
-      .from('event_participants')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId);
-
-    if (countError) throw countError;
-
-    if (count && count > 1) {
-      throw new Error('Cannot delete event with multiple participants');
-    }
-
-    // Delete participants first
-    const { error: participantsError } = await supabase
-      .from('event_participants')
-      .delete()
-      .eq('event_id', eventId);
-
-    if (participantsError) throw participantsError;
-
-    // Delete event messages
-    const { error: messagesError } = await supabase
-      .from('event_messages')
-      .delete()
-      .eq('event_id', eventId);
-
-    if (messagesError) throw messagesError;
-
-    // Delete the event itself
-    const { error: eventError } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', eventId);
-
-    if (eventError) throw eventError;
+    return EventService.deleteEvent(eventId, userId);
   }
 
-  // Groups
+  // Groups - delegate to GroupService
   static async getGroups() {
-    const { data, error } = await supabase
-      .from('groups')
-      .select(`
-        id,
-        name,
-        description,
-        avatar_url,
-        created_by,
-        created_at,
-        profiles!created_by (display_name)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    return GroupService.getGroups();
   }
 
   static async getGroupMembers(groupId: string) {
-    const { data, error } = await supabase
-      .from('group_members')
-      .select('user_id, profiles(display_name, avatar_url)')
-      .eq('group_id', groupId);
-
-    if (error) throw error;
-    return data;
+    return GroupService.getGroupMembers(groupId);
   }
 
   static async joinGroup(groupId: string, userId: string) {
-    const { error } = await supabase
-      .from('group_members')
-      .insert({ group_id: groupId, user_id: userId });
-
-    if (error) throw error;
+    return GroupService.joinGroup(groupId, userId);
   }
 
   static async leaveGroup(groupId: string, userId: string) {
-    const { error } = await supabase
-      .from('group_members')
-      .delete()
-      .eq('group_id', groupId)
-      .eq('user_id', userId);
-
-    if (error) throw error;
+    return GroupService.leaveGroup(groupId, userId);
   }
 
-  // Messages
+  // Messages - delegate to MessageService
   static async getEventMessages(eventId: string) {
-    const { data, error } = await supabase
-      .from('event_messages')
-      .select(`
-        id,
-        content,
-        created_at,
-        user_id,
-        profiles(display_name, avatar_url)
-      `)
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
+    return MessageService.getEventMessages(eventId);
   }
 
   static async getGroupMessages(groupId: string) {
-    const { data, error } = await supabase
-      .from('group_messages')
-      .select(`
-        id,
-        content,
-        created_at,
-        user_id,
-        profiles(display_name, avatar_url)
-      `)
-      .eq('group_id', groupId)
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
+    return MessageService.getGroupMessages(groupId);
   }
 
   static async getClubMessages() {
-    const { data, error } = await supabase
-      .from('club_messages')
-      .select(`
-        id,
-        content,
-        created_at,
-        user_id,
-        profiles(display_name, avatar_url)
-      `)
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return data;
+    return MessageService.getClubMessages();
   }
 
-  // Statistics
+  // Statistics - delegate to DashboardService
   static async getDashboardStats() {
-    const [eventsCount, groupsCount, messagesCount, usersCount] = await Promise.all([
-      supabase.from('events').select('id', { count: 'exact', head: true }),
-      supabase.from('groups').select('id', { count: 'exact', head: true }),
-      supabase.from('messages').select('id', { count: 'exact', head: true }),
-      supabase.from('profiles').select('id', { count: 'exact', head: true })
-    ]);
-
-    return {
-      totalEvents: eventsCount.count || 0,
-      totalGroups: groupsCount.count || 0,
-      totalMessages: messagesCount.count || 0,
-      activeUsers: usersCount.count || 0
-    };
+    return DashboardService.getDashboardStats();
   }
 }
