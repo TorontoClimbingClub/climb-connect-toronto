@@ -2,36 +2,38 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EmojiPickerComponent } from '@/components/ui/emoji-picker';
 import { useMessageReactions } from '@/hooks/useMessageReactions';
-import { Plus } from 'lucide-react';
 
 interface MessageReactionsProps {
   messageId: string;
   messageType: 'group' | 'event' | 'club' | 'belay_group';
   className?: string;
+  showInline?: boolean;
 }
 
-export function MessageReactions({ messageId, messageType, className }: MessageReactionsProps) {
+export function MessageReactions({ messageId, messageType, className, showInline = false }: MessageReactionsProps) {
   const { reactions, toggleReaction, loading } = useMessageReactions(messageType, messageId);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleEmojiSelect = async (emoji: string) => {
     await toggleReaction(emoji);
-    setShowEmojiPicker(false);
   };
 
   const handleReactionClick = async (emoji: string) => {
     await toggleReaction(emoji);
   };
 
-  if (reactions.length === 0 && !showEmojiPicker) {
+  // If showInline is true, only show the emoji picker button
+  if (showInline) {
     return (
-      <div className={`flex items-center gap-1 ${className}`}>
-        <EmojiPickerComponent
-          onEmojiSelect={handleEmojiSelect}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        />
-      </div>
+      <EmojiPickerComponent
+        onEmojiSelect={handleEmojiSelect}
+        className={`opacity-0 group-hover:opacity-100 transition-opacity ${className}`}
+      />
     );
+  }
+
+  // Don't render anything if there are no reactions
+  if (reactions.length === 0) {
+    return null;
   }
 
   return (

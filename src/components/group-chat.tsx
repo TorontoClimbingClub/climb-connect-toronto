@@ -439,7 +439,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             </div>
           )}
           
-          <div className="flex flex-col space-y-1">
+          <div className="flex flex-col">
             <div className="flex items-center space-x-2">
               {/* Show checkbox in delete mode */}
               {isDeleteMode && (
@@ -468,19 +468,31 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                   {message.content}
                 </div>
               ) : (
-                <div
-                  className={`px-3 py-2 rounded-2xl break-words ${
-                    isOwnMessage
-                      ? 'bg-blue-500 text-white rounded-br-md'
-                      : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                  }`}
-                >
-                  {message.content}
+                <div className="flex items-center space-x-2">
+                  <div
+                    className={`px-3 py-2 rounded-2xl break-words ${
+                      isOwnMessage
+                        ? 'bg-blue-500 text-white rounded-br-md'
+                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                  
+                  {/* Inline emoji picker - only show if not in delete mode */}
+                  {!isDeleteMode && (
+                    <MessageReactions
+                      messageId={message.id}
+                      messageType="group"
+                      showInline={true}
+                      className="ml-1"
+                    />
+                  )}
                 </div>
               )}
             </div>
             
-            {/* Reactions component - only show if not in delete mode */}
+            {/* Reaction counts - only show if not in delete mode and there are reactions */}
             {!isDeleteMode && (
               <MessageReactions
                 messageId={message.id}
